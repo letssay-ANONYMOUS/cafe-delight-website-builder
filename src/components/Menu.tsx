@@ -45,7 +45,7 @@ const Menu = () => {
       name: "Iced Americano",
       description: "Bold espresso shots over ice with cold water, perfect for a refreshing caffeine kick.",
       price: "$3.95",
-      image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=600&q=80",
+      image: "https://images.unsplash.com/photo-1551218808-94e220e084d2?auto=format&fit=crop&w=600&q=80",
       rating: 4,
       category: "Cold Coffee"
     },
@@ -54,7 +54,7 @@ const Menu = () => {
       name: "Mocha Delight",
       description: "Rich chocolate and premium espresso blend topped with whipped cream and cocoa powder.",
       price: "$5.75",
-      image: "https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?auto=format&fit=crop&w=600&q=80",
+      image: "https://images.unsplash.com/photo-1570968915860-54d5c301fa9f?auto=format&fit=crop&w=600&q=80",
       rating: 5,
       category: "Specialty Drinks"
     }
