@@ -1,4 +1,3 @@
-
 import { Star, Coffee, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,7 +9,7 @@ const Menu = () => {
       name: "Signature Espresso Blend",
       description: "Our house blend with rich chocolate notes and a velvety finish. Made from premium Arabica beans.",
       price: "$4.50",
-      image: "https://images.unsplash.com/photo-1721322800607-8c38375eef04?auto=format&fit=crop&w=600&q=80",
+      image: "https://images.unsplash.com/photo-1510591509098-f4fdc6d0ff04?auto=format&fit=crop&w=600&q=80",
       rating: 5,
       category: "Hot Coffee"
     },
@@ -19,43 +18,43 @@ const Menu = () => {
       name: "Caramel Macchiato",
       description: "Vanilla-flavored syrup, steamed milk, and espresso, topped with caramel drizzle and foam art.",
       price: "$5.25",
-      image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80",
+      image: "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=600&q=80",
       rating: 5,
       category: "Specialty Drinks"
     },
     {
       id: 3,
-      name: "Artisan Croissant",
-      description: "Buttery, flaky pastry baked fresh daily. Perfect companion to your morning coffee.",
-      price: "$3.75",
-      image: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?auto=format&fit=crop&w=600&q=80",
+      name: "Cappuccino Classic",
+      description: "Traditional Italian cappuccino with perfectly steamed milk foam and rich espresso base.",
+      price: "$4.75",
+      image: "https://images.unsplash.com/photo-1572442388796-11668a67e53d?auto=format&fit=crop&w=600&q=80",
       rating: 4,
-      category: "Pastries"
+      category: "Hot Coffee"
     },
     {
       id: 4,
       name: "Cold Brew Paradise",
       description: "Smooth, refreshing cold brew coffee with hints of vanilla and a touch of cream.",
       price: "$4.95",
-      image: "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=600&q=80",
+      image: "https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=600&q=80",
       rating: 5,
       category: "Cold Coffee"
     },
     {
       id: 5,
-      name: "Avocado Toast Supreme",
-      description: "Fresh avocado on artisan sourdough with cherry tomatoes, feta cheese, and balsamic glaze.",
-      price: "$8.50",
-      image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80",
+      name: "Iced Americano",
+      description: "Bold espresso shots over ice with cold water, perfect for a refreshing caffeine kick.",
+      price: "$3.95",
+      image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=600&q=80",
       rating: 4,
-      category: "Food"
+      category: "Cold Coffee"
     },
     {
       id: 6,
       name: "Mocha Delight",
       description: "Rich chocolate and premium espresso blend topped with whipped cream and cocoa powder.",
       price: "$5.75",
-      image: "https://images.unsplash.com/photo-1721322800607-8c38375eef04?auto=format&fit=crop&w=600&q=80",
+      image: "https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?auto=format&fit=crop&w=600&q=80",
       rating: 5,
       category: "Specialty Drinks"
     }
