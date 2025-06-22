@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,31 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Coffee-themed colors
+				coffee: {
+					50: '#faf7f2',
+					100: '#f2e9d8',
+					200: '#e6d1b1',
+					300: '#d4b185',
+					400: '#c4935c',
+					500: '#b8783f',
+					600: '#a96134',
+					700: '#8d4a2d',
+					800: '#733d29',
+					900: '#5e3325'
+				},
+				cream: {
+					50: '#fefdfb',
+					100: '#fef9f3',
+					200: '#fdf2e4',
+					300: '#fbe7cc',
+					400: '#f7d6a8',
+					500: '#f2c078',
+					600: '#eba948',
+					700: '#dc9025',
+					800: '#b7731a',
+					900: '#935e19'
 				}
 			},
 			borderRadius: {
@@ -84,11 +110,46 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'fade-in': {
+					'0%': {
+						opacity: '0',
+						transform: 'translateY(20px)'
+					},
+					'100%': {
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
+				},
+				'scale-in': {
+					'0%': {
+						transform: 'scale(0.95)',
+						opacity: '0'
+					},
+					'100%': {
+						transform: 'scale(1)',
+						opacity: '1'
+					}
+				},
+				'bounce-gentle': {
+					'0%, 100%': {
+						transform: 'translateY(0px)'
+					},
+					'50%': {
+						transform: 'translateY(-10px)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-in': 'fade-in 0.6s ease-out',
+				'scale-in': 'scale-in 0.3s ease-out',
+				'bounce-gentle': 'bounce-gentle 2s ease-in-out infinite'
+			},
+			fontFamily: {
+				'playfair': ['Playfair Display', 'serif'],
+				'inter': ['Inter', 'sans-serif']
 			}
 		}
 	},
