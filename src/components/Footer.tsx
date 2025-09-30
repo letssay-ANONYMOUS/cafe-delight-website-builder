@@ -11,12 +11,12 @@ const Footer = () => {
             <div className="flex items-center space-x-2 mb-4">
               <Coffee className="h-8 w-8 text-cream-400" />
               <span className="font-playfair text-2xl font-bold">
-                Brew & Bliss
+                NAWA CAFÉ
               </span>
             </div>
             <p className="text-cream-200 leading-relaxed mb-4">
-              Where every cup tells a story. Experience the perfect blend of artisanal coffee, 
-              cozy atmosphere, and exceptional service.
+              An immersive coffee experience where artistry meets cuisine. Experience gourmet coffee, 
+              authentic dishes, and unforgettable moments in Al Ain.
             </p>
             <div className="flex items-center space-x-1">
               {Array.from({ length: 5 }, (_, index) => (
@@ -57,17 +57,18 @@ const Footer = () => {
           <div>
             <h3 className="font-playfair text-xl font-semibold mb-4">Contact</h3>
             <div className="space-y-2 text-cream-200">
-              <p>123 Coffee Street</p>
-              <p>New York, NY 10001</p>
-              <p>(555) 123-BREW</p>
-              <p>hello@brewandbliss.com</p>
+              <p>Al Ain</p>
+              <p>United Arab Emirates</p>
+              <p>037800030</p>
+              <p>0506584176</p>
+              <p>nawacafe22@gmail.com</p>
             </div>
           </div>
         </div>
 
         <div className="border-t border-coffee-700 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-cream-300 text-sm">
-            © 2024 Brew & Bliss Cafe. All rights reserved.
+            © 2024 NAWA CAFÉ. All rights reserved.
           </p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <button className="text-cream-300 hover:text-cream-100 transition-colors duration-200 text-sm">
