@@ -7,17 +7,17 @@ const Contact = () => {
   const contactInfo = [
     {
       title: "Visit Us",
-      details: ["123 Coffee Street", "Downtown District", "New York, NY 10001"],
+      details: ["Al Banafsaj St. Hazza Bin Zayed Stadium", "Bldg. 15 - Al Tiwayya - Abu Dhabi", "United Arab Emirates"],
       icon: "📍"
     },
     {
       title: "Call Us",
-      details: ["(555) 123-BREW", "Mon-Fri: 6AM-9PM", "Sat-Sun: 7AM-10PM"],
+      details: ["037800030", "0506584176", "Mon-Fri: 6AM-9PM | Sat-Sun: 7AM-10PM"],
       icon: "📞"
     },
     {
       title: "Email Us",
-      details: ["hello@brewandbliss.com", "orders@brewandbliss.com", "events@brewandbliss.com"],
+      details: ["nawacafe22@gmail.com"],
       icon: "✉️"
     }
   ];
