@@ -46,7 +46,7 @@ const Hero = () => {
               <Button
                 variant="outline"
                 size="lg"
-                className="border-2 border-white text-white hover:bg-white hover:text-coffee-800 px-10 py-4 text-lg font-semibold rounded-full transition-all duration-300 transform hover:scale-105 backdrop-blur-sm"
+                className="border-2 border-white text-white bg-white/10 hover:bg-white hover:text-coffee-800 px-10 py-4 text-lg font-semibold rounded-full transition-all duration-300 transform hover:scale-105 backdrop-blur-sm"
               >
                 Find Locations
               </Button>
