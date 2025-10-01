@@ -1,6 +1,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { Coffee, UserCircle, Home } from 'lucide-react';
 
 const Hero = () => {
   return (
@@ -58,21 +59,21 @@ const Hero = () => {
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="text-center animate-fade-in" style={{ animationDelay: '0.2s' }}>
             <div className="w-16 h-16 bg-cream-400/20 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
-              <span className="text-2xl">☕</span>
+              <Coffee className="w-8 h-8 text-cream-200" />
             </div>
             <h3 className="text-xl font-semibold text-white mb-2">Premium Beans</h3>
             <p className="text-cream-200">Ethically sourced from the world's finest coffee regions</p>
           </div>
           <div className="text-center animate-fade-in" style={{ animationDelay: '0.4s' }}>
             <div className="w-16 h-16 bg-cream-400/20 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
-              <span className="text-2xl">👨‍🍳</span>
+              <UserCircle className="w-8 h-8 text-cream-200" />
             </div>
             <h3 className="text-xl font-semibold text-white mb-2">Expert Baristas</h3>
             <p className="text-cream-200">Trained artisans dedicated to the perfect brew</p>
           </div>
           <div className="text-center animate-fade-in" style={{ animationDelay: '0.6s' }}>
             <div className="w-16 h-16 bg-cream-400/20 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
-              <span className="text-2xl">🏠</span>
+              <Home className="w-8 h-8 text-cream-200" />
             </div>
             <h3 className="text-xl font-semibold text-white mb-2">Cozy Atmosphere</h3>
             <p className="text-cream-200">Your home away from home for work and relaxation</p>
