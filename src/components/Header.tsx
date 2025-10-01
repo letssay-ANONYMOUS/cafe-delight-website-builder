@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Coffee } from 'lucide-react';
+import { Coffee, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -44,6 +44,11 @@ const Header = () => {
                 {item.label}
               </Link>
             ))}
+            <Link to="/cart">
+              <Button variant="outline" size="icon" className="rounded-full">
+                <ShoppingCart className="h-5 w-5" />
+              </Button>
+            </Link>
             <Button className="bg-coffee-600 hover:bg-coffee-700 text-white px-6 py-2 rounded-full transition-all duration-300 transform hover:scale-105">
               Order Now
             </Button>
@@ -78,6 +83,12 @@ const Header = () => {
                   {item.label}
                 </Link>
               ))}
+              <Link to="/cart" onClick={() => setIsMenuOpen(false)}>
+                <Button variant="outline" size="sm" className="rounded-full w-fit gap-2">
+                  <ShoppingCart className="h-4 w-4" />
+                  Cart
+                </Button>
+              </Link>
               <Button className="bg-coffee-600 hover:bg-coffee-700 text-white px-6 py-2 rounded-full w-fit">
                 Order Now
               </Button>
