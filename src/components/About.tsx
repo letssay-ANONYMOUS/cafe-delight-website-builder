@@ -96,7 +96,7 @@ const About = () => {
             </div>
             <div className="hidden md:block absolute -bottom-6 -left-6 bg-white rounded-2xl p-6 shadow-2xl border border-coffee-200">
               <div className="text-center">
-                <div className="text-3xl font-bold text-coffee-800">4.9</div>
+                <div className="text-3xl font-bold text-coffee-800">4.7</div>
                 <div className="flex justify-center space-x-1 mb-1">
                   {renderStars(5)}
                 </div>
@@ -228,7 +228,7 @@ const About = () => {
               <div className="flex space-x-1">
                 {renderStars(5)}
               </div>
-              <span className="text-2xl md:text-3xl font-bold text-coffee-800">4.9</span>
+              <span className="text-2xl md:text-3xl font-bold text-coffee-800">4.7</span>
             </div>
             <p className="text-coffee-600 mb-6 text-sm md:text-base">
               Rated excellent by our customers
