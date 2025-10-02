@@ -25,7 +25,7 @@ const Header = () => {
           <Link to="/" className="flex items-center space-x-2">
             <Coffee className="h-8 w-8 text-coffee-600" />
             <span className="font-playfair text-2xl font-bold text-coffee-800">
-              Brew & Bliss
+              NAWA CAFÉ
             </span>
           </Link>
 
