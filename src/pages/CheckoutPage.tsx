@@ -19,9 +19,7 @@ const CheckoutPage = () => {
     cvc: '',
   });
 
-  const subtotal = 39.00;
-  const tax = 1.95;
-  const total = 40.95;
+  const total = 39.00;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -185,20 +183,10 @@ const CheckoutPage = () => {
                           <span className="text-coffee-700">AED 15.00</span>
                         </div>
                       </div>
-                      <div className="border-t border-coffee-200 pt-4 space-y-3">
-                        <div className="flex justify-between text-coffee-700">
-                          <span>Subtotal</span>
-                          <span>AED {subtotal.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between text-coffee-700">
-                          <span>Tax (5%)</span>
-                          <span>AED {tax.toFixed(2)}</span>
-                        </div>
-                        <div className="border-t border-coffee-200 pt-3">
-                          <div className="flex justify-between text-lg font-semibold text-coffee-800">
-                            <span>Total</span>
-                            <span>AED {total.toFixed(2)}</span>
-                          </div>
+                      <div className="border-t border-coffee-200 pt-4">
+                        <div className="flex justify-between text-lg font-semibold text-coffee-800">
+                          <span>Total</span>
+                          <span>AED {total.toFixed(2)}</span>
                         </div>
                       </div>
                     </div>

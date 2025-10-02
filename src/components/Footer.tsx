@@ -18,12 +18,17 @@ const Footer = () => {
               An immersive coffee experience where artistry meets cuisine. Experience gourmet coffee, 
               authentic dishes, and unforgettable moments in Al Ain.
             </p>
-            <div className="flex items-center space-x-1">
+            <a 
+              href="https://www.google.com/maps/place/NAWA+Cafe/@24.2454332,55.7114633,17z/data=!3m1!4b1!4m6!3m5!1s0x3e8ab391028950b1:0xe99373a583558a82!8m2!3d24.2454332!4d55.7140382!16s%2Fg%2F11rr27q630"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center space-x-1 hover:opacity-80 transition-opacity"
+            >
               {Array.from({ length: 5 }, (_, index) => (
-                <Star key={index} className="w-4 h-4 text-amber-400 fill-current" />
+                <Star key={index} className={`w-4 h-4 ${index < 4 ? 'text-amber-400 fill-current' : 'text-amber-400 fill-current opacity-70'}`} />
               ))}
-              <span className="ml-2 text-cream-200">4.9/5 Customer Rating</span>
-            </div>
+              <span className="ml-2 text-cream-200">4.7/5 Customer Rating</span>
+            </a>
           </div>
 
           {/* Quick Links */}
