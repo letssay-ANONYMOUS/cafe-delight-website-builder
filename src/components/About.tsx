@@ -234,7 +234,7 @@ const About = () => {
               Rated excellent by our customers
             </p>
             <a
-              href="https://www.google.com/maps/place/NAWA+Cafe/@24.2454321,55.711463,17z/data=!4m12!1m2!2m1!1sCoffee+shop!3m8!1s0x3e8ab391028950b1:0xe99373a583558a82!8m2!3d24.2454321!4d55.7140379!9m1!1b1!15sCgtDb2ZmZWUgc2hvcFoNIgtjb2ZmZWUgc2hvcJIBC2NvZmZlZV9zaG9wmgEkQ2hkRFNVaE5NRzluUzBWSlEwRm5TVU55ZDNGbVF6VlJSUkFCqgFPCgkvbS8wMnZxZm0QASoPIgtjb2ZmZWUgc2hvcCgAMh4QASIa1mZsRy5jNstlFiqELGs_EXo0ovZzE1SrdqgyDxACIgtjb2ZmZWUgc2hvcOABAPoBBAgAEDk!16s%2Fg%2F11rr27q630!5m1!1e3?entry=ttu&g_ep=EgoyMDI1MDkyMi4wIKXMDSoASAFQAw%3D%3D"
+              href="https://www.google.com/maps/place/NAWA+Cafe/@24.2454332,55.7114633,17z/data=!3m1!4b1!4m6!3m5!1s0x3e8ab391028950b1:0xe99373a583558a82!8m2!3d24.2454332!4d55.7140382!16s%2Fg%2F11rr27q630"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center space-x-2 bg-gradient-to-r from-coffee-700 to-coffee-600 text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-semibold hover:from-coffee-800 hover:to-coffee-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-sm md:text-base"

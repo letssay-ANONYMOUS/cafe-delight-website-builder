@@ -29,7 +29,7 @@ const LocationsPage = () => {
               <CardContent className="p-0">
                 <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
                   <iframe 
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3637.895399120355!2d55.71146833923969!3d24.24543696968284!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e8ab391028950b1%3A0xe99373a583558a82!2sNAWA%20Cafe!5e0!3m2!1sen!2suk!4v1759342249691!5m2!1sen!2suk"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3637.895399120355!2d55.71146330000001!3d24.2454332!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e8ab391028950b1%3A0xe99373a583558a82!2sNAWA%20Cafe!5e0!3m2!1sen!2sae!4v1735920000000!5m2!1sen!2sae"
                     className="absolute top-0 left-0 w-full h-full"
                     style={{ border: 0 }}
                     allowFullScreen
