@@ -1,6 +1,7 @@
 
 import { Coffee, Star, Award, Users, Leaf } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import aboutCoffee1 from '@/assets/about-coffee-1.jpg';
 
 const About = () => {
   const stats = [
@@ -73,8 +74,8 @@ const About = () => {
           <div className="relative">
             <div className="grid grid-cols-2 gap-3 md:gap-4">
               <img
-                src="https://images.unsplash.com/photo-1559496417-e7f25cb247cd?auto=format&fit=crop&w=400&q=80"
-                alt="Coffee roasting process"
+                src={aboutCoffee1}
+                alt="Premium coffee with latte art"
                 className="rounded-xl md:rounded-2xl shadow-xl w-full h-36 md:h-48 object-cover"
               />
               <img
