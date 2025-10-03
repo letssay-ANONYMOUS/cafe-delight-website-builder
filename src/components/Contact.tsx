@@ -86,12 +86,6 @@ const Contact = () => {
                     <span className="font-semibold text-coffee-800">6:30 AM - 12:00 AM</span>
                   </div>
                 </div>
-                <div className="mt-6 p-4 bg-cream-100 rounded-lg">
-                  <p className="text-sm text-coffee-600 text-center">
-                    <strong>Happy Hour:</strong> Monday-Friday 3-5 PM<br />
-                    Get 20% off all beverages!
-                  </p>
-                </div>
               </CardContent>
             </Card>
 
