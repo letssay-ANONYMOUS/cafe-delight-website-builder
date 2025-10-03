@@ -143,10 +143,6 @@ const About = () => {
             <ul className="space-y-2 text-coffee-700 text-sm md:text-base">
               <li className="flex items-start">
                 <span className="mr-2">•</span>
-                <span>Source and roast top-tier coffee beans from diverse global regions</span>
-              </li>
-              <li className="flex items-start">
-                <span className="mr-2">•</span>
                 <span>Continuously innovate to develop unique, personalized coffee blends</span>
               </li>
               <li className="flex items-start">
