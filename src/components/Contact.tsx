@@ -27,7 +27,7 @@ const Contact = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16 animate-fade-in">
           <h2 className="font-playfair text-4xl md:text-5xl font-bold text-coffee-800 mb-4">
-            Visit Our Cafe
+            Contact Us
           </h2>
           <p className="text-xl text-coffee-600 max-w-2xl mx-auto">
             Come experience the warmth and aroma of our cozy coffee haven
@@ -74,16 +74,16 @@ const Contact = () => {
                 </h3>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-coffee-600">Monday - Friday</span>
-                    <span className="font-semibold text-coffee-800">6:00 AM - 9:00 PM</span>
+                    <span className="text-coffee-600">Monday - Thursday</span>
+                    <span className="font-semibold text-coffee-800">6:30 AM - 12:00 AM</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-coffee-600">Saturday</span>
-                    <span className="font-semibold text-coffee-800">7:00 AM - 10:00 PM</span>
+                    <span className="text-coffee-600">Friday - Saturday</span>
+                    <span className="font-semibold text-coffee-800">7:00 AM - 1:00 AM</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-coffee-600">Sunday</span>
-                    <span className="font-semibold text-coffee-800">7:00 AM - 10:00 PM</span>
+                    <span className="font-semibold text-coffee-800">6:30 AM - 12:00 AM</span>
                   </div>
                 </div>
                 <div className="mt-6 p-4 bg-cream-100 rounded-lg">
