@@ -1,54 +1,15 @@
-import { useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Minus, Plus, Trash2, ShoppingCart } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-export interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  image: string;
-}
+import { useCart } from '@/contexts/CartContext';
 
 const CartPage = () => {
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: '1',
-      name: 'Espresso',
-      price: 12.00,
-      quantity: 2,
-      image: 'https://images.unsplash.com/photo-1510591509098-f4fdc6d0ff04?auto=format&fit=crop&w=400&q=80'
-    },
-    {
-      id: '2',
-      name: 'Cappuccino',
-      price: 15.00,
-      quantity: 1,
-      image: 'https://images.unsplash.com/photo-1572442388796-11668a67e53d?auto=format&fit=crop&w=400&q=80'
-    }
-  ]);
+  const { cartItems, updateQuantity, removeFromCart, getCartTotal } = useCart();
 
-  const updateQuantity = (id: string, change: number) => {
-    setCartItems(items =>
-      items.map(item =>
-        item.id === id
-          ? { ...item, quantity: Math.max(1, item.quantity + change) }
-          : item
-      )
-    );
-  };
-
-  const removeItem = (id: string) => {
-    setCartItems(items => items.filter(item => item.id !== id));
-  };
-
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const tax = subtotal * 0.05;
-  const total = subtotal + tax;
+  const total = getCartTotal();
 
   return (
     <div className="min-h-screen">
@@ -96,9 +57,9 @@ const CartPage = () => {
                             alt={item.name}
                             className="w-full sm:w-24 h-24 object-cover rounded-lg"
                           />
-                          <div className="flex-1">
+                           <div className="flex-1">
                             <h3 className="font-semibold text-lg text-coffee-800 mb-2">{item.name}</h3>
-                            <p className="text-coffee-600 font-medium mb-4">AED {item.price.toFixed(2)}</p>
+                            <p className="text-coffee-600 font-medium mb-4">${item.price.toFixed(2)}</p>
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-3">
                                 <Button
@@ -124,7 +85,7 @@ const CartPage = () => {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={() => removeItem(item.id)}
+                                onClick={() => removeFromCart(item.id)}
                                 className="text-red-600 hover:text-red-700 hover:bg-red-50"
                               >
                                 <Trash2 className="h-5 w-5" />
@@ -143,18 +104,10 @@ const CartPage = () => {
                     <CardContent className="p-6">
                       <h2 className="text-2xl font-semibold text-coffee-800 mb-6">Order Summary</h2>
                       <div className="space-y-4 mb-6">
-                        <div className="flex justify-between text-coffee-700">
-                          <span>Subtotal</span>
-                          <span>AED {subtotal.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between text-coffee-700">
-                          <span>Tax (5%)</span>
-                          <span>AED {tax.toFixed(2)}</span>
-                        </div>
                         <div className="border-t border-coffee-200 pt-4">
                           <div className="flex justify-between text-lg font-semibold text-coffee-800">
                             <span>Total</span>
-                            <span>AED {total.toFixed(2)}</span>
+                            <span>${total.toFixed(2)}</span>
                           </div>
                         </div>
                       </div>

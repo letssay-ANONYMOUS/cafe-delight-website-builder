@@ -2,9 +2,11 @@ import { Star, Coffee, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { useCart } from '@/contexts/CartContext';
 
 const Menu = () => {
   const { toast } = useToast();
+  const { addToCart } = useCart();
 
   const menuItems = [
     {
@@ -72,10 +74,19 @@ const Menu = () => {
     ));
   };
 
-  const handleAddToCart = (itemName: string) => {
+  const handleAddToCart = (item: typeof menuItems[0]) => {
+    addToCart({
+      id: item.id,
+      name: item.name,
+      description: item.description,
+      price: parseFloat(item.price.replace('$', '')),
+      image: item.image,
+      category: item.category,
+    });
+    
     toast({
       title: "Added to Cart",
-      description: `${itemName} has been added to your cart.`,
+      description: `${item.name} has been added to your cart.`,
     });
   };
 
@@ -131,7 +142,7 @@ const Menu = () => {
                   </span>
                   <Button 
                     className="bg-coffee-600 hover:bg-coffee-700 text-white px-4 py-2 rounded-full transition-all duration-300 transform hover:scale-105 flex items-center space-x-2"
-                    onClick={() => handleAddToCart(item.name)}
+                    onClick={() => handleAddToCart(item)}
                   >
                     <ShoppingCart className="w-4 h-4" />
                     <span>Add to Cart</span>

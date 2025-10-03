@@ -7,9 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { CreditCard, Lock } from 'lucide-react';
+import { useCart } from '@/contexts/CartContext';
+import { useNavigate } from 'react-router-dom';
 
 const CheckoutPage = () => {
   const { toast } = useToast();
+  const { cartItems, getCartTotal, clearCart } = useCart();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -18,8 +22,7 @@ const CheckoutPage = () => {
     cvc: '',
   });
 
-  const subtotal = 24.95;
-  const total = subtotal;
+  const total = getCartTotal();
 
   
 
@@ -30,15 +33,27 @@ const CheckoutPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (cartItems.length === 0) {
+      toast({
+        title: "Cart is Empty",
+        description: "Please add items to your cart before checkout.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setLoading(true);
 
     // Simulate payment processing
     setTimeout(() => {
       setLoading(false);
+      clearCart();
       toast({
         title: "Payment Successful!",
         description: "Your order has been confirmed. Thank you for your purchase!",
       });
+      navigate('/');
     }, 2000);
   };
 
@@ -181,24 +196,26 @@ const CheckoutPage = () => {
                 <Card className="sticky top-8">
                   <CardContent className="p-6">
                     <h2 className="text-2xl font-semibold text-coffee-800 mb-6">Order Summary</h2>
-                    <div className="space-y-4 mb-6">
-                      <div className="space-y-3">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-coffee-700">Espresso × 2</span>
-                          <span className="text-coffee-700">${(subtotal * 0.6).toFixed(2)}</span>
+                    {cartItems.length === 0 ? (
+                      <p className="text-coffee-600 text-center py-8">Your cart is empty</p>
+                    ) : (
+                      <div className="space-y-4 mb-6">
+                        <div className="space-y-3">
+                          {cartItems.map((item) => (
+                            <div key={item.id} className="flex justify-between text-sm">
+                              <span className="text-coffee-700">{item.name} × {item.quantity}</span>
+                              <span className="text-coffee-700">${(item.price * item.quantity).toFixed(2)}</span>
+                            </div>
+                          ))}
                         </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-coffee-700">Cappuccino × 1</span>
-                          <span className="text-coffee-700">${(subtotal * 0.4).toFixed(2)}</span>
+                        <div className="border-t border-coffee-200 pt-4">
+                          <div className="flex justify-between text-lg font-semibold text-coffee-800">
+                            <span>Total</span>
+                            <span>${total.toFixed(2)}</span>
+                          </div>
                         </div>
                       </div>
-                      <div className="border-t border-coffee-200 pt-4">
-                        <div className="flex justify-between text-lg font-semibold text-coffee-800">
-                          <span>Total</span>
-                          <span>${total.toFixed(2)}</span>
-                        </div>
-                      </div>
-                    </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>
