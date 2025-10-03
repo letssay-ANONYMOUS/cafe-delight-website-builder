@@ -37,8 +37,8 @@ const About = () => {
   };
 
   return (
-    <section id="about" className="py-12 md:py-20 bg-gradient-to-br from-coffee-100 via-cream-50 to-coffee-50">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="about" className="py-12 md:py-20 bg-gradient-to-br from-coffee-100 via-cream-50 to-coffee-50 overflow-x-hidden">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-full">
         {/* About Story */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16 items-center mb-12 md:mb-20">
           <div className="animate-fade-in">
@@ -107,7 +107,7 @@ const About = () => {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 mb-12 md:mb-20">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 mb-12 md:mb-20 overflow-hidden">
           {stats.map((stat, index) => {
             const IconComponent = stat.icon;
             return (
@@ -117,10 +117,10 @@ const About = () => {
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <IconComponent className="w-6 h-6 md:w-8 md:h-8 text-coffee-600 mx-auto mb-2 md:mb-3" />
-                <div className="text-2xl md:text-4xl lg:text-5xl font-bold text-coffee-700 mb-1 md:mb-2">
+                <div className="text-xl md:text-4xl lg:text-5xl font-bold text-coffee-700 mb-1 md:mb-2 break-words">
                   {stat.number}
                 </div>
-                <div className="text-xs md:text-sm text-coffee-600 font-medium">
+                <div className="text-xs md:text-sm text-coffee-600 font-medium break-words">
                   {stat.label}
                 </div>
               </div>
