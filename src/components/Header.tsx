@@ -1,12 +1,14 @@
-
 import { useState } from 'react';
 import { Coffee, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useLocation } from 'react-router-dom';
+import { useCart } from '@/contexts/CartContext';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const { getCartCount } = useCart();
+  const cartCount = getCartCount();
 
   const navItems = [
     { path: '/', label: 'Home' },
@@ -45,8 +47,13 @@ const Header = () => {
               </Link>
             ))}
             <Link to="/cart">
-              <Button variant="outline" size="icon" className="rounded-full">
+              <Button variant="outline" size="icon" className="rounded-full relative">
                 <ShoppingCart className="h-5 w-5" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-coffee-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                    {cartCount}
+                  </span>
+                )}
               </Button>
             </Link>
             <Button className="bg-coffee-600 hover:bg-coffee-700 text-white px-6 py-2 rounded-full transition-all duration-300 transform hover:scale-105">
@@ -84,9 +91,14 @@ const Header = () => {
                 </Link>
               ))}
               <Link to="/cart" onClick={() => setIsMenuOpen(false)}>
-                <Button variant="outline" size="sm" className="rounded-full w-fit gap-2">
+                <Button variant="outline" size="sm" className="rounded-full w-fit gap-2 relative">
                   <ShoppingCart className="h-4 w-4" />
                   Cart
+                  {cartCount > 0 && (
+                    <span className="bg-coffee-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center ml-1">
+                      {cartCount}
+                    </span>
+                  )}
                 </Button>
               </Link>
               <Button className="bg-coffee-600 hover:bg-coffee-700 text-white px-6 py-2 rounded-full w-fit">
