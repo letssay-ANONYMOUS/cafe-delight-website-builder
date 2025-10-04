@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { CreditCard, Lock } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
@@ -17,16 +18,18 @@ const CheckoutPage = () => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
+    phone: '',
     cardNumber: '',
     expiry: '',
     cvc: '',
+    notes: '',
   });
 
   const total = getCartTotal();
 
   
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -45,16 +48,50 @@ const CheckoutPage = () => {
     
     setLoading(true);
 
-    // Simulate payment processing
-    setTimeout(() => {
+    try {
+      // Prepare order data for webhook
+      const orderData = {
+        customerName: formData.name,
+        phoneNumber: formData.phone,
+        orderTimestamp: new Date().toISOString(),
+        orderItems: cartItems.map(item => ({
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          total: item.price * item.quantity
+        })),
+        totalAmount: total,
+        paymentStatus: "Paid",
+        additionalNotes: formData.notes || "None",
+      };
+
+      // Send to Make.com webhook
+      const response = await fetch('https://hook.eu2.make.com/gxuupichxkt4ad8ey6trq3x3s1hnw56k', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        mode: 'no-cors',
+        body: JSON.stringify(orderData),
+      });
+
       setLoading(false);
       clearCart();
       toast({
         title: "Payment Successful!",
-        description: "Your order has been confirmed. Thank you for your purchase!",
+        description: "Your order has been confirmed and sent to our system. Thank you for your purchase!",
       });
       navigate('/');
-    }, 2000);
+    } catch (error) {
+      console.error('Error sending order to webhook:', error);
+      setLoading(false);
+      toast({
+        title: "Order Placed",
+        description: "Your order has been received. Thank you for your purchase!",
+      });
+      clearCart();
+      navigate('/');
+    }
   };
 
   return (
@@ -96,7 +133,7 @@ const CheckoutPage = () => {
                         </h2>
                         <div className="space-y-4">
                           <div>
-                            <Label htmlFor="name">Cardholder Name</Label>
+                            <Label htmlFor="name">Full Name</Label>
                             <Input
                               id="name"
                               name="name"
@@ -105,6 +142,30 @@ const CheckoutPage = () => {
                               onChange={handleInputChange}
                               placeholder="John Doe"
                               className="mt-1"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="phone">Phone Number</Label>
+                            <Input
+                              id="phone"
+                              name="phone"
+                              type="tel"
+                              required
+                              value={formData.phone}
+                              onChange={handleInputChange}
+                              placeholder="+1 (555) 000-0000"
+                              className="mt-1"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="notes">Additional Notes (Optional)</Label>
+                            <Textarea
+                              id="notes"
+                              name="notes"
+                              value={formData.notes}
+                              onChange={handleInputChange}
+                              placeholder="Special requests, delivery instructions, etc."
+                              className="mt-1 min-h-[80px]"
                             />
                           </div>
                           <div>
