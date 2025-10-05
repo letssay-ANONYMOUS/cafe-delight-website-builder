@@ -33,16 +33,10 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         amount: amountInFils,
-        currency: "AED",
+        currency_code: "AED",
         success_url: `${origin}/payment-success?payment_intent_id={PAYMENT_INTENT_ID}`,
         cancel_url: `${origin}/checkout`,
         test: true, // Set to false for production
-        metadata: {
-          customerName,
-          phoneNumber,
-          orderItems: JSON.stringify(orderItems),
-          additionalNotes,
-        },
       }),
     });
 
