@@ -25,7 +25,7 @@ serve(async (req) => {
     // Amount should be in fils (1 AED = 100 fils)
     const amountInFils = Math.round(amount * 100);
 
-    const paymentIntentResponse = await fetch("https://api.ziina.com/v1/payment_intent", {
+    const paymentIntentResponse = await fetch("https://api-v2.ziina.com/api/payment_intent", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${ziinaToken}`,
