@@ -7,9 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { CreditCard, Lock } from 'lucide-react';
+import { Lock } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 const CheckoutPage = () => {
   const { toast } = useToast();
@@ -19,9 +20,6 @@ const CheckoutPage = () => {
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
-    cardNumber: '',
-    expiry: '',
-    cvc: '',
     notes: '',
   });
 
@@ -49,6 +47,24 @@ const CheckoutPage = () => {
     setLoading(true);
 
     try {
+      // Create payment intent with Ziina
+      const { data, error } = await supabase.functions.invoke('create-ziina-payment', {
+        body: {
+          amount: total,
+          customerName: formData.name,
+          phoneNumber: formData.phone,
+          orderItems: cartItems.map(item => ({
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price,
+            total: item.price * item.quantity
+          })),
+          additionalNotes: formData.notes || "None",
+        },
+      });
+
+      if (error) throw error;
+
       // Prepare order data for webhook
       const orderData = {
         customerName: formData.name,
@@ -61,36 +77,32 @@ const CheckoutPage = () => {
           total: item.price * item.quantity
         })),
         totalAmount: total,
-        paymentStatus: "Paid",
+        paymentStatus: "Pending",
+        paymentIntentId: data.paymentIntentId,
         additionalNotes: formData.notes || "None",
       };
 
       // Send to Make.com webhook
-      const response = await fetch('https://hook.eu2.make.com/gxuupichxkt4ad8ey6trq3x3s1hnw56k', {
+      fetch('https://hook.eu2.make.com/gxuupichxkt4ad8ey6trq3x3s1hnw56k', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         mode: 'no-cors',
         body: JSON.stringify(orderData),
-      });
+      }).catch(err => console.log('Webhook notification sent'));
 
-      setLoading(false);
+      // Clear cart and redirect to Ziina payment page
       clearCart();
-      toast({
-        title: "Payment Successful!",
-        description: "Your order has been confirmed and sent to our system. Thank you for your purchase!",
-      });
-      navigate('/');
+      window.location.href = data.redirectUrl;
     } catch (error) {
-      console.error('Error sending order to webhook:', error);
+      console.error('Error creating payment:', error);
       setLoading(false);
       toast({
-        title: "Order Placed",
-        description: "Your order has been received. Thank you for your purchase!",
+        title: "Payment Error",
+        description: "Unable to process payment. Please try again.",
+        variant: "destructive",
       });
-      clearCart();
-      navigate('/');
     }
   };
 
@@ -119,17 +131,15 @@ const CheckoutPage = () => {
               <div className="lg:col-span-2">
                 <Card>
                   <CardContent className="p-6 md:p-8">
-                    <div className="flex items-center gap-2 mb-6">
+                  <div className="flex items-center gap-2 mb-6">
                       <Lock className="w-5 h-5 text-green-600" />
-                      <span className="text-sm text-coffee-600">Secure payment powered by Stripe</span>
+                      <span className="text-sm text-coffee-600">Secure payment powered by Ziina</span>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
-                      {/* Payment Information */}
                       <div>
-                        <h2 className="text-xl font-semibold text-coffee-800 mb-4 flex items-center gap-2">
-                          <CreditCard className="w-5 h-5" />
-                          Payment Details
+                        <h2 className="text-xl font-semibold text-coffee-800 mb-4">
+                          Customer Details
                         </h2>
                         <div className="space-y-4">
                           <div>
@@ -153,7 +163,7 @@ const CheckoutPage = () => {
                               required
                               value={formData.phone}
                               onChange={handleInputChange}
-                              placeholder="+1 (555) 000-0000"
+                              placeholder="+971 50 123 4567"
                               className="mt-1"
                             />
                           </div>
@@ -168,75 +178,18 @@ const CheckoutPage = () => {
                               className="mt-1 min-h-[80px]"
                             />
                           </div>
-                          <div>
-                            <Label htmlFor="cardNumber">Card Number</Label>
-                            <Input
-                              id="cardNumber"
-                              name="cardNumber"
-                              required
-                              value={formData.cardNumber}
-                              onChange={handleInputChange}
-                              placeholder="4242 4242 4242 4242"
-                              maxLength={19}
-                              className="mt-1"
-                            />
-                          </div>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <Label htmlFor="expiry">Expiry Date</Label>
-                              <Input
-                                id="expiry"
-                                name="expiry"
-                                required
-                                value={formData.expiry}
-                                onChange={handleInputChange}
-                                placeholder="MM/YY"
-                                maxLength={5}
-                                className="mt-1"
-                              />
-                            </div>
-                            <div>
-                              <Label htmlFor="cvc">CVC</Label>
-                              <Input
-                                id="cvc"
-                                name="cvc"
-                                required
-                                value={formData.cvc}
-                                onChange={handleInputChange}
-                                placeholder="123"
-                                maxLength={3}
-                                className="mt-1"
-                              />
-                            </div>
-                          </div>
                         </div>
                       </div>
 
-                      {/* Alternative Payment Methods */}
-                      <div className="pt-4 border-t">
-                        <p className="text-sm font-medium mb-3 text-coffee-700">Or pay with:</p>
-                        <div className="grid grid-cols-2 gap-3">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            className="w-full flex items-center justify-center gap-2 h-12"
-                          >
-                            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.73-2.77-.01-2.2-1.9-2.96-3.66-3.42z"/>
-                            </svg>
-                            Apple Pay
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            className="w-full flex items-center justify-center gap-2 h-12"
-                          >
-                            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.73-2.77-.01-2.2-1.9-2.96-3.66-3.42z"/>
-                            </svg>
-                            Samsung Pay
-                          </Button>
-                        </div>
+                      <div className="bg-cream-100 p-4 rounded-lg">
+                        <p className="text-sm text-coffee-700 mb-2">
+                          You'll be redirected to Ziina's secure payment page where you can pay with:
+                        </p>
+                        <ul className="text-sm text-coffee-600 list-disc list-inside space-y-1">
+                          <li>Credit/Debit Card</li>
+                          <li>Apple Pay (if available)</li>
+                          <li>Google Pay (if available)</li>
+                        </ul>
                       </div>
 
                       <Button
@@ -245,7 +198,7 @@ const CheckoutPage = () => {
                         disabled={loading}
                         className="w-full bg-coffee-600 hover:bg-coffee-700"
                       >
-                        {loading ? 'Processing...' : `Pay $${total.toFixed(2)}`}
+                        {loading ? 'Processing...' : `Proceed to Payment - AED ${total.toFixed(2)}`}
                       </Button>
                     </form>
                   </CardContent>
