@@ -20,6 +20,9 @@ const Menu = () => {
     { id: 'appetisers', name: 'Appetisers', image: '/menu-images/appetiser-1.jpg' },
     { id: 'pasta', name: 'Pasta', image: '/menu-images/pasta-1.jpg' },
     { id: 'risotto', name: 'RISOTTO', image: '/menu-images/risotto-1.jpg' },
+    { id: 'spanish-dishes', name: 'Spanish Dishes', image: '/menu-images/spanish-1.jpg' },
+    { id: 'burgers', name: 'Burgers', image: '/menu-images/burger-1.jpg' },
+    { id: 'sharing-meal', name: 'SERVE SHARE & EAT - SHARING MEAL MEAN SHARING LOVE', image: '/menu-images/sharing-meal-1.jpg' },
     { id: 'pastries', name: 'Pastries & Desserts', image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=300&q=80' },
     { id: 'cold-beverages', name: 'Cold Beverages', image: 'https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&w=300&q=80' },
     { id: 'matcha', name: '🍃💚💚 MATCHA LOVERS OFFERS 🍃💚', image: 'https://images.unsplash.com/photo-1515823064-d6e0c04616a7?auto=format&fit=crop&w=300&q=80' },
@@ -148,6 +151,29 @@ const Menu = () => {
         { id: 78, name: 'Risotto 3', description: '', price: 0, image: '/menu-images/risotto-3.jpg' },
         { id: 79, name: 'Risotto 4', description: '', price: 0, image: '/menu-images/risotto-4.jpg' },
         { id: 80, name: 'Risotto 5', description: '', price: 0, image: '/menu-images/risotto-5.jpg' },
+      ],
+    },
+    'spanish-dishes': {
+      'Spanish Dishes': [
+        { id: 81, name: 'Spanish Dish 1', description: '', price: 0, image: '/menu-images/spanish-1.jpg' },
+        { id: 82, name: 'Spanish Dish 2', description: '', price: 0, image: '/menu-images/spanish-2.jpg' },
+      ],
+    },
+    'burgers': {
+      'Burgers': [
+        { id: 83, name: 'Burger 1', description: '', price: 0, image: '/menu-images/burger-1.jpg' },
+        { id: 84, name: 'Burger 2', description: '', price: 0, image: '/menu-images/burger-2.jpg' },
+        { id: 85, name: 'Burger 3', description: '', price: 0, image: '/menu-images/burger-3.jpg' },
+        { id: 86, name: 'Burger 4', description: '', price: 0, image: '/menu-images/burger-4.jpg' },
+        { id: 87, name: 'Burger 5', description: '', price: 0, image: '/menu-images/burger-5.jpg' },
+        { id: 88, name: 'Burger 6', description: '', price: 0, image: '/menu-images/burger-6.jpg' },
+        { id: 89, name: 'Burger 7', description: '', price: 0, image: '/menu-images/burger-7.jpg' },
+        { id: 90, name: 'Burger 8', description: '', price: 0, image: '/menu-images/burger-8.jpg' },
+      ],
+    },
+    'sharing-meal': {
+      'Sharing Meal': [
+        { id: 91, name: 'Sharing Tower', description: 'SERVE SHARE & EAT - SHARING MEAL MEAN SHARING LOVE', price: 0, image: '/menu-images/sharing-meal-1.jpg' },
       ],
     },
     'pastries': {
