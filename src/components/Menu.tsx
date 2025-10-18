@@ -1,59 +1,92 @@
-import { ShoppingCart, Search } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Search } from 'lucide-react';
 import { Card } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
-import { useCart } from '@/contexts/CartContext';
 import { Input } from '@/components/ui/input';
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
+// Lazy load the card component for better performance
+const MenuCard = lazy(() => import('./MenuCard'));
+
 const Menu = () => {
-  const { toast } = useToast();
-  const { addToCart } = useCart();
   const [selectedCard, setSelectedCard] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const categories = [
-    { id: 'nawa-breakfast', name: 'NAWA Breakfast', image: 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?auto=format&fit=crop&w=300&q=80', section: 'nawa-breakfast' },
-    { id: 'coffee', name: 'COFFEE', image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=300&q=80', section: 'coffee' },
-    { id: 'offer', name: 'YOUR WEEKLY DISCOUNT IS HERE', image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=300&q=80', section: 'offer' },
-    { id: 'lunch-dinner', name: 'Lunch & Dinner', image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=80', section: 'lunch-dinner' },
-    { id: 'pastries', name: 'Pastries & Desserts', image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=300&q=80', section: 'pastries' },
-    { id: 'cold-beverages', name: 'Cold Beverages', image: 'https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&w=300&q=80', section: 'cold-beverages' },
-    { id: 'matcha', name: '🍃💚💚 MATCHA LOVERS OFFERS 🍃💚', image: 'https://images.unsplash.com/photo-1515823064-d6e0c04616a7?auto=format&fit=crop&w=300&q=80', section: 'matcha' },
-    { id: 'arabic-coffee', name: 'ARABIC COFFEE', image: 'https://images.unsplash.com/photo-1610889556528-9a770e32642f?auto=format&fit=crop&w=300&q=80', section: 'arabic-coffee' },
-    { id: 'nawa-special-tea', name: 'NAWA SPECIAL TEA', image: 'https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?auto=format&fit=crop&w=300&q=80', section: 'nawa-special-tea' },
-    { id: 'nawa-summer', name: 'NAWA SUMMER', image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=300&q=80', section: 'nawa-summer' },
+    { id: 'nawa-breakfast', name: 'NAWA Breakfast', image: 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?auto=format&fit=crop&w=300&q=80' },
+    { id: 'coffee', name: 'COFFEE', image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=300&q=80' },
+    { id: 'offer', name: 'YOUR WEEKLY DISCOUNT IS HERE', image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=300&q=80' },
+    { id: 'lunch-dinner', name: 'Lunch & Dinner', image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=80' },
+    { id: 'pastries', name: 'Pastries & Desserts', image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=300&q=80' },
+    { id: 'cold-beverages', name: 'Cold Beverages', image: 'https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&w=300&q=80' },
+    { id: 'matcha', name: '🍃💚💚 MATCHA LOVERS OFFERS 🍃💚', image: 'https://images.unsplash.com/photo-1515823064-d6e0c04616a7?auto=format&fit=crop&w=300&q=80' },
+    { id: 'arabic-coffee', name: 'ARABIC COFFEE', image: 'https://images.unsplash.com/photo-1610889556528-9a770e32642f?auto=format&fit=crop&w=300&q=80' },
+    { id: 'nawa-special-tea', name: 'NAWA SPECIAL TEA', image: 'https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?auto=format&fit=crop&w=300&q=80' },
+    { id: 'nawa-summer', name: 'NAWA SUMMER', image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=300&q=80' },
   ];
 
-  // Generate 151 empty cards
-  const allCards = Array.from({ length: 151 }, (_, i) => ({
-    id: i + 1,
-    name: `Item ${i + 1}`,
-    description: '',
-    price: 0,
-    image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=600&q=80',
-    section: i < 15 ? 'nawa-breakfast' : 
-            i < 30 ? 'coffee' :
-            i < 45 ? 'offer' :
-            i < 60 ? 'lunch-dinner' :
-            i < 75 ? 'pastries' :
-            i < 90 ? 'cold-beverages' :
-            i < 105 ? 'matcha' :
-            i < 120 ? 'arabic-coffee' :
-            i < 135 ? 'nawa-special-tea' : 'nawa-summer'
-  }));
+  // Structured menu with subcategories (151 items total)
+  const menuStructure = {
+    'nawa-breakfast': {
+      'Savoury': Array.from({ length: 5 }, (_, i) => ({ id: i + 1, name: `Savoury ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?auto=format&fit=crop&w=600&q=80' })),
+      'Arabic Breakfast & Special Tea': Array.from({ length: 4 }, (_, i) => ({ id: i + 6, name: `Arabic Breakfast ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?auto=format&fit=crop&w=600&q=80' })),
+      'Pancakes & French Toast': Array.from({ length: 3 }, (_, i) => ({ id: i + 10, name: `Pancake ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?auto=format&fit=crop&w=600&q=80' })),
+      'Croissant': Array.from({ length: 3 }, (_, i) => ({ id: i + 13, name: `Croissant ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?auto=format&fit=crop&w=600&q=80' })),
+    },
+    'coffee': {
+      'Hot Coffee': Array.from({ length: 8 }, (_, i) => ({ id: i + 16, name: `Hot Coffee ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=600&q=80' })),
+      'Cold Coffee': Array.from({ length: 6 }, (_, i) => ({ id: i + 24, name: `Cold Coffee ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=600&q=80' })),
+      'Manual Brew': Array.from({ length: 4 }, (_, i) => ({ id: i + 30, name: `Manual Brew ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=600&q=80' })),
+    },
+    'offer': {
+      'Special Combos': Array.from({ length: 6 }, (_, i) => ({ id: i + 34, name: `Combo ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=600&q=80' })),
+    },
+    'lunch-dinner': {
+      'Salads': Array.from({ length: 6 }, (_, i) => ({ id: i + 40, name: `Salad ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80' })),
+      'Appetizers': Array.from({ length: 8 }, (_, i) => ({ id: i + 46, name: `Appetizer ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80' })),
+      'Pasta': Array.from({ length: 6 }, (_, i) => ({ id: i + 54, name: `Pasta ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80' })),
+      'Risotto': Array.from({ length: 4 }, (_, i) => ({ id: i + 60, name: `Risotto ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80' })),
+      'Spanish Dishes': Array.from({ length: 5 }, (_, i) => ({ id: i + 64, name: `Spanish Dish ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80' })),
+      'Burgers': Array.from({ length: 5 }, (_, i) => ({ id: i + 69, name: `Burger ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80' })),
+      'Serve Share & Eat': Array.from({ length: 4 }, (_, i) => ({ id: i + 74, name: `Share Dish ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80' })),
+      'Fries / Sides': Array.from({ length: 6 }, (_, i) => ({ id: i + 78, name: `Side ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80' })),
+      'Club Sandwich / Kids Meals': Array.from({ length: 4 }, (_, i) => ({ id: i + 84, name: `Kids Meal ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80' })),
+    },
+    'pastries': {
+      'Cakes & Desserts': Array.from({ length: 15 }, (_, i) => ({ id: i + 88, name: `Dessert ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80' })),
+    },
+    'cold-beverages': {
+      'Milkshakes & Smoothies': Array.from({ length: 8 }, (_, i) => ({ id: i + 103, name: `Shake ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&w=600&q=80' })),
+      'Mojito': Array.from({ length: 5 }, (_, i) => ({ id: i + 111, name: `Mojito ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&w=600&q=80' })),
+      'Water': Array.from({ length: 3 }, (_, i) => ({ id: i + 116, name: `Water ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&w=600&q=80' })),
+      'Infusion': Array.from({ length: 4 }, (_, i) => ({ id: i + 119, name: `Infusion ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&w=600&q=80' })),
+      'Soft Drinks': Array.from({ length: 3 }, (_, i) => ({ id: i + 123, name: `Soft Drink ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&w=600&q=80' })),
+    },
+    'matcha': {
+      'Matcha Drinks': Array.from({ length: 6 }, (_, i) => ({ id: i + 126, name: `Matcha ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1515823064-d6e0c04616a7?auto=format&fit=crop&w=600&q=80' })),
+    },
+    'arabic-coffee': {
+      'Arabic Coffee': Array.from({ length: 4 }, (_, i) => ({ id: i + 132, name: `Arabic Coffee ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1610889556528-9a770e32642f?auto=format&fit=crop&w=600&q=80' })),
+    },
+    'nawa-special-tea': {
+      'Earl Grey Special': Array.from({ length: 3 }, (_, i) => ({ id: i + 136, name: `Earl Grey ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?auto=format&fit=crop&w=600&q=80' })),
+      'Green Tea Mango': Array.from({ length: 2 }, (_, i) => ({ id: i + 139, name: `Green Tea ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?auto=format&fit=crop&w=600&q=80' })),
+      'Night Green Tea': Array.from({ length: 2 }, (_, i) => ({ id: i + 141, name: `Night Tea ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?auto=format&fit=crop&w=600&q=80' })),
+      'Nawa Special Black Tea': Array.from({ length: 2 }, (_, i) => ({ id: i + 143, name: `Black Tea ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?auto=format&fit=crop&w=600&q=80' })),
+    },
+    'nawa-summer': {
+      'Seasonal Desserts': Array.from({ length: 2 }, (_, i) => ({ id: i + 145, name: `Summer Dessert ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=600&q=80' })),
+      'Ice Creams': Array.from({ length: 3 }, (_, i) => ({ id: i + 147, name: `Ice Cream ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=600&q=80' })),
+      'Acai Bowl': Array.from({ length: 1 }, (_, i) => ({ id: i + 150, name: `Acai Bowl ${i + 1}`, description: '', price: 0, image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=600&q=80' })),
+    },
+  };
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      const offset = 150; // Account for sticky header
+      const offset = 150;
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - offset;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      });
+      window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
     }
   };
 
@@ -69,6 +102,8 @@ const Menu = () => {
               <Input
                 type="text"
                 placeholder="Search Item By Name, Price Or Description."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 bg-[#c9a962] border-none text-coffee-900 placeholder:text-coffee-700 rounded-lg"
               />
             </div>
@@ -83,7 +118,7 @@ const Menu = () => {
             {categories.map((category) => (
               <button
                 key={category.id}
-                onClick={() => scrollToSection(category.section)}
+                onClick={() => scrollToSection(category.id)}
                 className="flex-shrink-0 w-40 group cursor-pointer"
               >
                 <div className="relative overflow-hidden rounded-lg aspect-[4/3] mb-2">
@@ -105,55 +140,44 @@ const Menu = () => {
 
       {/* Menu Cards Grid */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-        {/* Group cards by section */}
         {categories.map((category) => {
-          const sectionCards = allCards.filter(card => card.section === category.section);
+          const categoryStructure = menuStructure[category.id as keyof typeof menuStructure];
+          if (!categoryStructure) return null;
           
           return (
-            <div key={category.id} id={category.section} className="mb-16 scroll-mt-32">
+            <div key={category.id} id={category.id} className="mb-16 scroll-mt-32">
               {/* Section Header */}
               <div className="mb-8">
                 <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
                   {category.name}
                 </h2>
-                <p className="text-white/80 text-sm">
-                  {sectionCards.length} items
-                </p>
               </div>
 
-              {/* Items Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {sectionCards.map((item) => (
-                  <Card
-                    key={item.id}
-                    onClick={() => setSelectedCard(item.id)}
-                    className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-transparent cursor-pointer"
-                  >
-                    {/* Image */}
-                    <div className="relative overflow-hidden aspect-[4/3]">
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      />
-                      <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-300" />
-                    </div>
-
-                    {/* Golden Footer */}
-                    <div className="bg-[#c9a962]/90 backdrop-blur-sm p-4 space-y-2">
-                      <div className="flex items-start justify-between gap-2">
-                        <h3 className="font-semibold text-white text-base leading-tight flex-1">
-                          {item.name}
-                        </h3>
+              {/* Subsections */}
+              {Object.entries(categoryStructure).map(([subsectionName, items]) => (
+                <div key={subsectionName} className="mb-12">
+                  <h3 className="text-xl md:text-2xl font-semibold text-[#c9a962] mb-6">
+                    {subsectionName}
+                  </h3>
+                  
+                  {/* Items Grid with Lazy Loading */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <Suspense fallback={
+                      <div className="col-span-full flex justify-center py-8">
+                        <div className="w-8 h-8 border-4 border-[#c9a962] border-t-transparent rounded-full animate-spin" />
                       </div>
-                      
-                      <p className="text-white/70 text-xs">
-                        Click to view details
-                      </p>
-                    </div>
-                  </Card>
-                ))}
-              </div>
+                    }>
+                      {items.map((item) => (
+                        <MenuCard
+                          key={item.id}
+                          item={item}
+                          onClick={() => setSelectedCard(item.id)}
+                        />
+                      ))}
+                    </Suspense>
+                  </div>
+                </div>
+              ))}
             </div>
           );
         })}
