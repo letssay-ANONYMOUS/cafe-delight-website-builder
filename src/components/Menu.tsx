@@ -27,10 +27,23 @@ const Menu = () => {
   // Structured menu with subcategories (151 items total)
   const menuStructure = {
     'nawa-breakfast': {
-      'Savoury': Array.from({ length: 5 }, (_, i) => ({ id: i + 1, name: `Savoury ${i + 1}`, description: '', price: 0, image: `/menu-images/${i + 1}.jpg` })),
-      'Arabic Breakfast & Special Tea': Array.from({ length: 4 }, (_, i) => ({ id: i + 6, name: `Arabic Breakfast ${i + 1}`, description: '', price: 0, image: `/menu-images/${i + 6}.jpg` })),
-      'Pancakes & French Toast': Array.from({ length: 3 }, (_, i) => ({ id: i + 10, name: `Pancake ${i + 1}`, description: '', price: 0, image: `/menu-images/${i + 10}.jpg` })),
-      'Croissant': Array.from({ length: 3 }, (_, i) => ({ id: i + 13, name: `Croissant ${i + 1}`, description: '', price: 0, image: `/menu-images/${i + 13}.jpg` })),
+      'Savoury': [
+        { id: 1, name: 'Avocado Toast', description: 'Flavours loaded to the core', price: 0, image: '/menu-images/savoury-1.jpg' },
+        { id: 2, name: 'Eggs Benedict', description: 'I want what I want', price: 0, image: '/menu-images/savoury-2.jpg' },
+        { id: 3, name: 'Smoked Salmon Toast', description: 'NAWA signature', price: 0, image: '/menu-images/savoury-3.jpg' },
+        { id: 4, name: 'Eggs Florentine', description: '', price: 0, image: '/menu-images/savoury-4.jpg' },
+        { id: 5, name: 'Shakshuka', description: 'NAWA style', price: 0, image: '/menu-images/savoury-5.jpg' },
+        { id: 6, name: 'Smoked Turkey Toast', description: '', price: 0, image: '/menu-images/savoury-6.jpg' },
+        { id: 7, name: 'Scrambled Eggs Toast', description: '', price: 0, image: '/menu-images/savoury-7.jpg' },
+        { id: 8, name: 'Egg White Omelette', description: '', price: 0, image: '/menu-images/savoury-8.jpg' },
+        { id: 9, name: 'Halloumi Pesto Toast', description: '', price: 0, image: '/menu-images/savoury-9.jpg' },
+        { id: 10, name: 'Cheese Omelette Toast', description: '', price: 0, image: '/menu-images/savoury-10.jpg' },
+        { id: 11, name: 'Truffle Omelette Toast', description: '', price: 0, image: '/menu-images/savoury-11.jpg' },
+        { id: 12, name: 'Fried Eggs Toast', description: '', price: 0, image: '/menu-images/savoury-12.jpg' },
+      ],
+      'Arabic Breakfast & Special Tea': Array.from({ length: 4 }, (_, i) => ({ id: i + 13, name: `Arabic Breakfast ${i + 1}`, description: '', price: 0, image: `/menu-images/${i + 6}.jpg` })),
+      'Pancakes & French Toast': Array.from({ length: 3 }, (_, i) => ({ id: i + 17, name: `Pancake ${i + 1}`, description: '', price: 0, image: `/menu-images/${i + 10}.jpg` })),
+      'Croissant': Array.from({ length: 3 }, (_, i) => ({ id: i + 20, name: `Croissant ${i + 1}`, description: '', price: 0, image: `/menu-images/${i + 13}.jpg` })),
     },
     'coffee': {
       'Hot Coffee': Array.from({ length: 8 }, (_, i) => ({ id: i + 16, name: `Hot Coffee ${i + 1}`, description: '', price: 0, image: `/menu-images/${i + 16}.jpg` })),
