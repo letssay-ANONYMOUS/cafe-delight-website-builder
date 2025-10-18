@@ -17,6 +17,9 @@ const Menu = () => {
     { id: 'manual-brew', name: 'MANUAL BREW', image: '/menu-images/manual-brew-1.jpg' },
     { id: 'offer', name: 'YOUR WEEKLY DISCOUNT IS HERE', image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=300&q=80' },
     { id: 'lunch-dinner', name: 'Lunch & Dinner', image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=80' },
+    { id: 'appetisers', name: 'Appetisers', image: '/menu-images/appetiser-1.jpg' },
+    { id: 'pasta', name: 'Pasta', image: '/menu-images/pasta-1.jpg' },
+    { id: 'risotto', name: 'RISOTTO', image: '/menu-images/risotto-1.jpg' },
     { id: 'pastries', name: 'Pastries & Desserts', image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=300&q=80' },
     { id: 'cold-beverages', name: 'Cold Beverages', image: 'https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&w=300&q=80' },
     { id: 'matcha', name: '🍃💚💚 MATCHA LOVERS OFFERS 🍃💚', image: 'https://images.unsplash.com/photo-1515823064-d6e0c04616a7?auto=format&fit=crop&w=300&q=80' },
@@ -118,6 +121,33 @@ const Menu = () => {
         { id: 63, name: 'Avocado Toast', description: 'Flavours loaded to the core', price: 0, image: '/menu-images/savoury-1.jpg' },
         { id: 64, name: 'Eggs Benedict', description: 'I want what I want', price: 0, image: '/menu-images/savoury-2.jpg' },
         { id: 65, name: 'Smoked Salmon Toast', description: 'NAWA signature', price: 0, image: '/menu-images/savoury-3.jpg' },
+      ],
+    },
+    'appetisers': {
+      'Appetisers': [
+        { id: 66, name: 'Appetiser 1', description: '', price: 0, image: '/menu-images/appetiser-1.jpg' },
+        { id: 67, name: 'Appetiser 2', description: '', price: 0, image: '/menu-images/appetiser-2.jpg' },
+        { id: 68, name: 'Appetiser 3', description: '', price: 0, image: '/menu-images/appetiser-3.jpg' },
+        { id: 69, name: 'Appetiser 4', description: '', price: 0, image: '/menu-images/appetiser-4.jpg' },
+        { id: 70, name: 'Appetiser 5', description: '', price: 0, image: '/menu-images/appetiser-5.jpg' },
+        { id: 71, name: 'Appetiser 6', description: '', price: 0, image: '/menu-images/appetiser-6.jpg' },
+        { id: 72, name: 'Appetiser 7', description: '', price: 0, image: '/menu-images/appetiser-7.jpg' },
+      ],
+    },
+    'pasta': {
+      'Pasta': [
+        { id: 73, name: 'Pasta 1', description: '', price: 0, image: '/menu-images/pasta-1.jpg' },
+        { id: 74, name: 'Pasta 2', description: '', price: 0, image: '/menu-images/pasta-2.jpg' },
+        { id: 75, name: 'Pasta 3', description: '', price: 0, image: '/menu-images/pasta-3.jpg' },
+      ],
+    },
+    'risotto': {
+      'Risotto': [
+        { id: 76, name: 'Risotto 1', description: '', price: 0, image: '/menu-images/risotto-1.jpg' },
+        { id: 77, name: 'Risotto 2', description: '', price: 0, image: '/menu-images/risotto-2.jpg' },
+        { id: 78, name: 'Risotto 3', description: '', price: 0, image: '/menu-images/risotto-3.jpg' },
+        { id: 79, name: 'Risotto 4', description: '', price: 0, image: '/menu-images/risotto-4.jpg' },
+        { id: 80, name: 'Risotto 5', description: '', price: 0, image: '/menu-images/risotto-5.jpg' },
       ],
     },
     'pastries': {
