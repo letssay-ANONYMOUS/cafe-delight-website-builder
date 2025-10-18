@@ -23,7 +23,10 @@ const Menu = () => {
     { id: 'spanish-dishes', name: 'Spanish Dishes', image: '/menu-images/spanish-1.jpg' },
     { id: 'burgers', name: 'Burgers', image: '/menu-images/burger-1.jpg' },
     { id: 'sharing-meal', name: 'SERVE SHARE & EAT - SHARING MEAL MEAN SHARING LOVE', image: '/menu-images/sharing-meal-1.jpg' },
-    { id: 'pastries', name: 'Pastries & Desserts', image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=300&q=80' },
+    { id: 'fries', name: 'Fries', image: '/menu-images/fries-1.jpg' },
+    { id: 'club-sandwich', name: 'EATING HEALTHY TO LOSE WEIGHT CLUB SANDWICH', image: '/menu-images/club-sandwich-1.jpg' },
+    { id: 'kids-meals', name: 'Kids Meals', image: '/menu-images/kids-meal-1.jpg' },
+    { id: 'pastries', name: 'Pastries & Desserts', image: '/menu-images/dessert-1.jpg' },
     { id: 'cold-beverages', name: 'Cold Beverages', image: 'https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&w=300&q=80' },
     { id: 'matcha', name: '🍃💚💚 MATCHA LOVERS OFFERS 🍃💚', image: 'https://images.unsplash.com/photo-1515823064-d6e0c04616a7?auto=format&fit=crop&w=300&q=80' },
     { id: 'arabic-coffee', name: 'ARABIC COFFEE', image: 'https://images.unsplash.com/photo-1610889556528-9a770e32642f?auto=format&fit=crop&w=300&q=80' },
@@ -176,8 +179,42 @@ const Menu = () => {
         { id: 91, name: 'Sharing Tower', description: 'SERVE SHARE & EAT - SHARING MEAL MEAN SHARING LOVE', price: 0, image: '/menu-images/sharing-meal-1.jpg' },
       ],
     },
+    'fries': {
+      'Fries': [
+        { id: 92, name: 'Fries 1', description: '', price: 0, image: '/menu-images/fries-1.jpg' },
+        { id: 93, name: 'Fries 2', description: '', price: 0, image: '/menu-images/fries-2.jpg' },
+        { id: 94, name: 'Fries 3', description: '', price: 0, image: '/menu-images/fries-3.jpg' },
+      ],
+    },
+    'club-sandwich': {
+      'Club Sandwich': [
+        { id: 95, name: 'Healthy Club Sandwich', description: 'EATING HEALTHY TO LOSE WEIGHT', price: 0, image: '/menu-images/club-sandwich-1.jpg' },
+      ],
+    },
+    'kids-meals': {
+      'Kids Meals': [
+        { id: 96, name: 'Kids Meal 1', description: '', price: 0, image: '/menu-images/kids-meal-1.jpg' },
+        { id: 97, name: 'Kids Meal 2', description: '', price: 0, image: '/menu-images/kids-meal-2.jpg' },
+        { id: 98, name: 'Kids Meal 3', description: '', price: 0, image: '/menu-images/kids-meal-3.jpg' },
+      ],
+    },
     'pastries': {
-      'Cakes & Desserts': Array.from({ length: 15 }, (_, i) => ({ id: i + 88, name: `Dessert ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 38) % 50 + 1, 50)}.jpg` })),
+      'Cakes & Desserts': [
+        { id: 99, name: 'Custard Donut', description: '', price: 0, image: '/menu-images/dessert-1.jpg' },
+        { id: 100, name: 'Nutella Donut', description: '', price: 0, image: '/menu-images/dessert-2.jpg' },
+        { id: 101, name: 'Dessert 3', description: '', price: 0, image: '/menu-images/dessert-3.jpg' },
+        { id: 102, name: 'Dessert 4', description: '', price: 0, image: '/menu-images/dessert-4.jpg' },
+        { id: 103, name: 'Dessert 5', description: '', price: 0, image: '/menu-images/dessert-5.jpg' },
+        { id: 104, name: 'Dessert 6', description: '', price: 0, image: '/menu-images/dessert-6.jpg' },
+        { id: 105, name: 'Dessert 7', description: '', price: 0, image: '/menu-images/dessert-7.jpg' },
+        { id: 106, name: 'Dessert 8', description: '', price: 0, image: '/menu-images/dessert-8.jpg' },
+        { id: 107, name: 'Mango Passion Cheesecake', description: '', price: 0, image: '/menu-images/dessert-9.jpg' },
+        { id: 108, name: 'Very Berry Cheesecake', description: '', price: 0, image: '/menu-images/dessert-10.jpg' },
+        { id: 109, name: 'Cinnamon Churros', description: '', price: 0, image: '/menu-images/dessert-11.jpg' },
+        { id: 110, name: 'Dessert 12', description: '', price: 0, image: '/menu-images/dessert-12.jpg' },
+        { id: 111, name: 'Dessert 13', description: '', price: 0, image: '/menu-images/dessert-13.jpg' },
+        { id: 112, name: 'Dessert 14', description: '', price: 0, image: '/menu-images/dessert-14.jpg' },
+      ],
     },
     'cold-beverages': {
       'Milkshakes & Smoothies': Array.from({ length: 8 }, (_, i) => ({ id: i + 103, name: `Shake ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 3) % 50 + 1, 50)}.jpg` })),
