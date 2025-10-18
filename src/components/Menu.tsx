@@ -14,6 +14,7 @@ const Menu = () => {
   const categories = [
     { id: 'nawa-breakfast', name: 'NAWA Breakfast', image: 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?auto=format&fit=crop&w=300&q=80' },
     { id: 'coffee', name: 'COFFEE', image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=300&q=80' },
+    { id: 'manual-brew', name: 'MANUAL BREW', image: '/menu-images/manual-brew-1.jpg' },
     { id: 'offer', name: 'YOUR WEEKLY DISCOUNT IS HERE', image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=300&q=80' },
     { id: 'lunch-dinner', name: 'Lunch & Dinner', image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=80' },
     { id: 'pastries', name: 'Pastries & Desserts', image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=300&q=80' },
@@ -98,8 +99,23 @@ const Menu = () => {
         { id: 56, name: 'Cold Coffee 15', description: '', price: 0, image: '/menu-images/cold-coffee-15.jpg' },
       ],
     },
+    'manual-brew': {
+      'Manual Brew': [
+        { id: 57, name: 'Manual Brew 1', description: '', price: 0, image: '/menu-images/manual-brew-1.jpg' },
+        { id: 58, name: 'Manual Brew 2', description: '', price: 0, image: '/menu-images/manual-brew-2.jpg' },
+        { id: 59, name: 'Manual Brew 3', description: '', price: 0, image: '/menu-images/manual-brew-3.jpg' },
+        { id: 60, name: 'Manual Brew 4', description: '', price: 0, image: '/menu-images/manual-brew-4.jpg' },
+      ],
+    },
     'offer': {
-      'Special Combos': Array.from({ length: 6 }, (_, i) => ({ id: i + 34, name: `Combo ${i + 1}`, description: '', price: 0, image: `/menu-images/${i + 34}.jpg` })),
+      'Special Combos': [
+        { id: 61, name: 'Combo 1', description: '', price: 0, image: '/menu-images/34.jpg' },
+        { id: 62, name: 'Combo 2', description: '', price: 0, image: '/menu-images/35.jpg' },
+        { id: 63, name: 'Combo 3', description: '', price: 0, image: '/menu-images/36.jpg' },
+        { id: 64, name: 'Combo 4', description: '', price: 0, image: '/menu-images/37.jpg' },
+        { id: 65, name: 'Combo 5', description: '', price: 0, image: '/menu-images/offer-5.jpg' },
+        { id: 66, name: 'Combo 6', description: '', price: 0, image: '/menu-images/offer-6.jpg' },
+      ],
     },
     'lunch-dinner': {
       'Salads': Array.from({ length: 6 }, (_, i) => ({ id: i + 40, name: `Salad ${i + 1}`, description: '', price: 0, image: `/menu-images/${i + 40}.jpg` })),
