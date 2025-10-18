@@ -41,9 +41,23 @@ const Menu = () => {
         { id: 11, name: 'Truffle Omelette Toast', description: '', price: 0, image: '/menu-images/savoury-11.jpg' },
         { id: 12, name: 'Fried Eggs Toast', description: '', price: 0, image: '/menu-images/savoury-12.jpg' },
       ],
-      'Arabic Breakfast & Special Tea': Array.from({ length: 4 }, (_, i) => ({ id: i + 13, name: `Arabic Breakfast ${i + 1}`, description: '', price: 0, image: `/menu-images/${i + 6}.jpg` })),
-      'Pancakes & French Toast': Array.from({ length: 3 }, (_, i) => ({ id: i + 17, name: `Pancake ${i + 1}`, description: '', price: 0, image: `/menu-images/${i + 10}.jpg` })),
-      'Croissant': Array.from({ length: 3 }, (_, i) => ({ id: i + 20, name: `Croissant ${i + 1}`, description: '', price: 0, image: `/menu-images/${i + 13}.jpg` })),
+      'Arabic Breakfast & Special Tea': [
+        { id: 13, name: 'Arabic Breakfast', description: 'Traditional Arabic breakfast platter', price: 0, image: '/menu-images/arabic-breakfast-1.jpg' },
+      ],
+      'Pancakes & French Toast': [
+        { id: 14, name: 'Pancakes', description: '', price: 0, image: '/menu-images/pancake-1.jpg' },
+        { id: 15, name: 'French Toast', description: '', price: 0, image: '/menu-images/pancake-2.jpg' },
+        { id: 16, name: 'Sweet Pancakes', description: '', price: 0, image: '/menu-images/pancake-3.jpg' },
+        { id: 17, name: 'Classic French Toast', description: '', price: 0, image: '/menu-images/pancake-4.jpg' },
+        { id: 18, name: 'Specialty Pancakes', description: '', price: 0, image: '/menu-images/pancake-5.jpg' },
+        { id: 19, name: 'Premium French Toast', description: '', price: 0, image: '/menu-images/pancake-6.jpg' },
+      ],
+      'Croissant': [
+        { id: 20, name: 'Classic Croissant', description: '', price: 0, image: '/menu-images/croissant-1.jpg' },
+        { id: 21, name: 'Chocolate Croissant', description: '', price: 0, image: '/menu-images/croissant-2.jpg' },
+        { id: 22, name: 'Almond Croissant', description: '', price: 0, image: '/menu-images/croissant-3.jpg' },
+        { id: 23, name: 'Special Croissant', description: '', price: 0, image: '/menu-images/croissant-4.jpg' },
+      ],
     },
     'coffee': {
       'Hot Coffee': Array.from({ length: 8 }, (_, i) => ({ id: i + 16, name: `Hot Coffee ${i + 1}`, description: '', price: 0, image: `/menu-images/${i + 16}.jpg` })),
