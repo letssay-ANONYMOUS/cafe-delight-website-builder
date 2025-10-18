@@ -109,24 +109,16 @@ const Menu = () => {
     },
     'offer': {
       'Special Combos': [
-        { id: 61, name: 'Combo 1', description: '', price: 0, image: '/menu-images/34.jpg' },
-        { id: 62, name: 'Combo 2', description: '', price: 0, image: '/menu-images/35.jpg' },
-        { id: 63, name: 'Combo 3', description: '', price: 0, image: '/menu-images/36.jpg' },
-        { id: 64, name: 'Combo 4', description: '', price: 0, image: '/menu-images/37.jpg' },
-        { id: 65, name: 'Combo 5', description: '', price: 0, image: '/menu-images/offer-5.jpg' },
-        { id: 66, name: 'Combo 6', description: '', price: 0, image: '/menu-images/offer-6.jpg' },
+        { id: 61, name: 'Combo 1', description: '', price: 0, image: '/menu-images/offer-1.jpg' },
+        { id: 62, name: 'Combo 2', description: '', price: 0, image: '/menu-images/offer-2.jpg' },
       ],
     },
     'lunch-dinner': {
-      'Salads': Array.from({ length: 6 }, (_, i) => ({ id: i + 40, name: `Salad ${i + 1}`, description: '', price: 0, image: `/menu-images/${i + 40}.jpg` })),
-      'Appetizers': Array.from({ length: 8 }, (_, i) => ({ id: i + 46, name: `Appetizer ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min(i + 46, 50)}.jpg` })),
-      'Pasta': Array.from({ length: 6 }, (_, i) => ({ id: i + 54, name: `Pasta ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min(i % 50 + 1, 50)}.jpg` })),
-      'Risotto': Array.from({ length: 4 }, (_, i) => ({ id: i + 60, name: `Risotto ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 10) % 50 + 1, 50)}.jpg` })),
-      'Spanish Dishes': Array.from({ length: 5 }, (_, i) => ({ id: i + 64, name: `Spanish Dish ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 14) % 50 + 1, 50)}.jpg` })),
-      'Burgers': Array.from({ length: 5 }, (_, i) => ({ id: i + 69, name: `Burger ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 19) % 50 + 1, 50)}.jpg` })),
-      'Serve Share & Eat': Array.from({ length: 4 }, (_, i) => ({ id: i + 74, name: `Share Dish ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 24) % 50 + 1, 50)}.jpg` })),
-      'Fries / Sides': Array.from({ length: 6 }, (_, i) => ({ id: i + 78, name: `Side ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 28) % 50 + 1, 50)}.jpg` })),
-      'Club Sandwich / Kids Meals': Array.from({ length: 4 }, (_, i) => ({ id: i + 84, name: `Kids Meal ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 34) % 50 + 1, 50)}.jpg` })),
+      'Savoury': [
+        { id: 63, name: 'Avocado Toast', description: 'Flavours loaded to the core', price: 0, image: '/menu-images/savoury-1.jpg' },
+        { id: 64, name: 'Eggs Benedict', description: 'I want what I want', price: 0, image: '/menu-images/savoury-2.jpg' },
+        { id: 65, name: 'Smoked Salmon Toast', description: 'NAWA signature', price: 0, image: '/menu-images/savoury-3.jpg' },
+      ],
     },
     'pastries': {
       'Cakes & Desserts': Array.from({ length: 15 }, (_, i) => ({ id: i + 88, name: `Dessert ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 38) % 50 + 1, 50)}.jpg` })),
