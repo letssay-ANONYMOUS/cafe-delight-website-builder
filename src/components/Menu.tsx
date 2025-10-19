@@ -99,46 +99,54 @@ const Menu = () => {
 
       {/* Menu Cards Grid */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-        {categories.map((category) => {
-          const categoryStructure = menuStructure[category.id as keyof typeof menuStructure];
-          if (!categoryStructure) return null;
+        {(() => {
+          let globalCardNumber = 1;
           
-          return (
-            <div key={category.id} id={category.id} className="mb-16 scroll-mt-32">
-              {/* Section Header */}
-              <div className="mb-8">
-                <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
-                  {category.name}
-                </h2>
-              </div>
-
-              {/* Subsections */}
-              {Object.entries(categoryStructure).map(([subsectionName, items]) => (
-                <div key={subsectionName} className="mb-12">
-                  <h3 className="text-xl md:text-2xl font-semibold text-[#c9a962] mb-6">
-                    {subsectionName}
-                  </h3>
-                  
-                  {/* Items Grid with Lazy Loading */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    <Suspense fallback={
-                      <div className="col-span-full flex justify-center py-8">
-                        <div className="w-8 h-8 border-4 border-[#c9a962] border-t-transparent rounded-full animate-spin" />
-                      </div>
-                    }>
-                      {items.map((item) => (
-                        <MenuCard
-                          key={item.id}
-                          item={item}
-                        />
-                      ))}
-                    </Suspense>
-                  </div>
+          return categories.map((category) => {
+            const categoryStructure = menuStructure[category.id as keyof typeof menuStructure];
+            if (!categoryStructure) return null;
+            
+            return (
+              <div key={category.id} id={category.id} className="mb-16 scroll-mt-32">
+                {/* Section Header */}
+                <div className="mb-8">
+                  <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
+                    {category.name}
+                  </h2>
                 </div>
-              ))}
-            </div>
-          );
-        })}
+
+                {/* Subsections */}
+                {Object.entries(categoryStructure).map(([subsectionName, items]) => (
+                  <div key={subsectionName} className="mb-12">
+                    <h3 className="text-xl md:text-2xl font-semibold text-[#c9a962] mb-6">
+                      {subsectionName}
+                    </h3>
+                    
+                    {/* Items Grid with Lazy Loading */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                      <Suspense fallback={
+                        <div className="col-span-full flex justify-center py-8">
+                          <div className="w-8 h-8 border-4 border-[#c9a962] border-t-transparent rounded-full animate-spin" />
+                        </div>
+                      }>
+                        {items.map((item) => {
+                          const currentNumber = globalCardNumber++;
+                          return (
+                            <MenuCard
+                              key={item.id}
+                              item={item}
+                              cardNumber={currentNumber}
+                            />
+                          );
+                        })}
+                      </Suspense>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          });
+        })()}
       </div>
 
       {/* Modal for Card Details */}

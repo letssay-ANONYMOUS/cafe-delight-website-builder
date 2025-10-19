@@ -9,9 +9,10 @@ interface MenuCardProps {
     price: number;
     image: string;
   };
+  cardNumber?: number;
 }
 
-const MenuCard = ({ item }: MenuCardProps) => {
+const MenuCard = ({ item, cardNumber }: MenuCardProps) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
@@ -32,6 +33,13 @@ const MenuCard = ({ item }: MenuCardProps) => {
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
         <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-300" />
+        
+        {/* Temporary Card Number */}
+        {cardNumber && (
+          <div className="absolute top-2 left-2 w-10 h-10 bg-red-500 rounded-full flex items-center justify-center shadow-lg z-10">
+            <span className="text-white font-bold text-lg">{cardNumber}</span>
+          </div>
+        )}
       </div>
 
       {/* Golden Footer */}
