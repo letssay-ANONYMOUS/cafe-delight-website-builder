@@ -1,12 +1,12 @@
 export const menuStructure = {
   'nawa-breakfast': {
     'Savoury': [
-      { id: 1, name: 'Loaded Avocado Toast', description: 'Sourdough bread, Avocado mashed, sauté baby spinach, scramble egg, beetroot mayo', price: 49, image: '/menu-images/savoury-1.jpg' },
-      { id: 2, name: 'Spicy Mushroom Benedict', description: 'Freshly baked english muffin topped with spicy mushroom and sauce, poached eggs and sliced avocados garnished with parmesan', price: 47, image: '/menu-images/savoury-2.jpg' },
-      { id: 3, name: 'Beetroot Avocado Toast', description: 'Beetroot mix, Avocado puree, Feta cheese, Curry Chili and egg', price: 45, image: '/menu-images/savoury-3.jpg' },
-      { id: 4, name: 'NAWA EGG FLORENTINE', description: 'ITS A ENGLISH MUFFIN BASED WITH LABNEH AND TOPPED WITH SAUTEED SPINACH, POACHED EGGS AND HOLLANDAISE SAUCE', price: 47, image: '/menu-images/savoury-4.jpg' },
-      { id: 5, name: 'NEW NAWA SHAKSHUKA', description: 'Shakshouka is a Tunisian dish of eggs mix with tomato sauce, onions, bell peppers and spices', price: 48, image: '/menu-images/savoury-5.jpg' },
-      { id: 6, name: 'Croque Madame', description: 'Sour dough toast with turkey slice, beschamel sauce, mixed cheese, baked and then topped with a sunny side egg', price: 45, image: '/menu-images/savoury-6.jpg' },
+      { id: 1, name: 'Zattar Babka', description: 'Toast babka bread stuffed with labneh, zattar glazed on the side, labneh zattar kalamata olives, gherking wedge', price: 40, image: '/menu-images/savoury-1.jpg' },
+      { id: 2, name: 'GOURMET BREAKFAST SANDWICH', description: 'GOURMET SANDWICH WITH PANCAKE TACO PIE, LAMB SAUSAGE, BACON SLICE, SCRAMBLED EGGS, MAPPLE SRIRACHA SAUCE, MOZARELLA CHEESE COATED WITH CRUNCHY CUBE TOAST', price: 42, image: '/menu-images/savoury-2.jpg' },
+      { id: 3, name: 'NEW NAWA🥘🔥 SHAKSHUKA🥘🔥🍅🍅🧀🐣🧄🧅🌶️', description: 'Shakshouka 🍳🔥 is a 🍞🇹🇳Tunisian dish of eggs🥚 mix with cheese🥑🧀 in a sauce of tomatoes🍅🍅, olive oil, peppers, onion🧅, and garlic🧄, commonly spiced with cumin, paprika, and cayenne pepper. Shakshouka is a popular dish throughout North Africa and the Middle East.', price: 48, image: '/menu-images/savoury-3.jpg' },
+      { id: 4, name: 'NAWA EGG FLORENTINE', description: 'ITS A ENGLISH MUFFIN BASED WITH LABNEH AND TOP WITH MUSHROOM BEEF BACON BABY SPINACH AND FRESHLY MADE HALLONDISE SAUCE', price: 47, image: '/menu-images/savoury-4.jpg' },
+      { id: 5, name: 'Creamy Mushroom Toasty', description: 'Sourdough bread, Avocado mashed, sauté baby spinach, scramble egg, beetroot mayo.', price: 42, image: '/menu-images/savoury-5.jpg' },
+      { id: 6, name: 'Loaded avocado toast', description: 'Sourdough bread, Avocado mashed, sauté baby spinach, scramble egg, beetroot mayo.', price: 49, image: '/menu-images/savoury-6.jpg' },
       { id: 7, name: 'Turkish Eggs', description: 'Special sesame simit bread on a bed of yogurt sauce topped with poached eggs and sprinkled with home-made chili oil', price: 40, image: '/menu-images/savoury-7.jpg' },
       { id: 8, name: 'Creamy Mushroom Toasty', description: 'Sour dough toast topped with creamy mushroom sauce and mixed cheese', price: 42, image: '/menu-images/savoury-8.jpg' },
       { id: 9, name: 'Halloumi Pesto Toast', description: 'Sour dough toast with sun-dried tomato pesto, grilled halloumi and tomatoes on top. Garnished with parmesan cheese', price: 43, image: '/menu-images/savoury-9.jpg' },

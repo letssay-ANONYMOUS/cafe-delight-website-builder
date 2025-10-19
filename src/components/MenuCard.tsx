@@ -50,9 +50,14 @@ const MenuCard = ({ item, cardNumber }: MenuCardProps) => {
           </h3>
         </div>
         
-        <p className="text-white/70 text-xs">
-          Click to view details
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-white/90 font-bold text-lg">
+            AED {item.price.toFixed(2)}
+          </p>
+          <p className="text-white/60 text-xs">
+            Click for details
+          </p>
+        </div>
       </div>
     </Card>
   );
