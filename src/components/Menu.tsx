@@ -27,7 +27,11 @@ const Menu = () => {
     { id: 'club-sandwich', name: 'EATING HEALTHY TO LOSE WEIGHT CLUB SANDWICH', image: '/menu-images/club-sandwich-1.jpg' },
     { id: 'kids-meals', name: 'Kids Meals', image: '/menu-images/kids-meal-1.jpg' },
     { id: 'pastries', name: 'Pastries & Desserts', image: '/menu-images/dessert-1.jpg' },
-    { id: 'cold-beverages', name: 'Cold Beverages', image: 'https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&w=300&q=80' },
+    { id: 'cold-beverages', name: 'Cold Beverages', image: '/menu-images/cold-coffee-1.jpg' },
+    { id: 'mojito', name: 'Mojito', image: '/menu-images/mojito-1.jpg' },
+    { id: 'water', name: 'Water', image: '/menu-images/water-1.jpg' },
+    { id: 'infusion', name: 'Infusion', image: '/menu-images/infusion-1.jpg' },
+    { id: 'fresh-juice', name: 'Fresh Juice', image: '/menu-images/fresh-juice-1.jpg' },
     { id: 'matcha', name: '🍃💚💚 MATCHA LOVERS OFFERS 🍃💚', image: 'https://images.unsplash.com/photo-1515823064-d6e0c04616a7?auto=format&fit=crop&w=300&q=80' },
     { id: 'arabic-coffee', name: 'ARABIC COFFEE', image: 'https://images.unsplash.com/photo-1610889556528-9a770e32642f?auto=format&fit=crop&w=300&q=80' },
     { id: 'nawa-special-tea', name: 'NAWA SPECIAL TEA', image: 'https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?auto=format&fit=crop&w=300&q=80' },
@@ -217,28 +221,62 @@ const Menu = () => {
       ],
     },
     'cold-beverages': {
-      'Milkshakes & Smoothies': Array.from({ length: 8 }, (_, i) => ({ id: i + 103, name: `Shake ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 3) % 50 + 1, 50)}.jpg` })),
-      'Mojito': Array.from({ length: 5 }, (_, i) => ({ id: i + 111, name: `Mojito ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 11) % 50 + 1, 50)}.jpg` })),
-      'Water': Array.from({ length: 3 }, (_, i) => ({ id: i + 116, name: `Water ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 16) % 50 + 1, 50)}.jpg` })),
-      'Infusion': Array.from({ length: 4 }, (_, i) => ({ id: i + 119, name: `Infusion ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 19) % 50 + 1, 50)}.jpg` })),
-      'Soft Drinks': Array.from({ length: 3 }, (_, i) => ({ id: i + 123, name: `Soft Drink ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 23) % 50 + 1, 50)}.jpg` })),
+      'Cold Beverages': [
+        { id: 113, name: 'Cold Beverage 1', description: '', price: 0, image: '/menu-images/cold-coffee-1.jpg' },
+        { id: 114, name: 'Cold Beverage 2', description: '', price: 0, image: '/menu-images/cold-coffee-2.jpg' },
+        { id: 115, name: 'Cold Beverage 3', description: '', price: 0, image: '/menu-images/cold-coffee-3.jpg' },
+        { id: 116, name: 'Cold Beverage 4', description: '', price: 0, image: '/menu-images/cold-coffee-4.jpg' },
+        { id: 117, name: 'Cold Beverage 5', description: '', price: 0, image: '/menu-images/cold-coffee-5.jpg' },
+        { id: 118, name: 'Cold Beverage 6', description: '', price: 0, image: '/menu-images/cold-coffee-6.jpg' },
+        { id: 119, name: 'Cold Beverage 7', description: '', price: 0, image: '/menu-images/cold-coffee-7.jpg' },
+      ],
+    },
+    'mojito': {
+      'Mojito': [
+        { id: 120, name: 'Mojito 1', description: '', price: 0, image: '/menu-images/mojito-1.jpg' },
+        { id: 121, name: 'Mojito 2', description: '', price: 0, image: '/menu-images/mojito-2.jpg' },
+        { id: 122, name: 'Mojito 3', description: '', price: 0, image: '/menu-images/mojito-3.jpg' },
+        { id: 123, name: 'Mojito 4', description: '', price: 0, image: '/menu-images/mojito-4.jpg' },
+        { id: 124, name: 'Mojito 5', description: '', price: 0, image: '/menu-images/mojito-5.jpg' },
+      ],
+    },
+    'water': {
+      'Water': [
+        { id: 125, name: 'Himalayan Premium Glass Bottle', description: '', price: 0, image: '/menu-images/water-1.jpg' },
+        { id: 126, name: 'Himalayan Luxurious Water', description: '', price: 0, image: '/menu-images/water-2.jpg' },
+        { id: 127, name: 'Himalayan Sparkling Water', description: '', price: 0, image: '/menu-images/water-3.jpg' },
+      ],
+    },
+    'infusion': {
+      'Infusion': [
+        { id: 128, name: 'Hibiscus Infusion', description: '', price: 0, image: '/menu-images/infusion-1.jpg' },
+        { id: 129, name: 'Infusion 2', description: '', price: 0, image: '/menu-images/infusion-2.jpg' },
+      ],
+    },
+    'fresh-juice': {
+      'Fresh Juice': [
+        { id: 130, name: 'Fresh Juice 1', description: '', price: 0, image: '/menu-images/fresh-juice-1.jpg' },
+        { id: 131, name: 'Fresh Juice 2', description: '', price: 0, image: '/menu-images/fresh-juice-2.jpg' },
+        { id: 132, name: 'Fresh Juice 3', description: '', price: 0, image: '/menu-images/fresh-juice-3.jpg' },
+        { id: 133, name: 'Fresh Juice 4', description: '', price: 0, image: '/menu-images/fresh-juice-4.jpg' },
+      ],
     },
     'matcha': {
-      'Matcha Drinks': Array.from({ length: 6 }, (_, i) => ({ id: i + 126, name: `Matcha ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 26) % 50 + 1, 50)}.jpg` })),
+      'Matcha Drinks': Array.from({ length: 6 }, (_, i) => ({ id: i + 134, name: `Matcha ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 26) % 50 + 1, 50)}.jpg` })),
     },
     'arabic-coffee': {
-      'Arabic Coffee': Array.from({ length: 4 }, (_, i) => ({ id: i + 132, name: `Arabic Coffee ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 32) % 50 + 1, 50)}.jpg` })),
+      'Arabic Coffee': Array.from({ length: 4 }, (_, i) => ({ id: i + 140, name: `Arabic Coffee ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 32) % 50 + 1, 50)}.jpg` })),
     },
     'nawa-special-tea': {
-      'Earl Grey Special': Array.from({ length: 3 }, (_, i) => ({ id: i + 136, name: `Earl Grey ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 36) % 50 + 1, 50)}.jpg` })),
-      'Green Tea Mango': Array.from({ length: 2 }, (_, i) => ({ id: i + 139, name: `Green Tea ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 39) % 50 + 1, 50)}.jpg` })),
-      'Night Green Tea': Array.from({ length: 2 }, (_, i) => ({ id: i + 141, name: `Night Tea ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 41) % 50 + 1, 50)}.jpg` })),
-      'Nawa Special Black Tea': Array.from({ length: 2 }, (_, i) => ({ id: i + 143, name: `Black Tea ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 43) % 50 + 1, 50)}.jpg` })),
+      'Earl Grey Special': Array.from({ length: 3 }, (_, i) => ({ id: i + 144, name: `Earl Grey ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 36) % 50 + 1, 50)}.jpg` })),
+      'Green Tea Mango': Array.from({ length: 2 }, (_, i) => ({ id: i + 147, name: `Green Tea ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 39) % 50 + 1, 50)}.jpg` })),
+      'Night Green Tea': Array.from({ length: 2 }, (_, i) => ({ id: i + 149, name: `Night Tea ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 41) % 50 + 1, 50)}.jpg` })),
+      'Nawa Special Black Tea': Array.from({ length: 2 }, (_, i) => ({ id: i + 151, name: `Black Tea ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 43) % 50 + 1, 50)}.jpg` })),
     },
     'nawa-summer': {
-      'Seasonal Desserts': Array.from({ length: 2 }, (_, i) => ({ id: i + 145, name: `Summer Dessert ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 45) % 50 + 1, 50)}.jpg` })),
-      'Ice Creams': Array.from({ length: 3 }, (_, i) => ({ id: i + 147, name: `Ice Cream ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 47) % 50 + 1, 50)}.jpg` })),
-      'Acai Bowl': Array.from({ length: 1 }, (_, i) => ({ id: i + 150, name: `Acai Bowl ${i + 1}`, description: '', price: 0, image: `/menu-images/${50}.jpg` })),
+      'Seasonal Desserts': Array.from({ length: 2 }, (_, i) => ({ id: i + 153, name: `Summer Dessert ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 45) % 50 + 1, 50)}.jpg` })),
+      'Ice Creams': Array.from({ length: 3 }, (_, i) => ({ id: i + 155, name: `Ice Cream ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 47) % 50 + 1, 50)}.jpg` })),
+      'Acai Bowl': Array.from({ length: 1 }, (_, i) => ({ id: i + 158, name: `Acai Bowl ${i + 1}`, description: '', price: 0, image: `/menu-images/${50}.jpg` })),
     },
   };
 
