@@ -262,21 +262,33 @@ const Menu = () => {
       ],
     },
     'matcha': {
-      'Matcha Drinks': Array.from({ length: 6 }, (_, i) => ({ id: i + 134, name: `Matcha ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 26) % 50 + 1, 50)}.jpg` })),
+      'Matcha Lovers Offers': [
+        { id: 134, name: 'Matcha Offer 1', description: '', price: 0, image: '/menu-images/offer-3.jpg' },
+        { id: 135, name: 'Matcha Offer 2', description: '', price: 0, image: '/menu-images/offer-4.jpg' },
+        { id: 136, name: 'Matcha Offer 3', description: '', price: 0, image: '/menu-images/offer-7.jpg' },
+        { id: 137, name: 'Matcha Offer 4', description: '', price: 0, image: '/menu-images/offer-8.jpg' },
+        { id: 138, name: 'Matcha Offer 5', description: '', price: 0, image: '/menu-images/offer-9.jpg' },
+        { id: 139, name: 'Matcha Offer 6', description: '', price: 0, image: '/menu-images/offer-10.jpg' },
+        { id: 140, name: 'Matcha Offer 7', description: '', price: 0, image: '/menu-images/offer-11.jpg' },
+      ],
     },
     'arabic-coffee': {
-      'Arabic Coffee': Array.from({ length: 4 }, (_, i) => ({ id: i + 140, name: `Arabic Coffee ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 32) % 50 + 1, 50)}.jpg` })),
+      'Arabic Coffee': Array.from({ length: 4 }, (_, i) => ({ id: i + 141, name: `Arabic Coffee ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 32) % 50 + 1, 50)}.jpg` })),
     },
     'nawa-special-tea': {
-      'Earl Grey Special': Array.from({ length: 3 }, (_, i) => ({ id: i + 144, name: `Earl Grey ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 36) % 50 + 1, 50)}.jpg` })),
-      'Green Tea Mango': Array.from({ length: 2 }, (_, i) => ({ id: i + 147, name: `Green Tea ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 39) % 50 + 1, 50)}.jpg` })),
-      'Night Green Tea': Array.from({ length: 2 }, (_, i) => ({ id: i + 149, name: `Night Tea ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 41) % 50 + 1, 50)}.jpg` })),
-      'Nawa Special Black Tea': Array.from({ length: 2 }, (_, i) => ({ id: i + 151, name: `Black Tea ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 43) % 50 + 1, 50)}.jpg` })),
+      'Special Tea': [
+        { id: 145, name: 'Special Tea 1', description: '', price: 0, image: '/menu-images/special-tea-1.jpg' },
+        { id: 146, name: 'Special Tea 2', description: '', price: 0, image: '/menu-images/special-tea-2.jpg' },
+        { id: 147, name: 'Special Tea 3', description: '', price: 0, image: '/menu-images/special-tea-3.jpg' },
+        { id: 148, name: 'Special Tea 4', description: '', price: 0, image: '/menu-images/special-tea-4.jpg' },
+      ],
     },
     'nawa-summer': {
-      'Seasonal Desserts': Array.from({ length: 2 }, (_, i) => ({ id: i + 153, name: `Summer Dessert ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 45) % 50 + 1, 50)}.jpg` })),
-      'Ice Creams': Array.from({ length: 3 }, (_, i) => ({ id: i + 155, name: `Ice Cream ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 47) % 50 + 1, 50)}.jpg` })),
-      'Acai Bowl': Array.from({ length: 1 }, (_, i) => ({ id: i + 158, name: `Acai Bowl ${i + 1}`, description: '', price: 0, image: `/menu-images/${50}.jpg` })),
+      'Nawa Summer': [
+        { id: 149, name: 'Nawa Summer 1', description: '', price: 0, image: '/menu-images/nawa-summer-1.jpg' },
+        { id: 150, name: 'Nawa Summer 2', description: '', price: 0, image: '/menu-images/nawa-summer-2.jpg' },
+        { id: 151, name: 'Nawa Summer 3', description: '', price: 0, image: '/menu-images/nawa-summer-3.jpg' },
+      ],
     },
   };
 
