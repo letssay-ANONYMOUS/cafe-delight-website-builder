@@ -1,4 +1,5 @@
 import { Card } from '@/components/ui/card';
+import { useNavigate } from 'react-router-dom';
 
 interface MenuCardProps {
   item: {
@@ -8,13 +9,18 @@ interface MenuCardProps {
     price: number;
     image: string;
   };
-  onClick: () => void;
 }
 
-const MenuCard = ({ item, onClick }: MenuCardProps) => {
+const MenuCard = ({ item }: MenuCardProps) => {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate(`/menu/${item.id}`);
+  };
+
   return (
     <Card
-      onClick={onClick}
+      onClick={handleClick}
       className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-transparent cursor-pointer"
     >
       {/* Image */}

@@ -273,7 +273,9 @@ const Menu = () => {
       ],
     },
     'arabic-coffee': {
-      'Arabic Coffee': Array.from({ length: 4 }, (_, i) => ({ id: i + 141, name: `Arabic Coffee ${i + 1}`, description: '', price: 0, image: `/menu-images/${Math.min((i + 32) % 50 + 1, 50)}.jpg` })),
+      'Arabic Coffee': [
+        { id: 141, name: 'Arabic Coffee', description: 'Traditional Arabic coffee', price: 15, image: '/menu-images/arabic-coffee-1.jpg' },
+      ],
     },
     'nawa-special-tea': {
       'Special Tea': [
@@ -383,7 +385,6 @@ const Menu = () => {
                         <MenuCard
                           key={item.id}
                           item={item}
-                          onClick={() => setSelectedCard(item.id)}
                         />
                       ))}
                     </Suspense>
