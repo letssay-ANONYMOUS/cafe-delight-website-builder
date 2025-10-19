@@ -63,7 +63,7 @@ const MenuItemDetail = () => {
                   {item.description}
                 </p>
                 <div className="text-3xl font-bold text-[#c9a962]">
-                  {item.price} SAR
+                  AED {item.price.toFixed(2)}
                 </div>
               </div>
 
