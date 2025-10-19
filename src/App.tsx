@@ -18,6 +18,7 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 import MenuItemDetail from "./pages/MenuItemDetail";
+import ProductDetail from "./pages/ProductDetail";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/about" element={<AboutPage />} />
           <Route path="/catering" element={<CateringPage />} />
           <Route path="/store" element={<StorePage />} />
+          <Route path="/store/:id" element={<ProductDetail />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/locations" element={<LocationsPage />} />
           <Route path="/cart" element={<CartPage />} />

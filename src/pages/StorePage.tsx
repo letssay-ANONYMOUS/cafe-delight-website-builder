@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, Star, Leaf, Award, Package } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Leaf, Award, Package } from 'lucide-react';
+import StoreProductCard from '@/components/StoreProductCard';
 
 const StorePage = () => {
   useEffect(() => {
@@ -138,48 +138,7 @@ const StorePage = () => {
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {products.map((product) => (
-              <Card key={product.id} className="border-coffee-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 overflow-hidden group">
-                <div className="relative overflow-hidden bg-gradient-to-br from-coffee-50 to-cream-100 h-64">
-                  <img 
-                    src={product.image} 
-                    alt={product.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                  <Badge className="absolute top-4 right-4 bg-coffee-600 text-white border-0">
-                    {product.badge}
-                  </Badge>
-                </div>
-                
-                <CardHeader>
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-1">
-                      {[...Array(product.rating)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 fill-coffee-500 text-coffee-500" />
-                      ))}
-                    </div>
-                    <span className="text-sm text-coffee-600">{product.origin}</span>
-                  </div>
-                  <CardTitle className="text-xl text-coffee-900 font-playfair">{product.name}</CardTitle>
-                  <CardDescription className="text-coffee-700 line-clamp-2">{product.description}</CardDescription>
-                </CardHeader>
-                
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <span className="text-3xl font-bold text-coffee-600">${product.price}</span>
-                    <span className="text-coffee-600">{product.volume}</span>
-                  </div>
-                </CardContent>
-                
-                <CardFooter className="flex gap-2">
-                  <Button className="flex-1 bg-coffee-600 hover:bg-coffee-700 text-white rounded-full">
-                    <ShoppingCart className="w-4 h-4 mr-2" />
-                    Add to Cart
-                  </Button>
-                  <Button variant="outline" className="border-coffee-600 text-coffee-600 hover:bg-coffee-50 rounded-full">
-                    Details
-                  </Button>
-                </CardFooter>
-              </Card>
+              <StoreProductCard key={product.id} product={product} />
             ))}
           </div>
         </div>
@@ -226,7 +185,7 @@ const StorePage = () => {
       </section>
 
       {/* CTA Section */}
-      <section id="store-products" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-coffee-800 via-coffee-700 to-coffee-800 text-white">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-coffee-800 via-coffee-700 to-coffee-800 text-white">
         <div className="container mx-auto text-center">
           <h2 className="font-playfair text-4xl md:text-5xl font-bold mb-6">
             Experience Mediterranean Excellence
@@ -239,10 +198,7 @@ const StorePage = () => {
               size="lg" 
               className="bg-white text-coffee-700 hover:bg-cream-50 rounded-full px-8"
               onClick={() => {
-                const productsSection = document.getElementById('store-products');
-                if (productsSection) {
-                  productsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
+                window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
             >
               Buy Now
