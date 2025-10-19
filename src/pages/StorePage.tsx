@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,13 +7,16 @@ import { Badge } from '@/components/ui/badge';
 import { ShoppingCart, Star, Leaf, Award, Package } from 'lucide-react';
 
 const StorePage = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   const products = [
     {
       id: 1,
       name: "Premium Extra Virgin Olive Oil",
       description: "Cold-pressed from hand-picked olives in the Mediterranean. Rich, fruity flavor with peppery finish.",
       price: 28.99,
-      image: "/placeholder.svg",
+      image: "/olive-oils/premium-evoo.jpg",
       rating: 5,
       badge: "Bestseller",
       volume: "500ml",
@@ -23,7 +27,7 @@ const StorePage = () => {
       name: "Organic Single Estate Olive Oil",
       description: "Certified organic, single-origin olive oil with delicate notes of grass and artichoke.",
       price: 34.99,
-      image: "/placeholder.svg",
+      image: "/olive-oils/organic-estate.jpg",
       rating: 5,
       badge: "Organic",
       volume: "750ml",
@@ -34,7 +38,7 @@ const StorePage = () => {
       name: "Infused Garlic & Herb Olive Oil",
       description: "Premium olive oil infused with fresh garlic, rosemary, and Mediterranean herbs.",
       price: 24.99,
-      image: "/placeholder.svg",
+      image: "/olive-oils/garlic-herb.jpg",
       rating: 4,
       badge: "Limited",
       volume: "250ml",
@@ -45,7 +49,7 @@ const StorePage = () => {
       name: "Early Harvest Olive Oil",
       description: "Made from green, early-harvest olives for intense flavor and maximum health benefits.",
       price: 39.99,
-      image: "/placeholder.svg",
+      image: "/olive-oils/early-harvest.jpg",
       rating: 5,
       badge: "Premium",
       volume: "500ml",
@@ -56,7 +60,7 @@ const StorePage = () => {
       name: "Lemon Infused Olive Oil",
       description: "Bright and zesty olive oil infused with fresh Mediterranean lemons. Perfect for salads.",
       price: 26.99,
-      image: "/placeholder.svg",
+      image: "/olive-oils/lemon-infused.jpg",
       rating: 5,
       badge: "New",
       volume: "250ml",
@@ -67,7 +71,7 @@ const StorePage = () => {
       name: "Gift Set Collection",
       description: "Curated selection of three premium olive oils in an elegant gift box.",
       price: 79.99,
-      image: "/placeholder.svg",
+      image: "/olive-oils/gift-set.jpg",
       rating: 5,
       badge: "Gift Set",
       volume: "3x250ml",
@@ -222,7 +226,7 @@ const StorePage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-coffee-800 via-coffee-700 to-coffee-800 text-white">
+      <section id="store-products" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-coffee-800 via-coffee-700 to-coffee-800 text-white">
         <div className="container mx-auto text-center">
           <h2 className="font-playfair text-4xl md:text-5xl font-bold mb-6">
             Experience Mediterranean Excellence
@@ -230,12 +234,18 @@ const StorePage = () => {
           <p className="text-xl text-cream-100 mb-8 max-w-2xl mx-auto">
             Join thousands of satisfied customers who have elevated their cooking with our premium olive oils.
           </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Button size="lg" className="bg-white text-coffee-700 hover:bg-cream-50 rounded-full px-8">
-              Shop Now
-            </Button>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10 rounded-full px-8">
-              Learn More
+          <div className="flex justify-center">
+            <Button 
+              size="lg" 
+              className="bg-white text-coffee-700 hover:bg-cream-50 rounded-full px-8"
+              onClick={() => {
+                const productsSection = document.getElementById('store-products');
+                if (productsSection) {
+                  productsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+              }}
+            >
+              Buy Now
             </Button>
           </div>
         </div>

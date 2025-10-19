@@ -1,10 +1,15 @@
+import { useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Users, Calendar, Coffee, Utensils, Clock, MapPin } from 'lucide-react';
+import cateringHeroImage from '@/assets/catering-hero.png';
 
 const CateringPage = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   const services = [
     {
       icon: Coffee,
@@ -52,22 +57,32 @@ const CateringPage = () => {
       <Header />
       
       {/* Hero Section */}
-      <section className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-coffee-100 via-cream-50 to-background">
-        <div className="container mx-auto text-center">
-          <h1 className="font-playfair text-5xl md:text-6xl font-bold text-coffee-900 mb-6 animate-fade-in">
-            Catering Services
-          </h1>
-          <p className="text-xl text-coffee-700 max-w-3xl mx-auto mb-8 animate-fade-in">
-            Elevate your events with our premium catering services. From intimate gatherings to large corporate events, 
-            we bring the café experience to you.
-          </p>
-          <div className="flex flex-wrap justify-center gap-4 animate-scale-in">
-            <Button size="lg" className="bg-coffee-600 hover:bg-coffee-700 text-white rounded-full px-8">
-              Get a Quote
-            </Button>
-            <Button size="lg" variant="outline" className="rounded-full px-8 border-coffee-600 text-coffee-600 hover:bg-coffee-50">
-              View Sample Menu
-            </Button>
+      <section className="relative pt-24 pb-0 overflow-hidden">
+        <div className="relative h-[500px] md:h-[600px]">
+          <img 
+            src={cateringHeroImage} 
+            alt="NAWA Café Catering Services" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
+              <h1 className="font-playfair text-5xl md:text-7xl font-bold mb-6 animate-fade-in drop-shadow-lg">
+                Catering Services
+              </h1>
+              <p className="text-xl md:text-2xl max-w-3xl mx-auto mb-8 animate-fade-in drop-shadow-md">
+                Elevate your events with our premium catering services. From intimate gatherings to large corporate events, 
+                we bring the café experience to you.
+              </p>
+              <div className="flex flex-wrap justify-center gap-4 animate-scale-in">
+                <Button size="lg" className="bg-[#c9a962] hover:bg-[#b89952] text-white rounded-full px-8 shadow-lg">
+                  Get a Quote
+                </Button>
+                <Button size="lg" variant="outline" className="rounded-full px-8 border-white text-white hover:bg-white/20 backdrop-blur-sm shadow-lg">
+                  View Sample Menu
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -173,12 +188,13 @@ const CateringPage = () => {
           <p className="text-xl text-cream-100 mb-8 max-w-2xl mx-auto">
             Contact us today for a personalized quote and let us make your event unforgettable.
           </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Button size="lg" className="bg-white text-coffee-600 hover:bg-cream-50 rounded-full px-8">
-              Request Quote
-            </Button>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10 rounded-full px-8">
-              Call Us: (555) 123-4567
+          <div className="flex justify-center">
+            <Button 
+              size="lg" 
+              className="bg-white text-coffee-600 hover:bg-cream-50 rounded-full px-8"
+              onClick={() => window.location.href = 'mailto:nawacafe22@gmail.com?subject=Catering Inquiry&body=Hello NAWA Café Team, I would like to inquire about your catering services. Please contact me at: 037800030 or 0506584176'}
+            >
+              Connect With Us
             </Button>
           </div>
         </div>
