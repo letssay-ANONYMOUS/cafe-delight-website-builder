@@ -1,18 +1,18 @@
 export const menuStructure = {
   'nawa-breakfast': {
     'Savoury': [
-      { id: 1, name: 'Avocado Toast', description: 'Flavours loaded to the core', price: 0, image: '/menu-images/savoury-1.jpg' },
-      { id: 2, name: 'Eggs Benedict', description: 'I want what I want', price: 0, image: '/menu-images/savoury-2.jpg' },
-      { id: 3, name: 'Smoked Salmon Toast', description: 'NAWA signature', price: 0, image: '/menu-images/savoury-3.jpg' },
-      { id: 4, name: 'Eggs Florentine', description: '', price: 0, image: '/menu-images/savoury-4.jpg' },
-      { id: 5, name: 'Shakshuka', description: 'NAWA style', price: 0, image: '/menu-images/savoury-5.jpg' },
-      { id: 6, name: 'Smoked Turkey Toast', description: '', price: 0, image: '/menu-images/savoury-6.jpg' },
-      { id: 7, name: 'Scrambled Eggs Toast', description: '', price: 0, image: '/menu-images/savoury-7.jpg' },
-      { id: 8, name: 'Egg White Omelette', description: '', price: 0, image: '/menu-images/savoury-8.jpg' },
-      { id: 9, name: 'Halloumi Pesto Toast', description: '', price: 0, image: '/menu-images/savoury-9.jpg' },
-      { id: 10, name: 'Cheese Omelette Toast', description: '', price: 0, image: '/menu-images/savoury-10.jpg' },
-      { id: 11, name: 'Truffle Omelette Toast', description: '', price: 0, image: '/menu-images/savoury-11.jpg' },
-      { id: 12, name: 'Fried Eggs Toast', description: '', price: 0, image: '/menu-images/savoury-12.jpg' },
+      { id: 1, name: 'Loaded Avocado Toast', description: 'Sourdough bread, Avocado mashed, sauté baby spinach, scramble egg, beetroot mayo', price: 49, image: '/menu-images/savoury-1.jpg' },
+      { id: 2, name: 'Spicy Mushroom Benedict', description: 'Freshly baked english muffin topped with spicy mushroom and sauce, poached eggs and sliced avocados garnished with parmesan', price: 47, image: '/menu-images/savoury-2.jpg' },
+      { id: 3, name: 'Beetroot Avocado Toast', description: 'Beetroot mix, Avocado puree, Feta cheese, Curry Chili and egg', price: 45, image: '/menu-images/savoury-3.jpg' },
+      { id: 4, name: 'NAWA EGG FLORENTINE', description: 'ITS A ENGLISH MUFFIN BASED WITH LABNEH AND TOPPED WITH SAUTEED SPINACH, POACHED EGGS AND HOLLANDAISE SAUCE', price: 47, image: '/menu-images/savoury-4.jpg' },
+      { id: 5, name: 'NEW NAWA SHAKSHUKA', description: 'Shakshouka is a Tunisian dish of eggs mix with tomato sauce, onions, bell peppers and spices', price: 48, image: '/menu-images/savoury-5.jpg' },
+      { id: 6, name: 'Croque Madame', description: 'Sour dough toast with turkey slice, beschamel sauce, mixed cheese, baked and then topped with a sunny side egg', price: 45, image: '/menu-images/savoury-6.jpg' },
+      { id: 7, name: 'Turkish Eggs', description: 'Special sesame simit bread on a bed of yogurt sauce topped with poached eggs and sprinkled with home-made chili oil', price: 40, image: '/menu-images/savoury-7.jpg' },
+      { id: 8, name: 'Creamy Mushroom Toasty', description: 'Sour dough toast topped with creamy mushroom sauce and mixed cheese', price: 42, image: '/menu-images/savoury-8.jpg' },
+      { id: 9, name: 'Halloumi Pesto Toast', description: 'Sour dough toast with sun-dried tomato pesto, grilled halloumi and tomatoes on top. Garnished with parmesan cheese', price: 43, image: '/menu-images/savoury-9.jpg' },
+      { id: 10, name: 'Zattar Babka', description: 'Toast babka bread stuffed with labneh, zattar glazed on the side, labneh zattar kalamata olives, gherkin wedge', price: 40, image: '/menu-images/savoury-10.jpg' },
+      { id: 11, name: 'Truffle Omelette Toast', description: 'Sour dough toast topped with mixed cheese, omelette cooked with cheese and truffle mushroom. Garnished with parmesan', price: 46, image: '/menu-images/savoury-11.jpg' },
+      { id: 12, name: 'GOURMET BREAKFAST SANDWICH', description: 'GOURMET SANDWICH WITH PANCAKE TACO PIE, LAMB MORTADELLA, SCRAMBLED EGG AND CHEDDAR CHEESE', price: 42, image: '/menu-images/savoury-12.jpg' },
     ],
     'Arabic Breakfast & Special Tea': [
       { id: 13, name: 'Arabic Breakfast', description: 'Traditional Arabic breakfast platter', price: 0, image: '/menu-images/arabic-breakfast-1.jpg' },
@@ -87,9 +87,9 @@ export const menuStructure = {
   },
   'lunch-dinner': {
     'Savoury': [
-      { id: 63, name: 'Avocado Toast', description: 'Flavours loaded to the core', price: 0, image: '/menu-images/savoury-1.jpg' },
-      { id: 64, name: 'Eggs Benedict', description: 'I want what I want', price: 0, image: '/menu-images/savoury-2.jpg' },
-      { id: 65, name: 'Smoked Salmon Toast', description: 'NAWA signature', price: 0, image: '/menu-images/savoury-3.jpg' },
+      { id: 63, name: 'Loaded Avocado Toast', description: 'Sourdough bread, Avocado mashed, sauté baby spinach, scramble egg, beetroot mayo', price: 49, image: '/menu-images/savoury-1.jpg' },
+      { id: 64, name: 'Spicy Mushroom Benedict', description: 'Freshly baked english muffin topped with spicy mushroom and sauce, poached eggs and sliced avocados garnished with parmesan', price: 47, image: '/menu-images/savoury-2.jpg' },
+      { id: 65, name: 'Beetroot Avocado Toast', description: 'Beetroot mix, Avocado puree, Feta cheese, Curry Chili and egg', price: 45, image: '/menu-images/savoury-3.jpg' },
     ],
   },
   'appetisers': {
