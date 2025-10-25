@@ -4,6 +4,7 @@ import { AdminPasswordModal } from './AdminPasswordModal';
 import { useAdmin } from '@/contexts/AdminContext';
 import { Button } from './ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   const [clickCount, setClickCount] = useState(0);
@@ -128,24 +129,24 @@ const Footer = () => {
             <h3 className="font-playfair text-xl font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <button className="text-cream-200 hover:text-cream-100 transition-colors duration-200">
+                <Link to="/menu" className="text-cream-200 hover:text-cream-100 transition-colors duration-200 block">
                   Our Menu
-                </button>
+                </Link>
               </li>
               <li>
-                <button className="text-cream-200 hover:text-cream-100 transition-colors duration-200">
+                <Link to="/about" className="text-cream-200 hover:text-cream-100 transition-colors duration-200 block">
                   About Us
-                </button>
+                </Link>
               </li>
               <li>
-                <button className="text-cream-200 hover:text-cream-100 transition-colors duration-200">
+                <Link to="/catering" className="text-cream-200 hover:text-cream-100 transition-colors duration-200 block">
                   Catering
-                </button>
+                </Link>
               </li>
               <li>
-                <button className="text-cream-200 hover:text-cream-100 transition-colors duration-200">
-                  Events
-                </button>
+                <Link to="/contact" className="text-cream-200 hover:text-cream-100 transition-colors duration-200 block">
+                  Contact
+                </Link>
               </li>
             </ul>
           </div>
@@ -156,9 +157,15 @@ const Footer = () => {
             <div className="space-y-2 text-cream-200">
               <p>Al Ain</p>
               <p>United Arab Emirates</p>
-              <p>037800030</p>
-              <p>0506584176</p>
-              <p>nawacafe22@gmail.com</p>
+              <a href="tel:037800030" className="block hover:text-cream-100 transition-colors">
+                037800030
+              </a>
+              <a href="tel:0506584176" className="block hover:text-cream-100 transition-colors">
+                0506584176
+              </a>
+              <a href="mailto:nawacafe22@gmail.com" className="block hover:text-cream-100 transition-colors">
+                nawacafe22@gmail.com
+              </a>
             </div>
           </div>
         </div>

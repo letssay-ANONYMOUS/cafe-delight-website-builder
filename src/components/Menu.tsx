@@ -207,8 +207,8 @@ const Menu = () => {
                       {subsectionName}
                     </h3>
                     
-                    {/* Items Grid with Lazy Loading */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {/* Items Grid with Lazy Loading - Mobile shows 2 cols, tablet/desktop show 3-4 */}
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
                       <Suspense fallback={
                         <div className="col-span-full flex justify-center py-8">
                           <div className="w-8 h-8 border-4 border-[#c9a962] border-t-transparent rounded-full animate-spin" />

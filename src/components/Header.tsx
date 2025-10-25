@@ -23,7 +23,17 @@ const Header = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-coffee-200 shadow-sm">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-coffee-200 shadow-sm transform-gpu">
+      <style>
+        {`
+          @supports (-webkit-touch-callout: none) {
+            header {
+              position: -webkit-sticky;
+              position: sticky;
+            }
+          }
+        `}
+      </style>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center space-x-2">
@@ -76,7 +86,7 @@ const Header = () => {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden absolute top-16 left-0 right-0 bg-white/95 backdrop-blur-sm border-b border-coffee-200 shadow-lg">
+          <div className="md:hidden fixed top-16 left-0 right-0 bg-white/95 backdrop-blur-sm border-b border-coffee-200 shadow-lg z-50">
             <nav className="flex flex-col space-y-4 p-4">
               {navItems.map((item) => (
                 <Link

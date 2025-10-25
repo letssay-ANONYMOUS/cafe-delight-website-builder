@@ -22,6 +22,8 @@ const MenuCard = ({ item, cardNumber, onEdit, onDelete }: MenuCardProps) => {
   const { isAdmin } = useAdmin();
 
   const handleClick = () => {
+    // Save scroll position before navigating
+    sessionStorage.setItem('menuScrollY', window.scrollY.toString());
     navigate(`/menu/${item.id}`);
   };
 
@@ -81,21 +83,24 @@ const MenuCard = ({ item, cardNumber, onEdit, onDelete }: MenuCardProps) => {
       </div>
 
       {/* Golden Footer */}
-      <div className="bg-[#c9a962]/90 backdrop-blur-sm p-4 space-y-2">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="font-semibold text-white text-base leading-tight flex-1">
-            {item.name}
-          </h3>
-        </div>
+      <div className="bg-[#c9a962]/90 backdrop-blur-sm p-3 space-y-2">
+        <h3 className="font-semibold text-white text-sm md:text-base leading-tight">
+          {item.name}
+        </h3>
         
         <div className="flex items-center justify-between">
-          <p className="text-white/90 font-bold text-lg">
+          <p className="text-white/90 font-bold text-base md:text-lg">
             AED {item.price.toFixed(2)}
           </p>
-          <p className="text-white/60 text-xs">
+          <p className="text-white/60 text-xs hidden md:block">
             Click for details
           </p>
         </div>
+        
+        {/* Description - Hidden on mobile */}
+        <p className="text-white/70 text-xs leading-relaxed line-clamp-2 hidden md:block">
+          {item.description}
+        </p>
       </div>
     </Card>
   );

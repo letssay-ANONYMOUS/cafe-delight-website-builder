@@ -5,17 +5,52 @@ import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { getAllMenuItems } from '@/data/menuData';
+import { useCart } from '@/contexts/CartContext';
+import { useToast } from '@/hooks/use-toast';
 
 const MenuItemDetail = () => {
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
   const { id } = useParams();
   const navigate = useNavigate();
+  const { addToCart } = useCart();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    // Restore scroll position if available
+    const savedScrollY = sessionStorage.getItem('menuScrollY');
+    if (savedScrollY) {
+      window.scrollTo(0, parseInt(savedScrollY));
+      sessionStorage.removeItem('menuScrollY');
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, []);
 
   // Find the item across all categories
   const allItems = getAllMenuItems();
   const item = allItems.find(item => item.id === Number(id));
+
+  const handleBack = () => {
+    // Save current scroll position before navigating back
+    const scrollY = window.scrollY.toString();
+    sessionStorage.setItem('menuScrollY', scrollY);
+    navigate('/menu');
+  };
+
+  const handleAddToCart = () => {
+    if (!item) return;
+    addToCart({
+      id: item.id,
+      name: item.name,
+      description: item.description,
+      price: item.price,
+      image: item.image,
+      category: 'menu'
+    });
+    toast({
+      title: 'Added to cart',
+      description: `${item.name} has been added to your cart.`,
+    });
+  };
 
   if (!item) {
     return (
@@ -42,7 +77,7 @@ const MenuItemDetail = () => {
         <div className="max-w-4xl mx-auto">
           <Button 
             variant="ghost" 
-            onClick={() => navigate('/menu')}
+            onClick={handleBack}
             className="mb-6"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -75,10 +110,7 @@ const MenuItemDetail = () => {
                 <Button 
                   size="lg" 
                   className="w-full"
-                  onClick={() => {
-                    // Add to cart functionality can be added here
-                    console.log('Add to cart:', item);
-                  }}
+                  onClick={handleAddToCart}
                 >
                   Add to Cart
                 </Button>
