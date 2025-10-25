@@ -1,8 +1,24 @@
 
 import { Coffee, Star } from 'lucide-react';
+import { useState } from 'react';
+import { AdminPasswordModal } from './AdminPasswordModal';
 
 const Footer = () => {
+  const [clickCount, setClickCount] = useState(0);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+
+  const handleCopyrightClick = () => {
+    const newCount = clickCount + 1;
+    setClickCount(newCount);
+    
+    if (newCount >= 5) {
+      setShowPasswordModal(true);
+      setClickCount(0);
+    }
+  };
+
   return (
+    <>
     <footer className="bg-coffee-800 text-white py-12">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -118,7 +134,10 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-coffee-700 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-cream-300 text-sm">
+          <p 
+            className="text-cream-300 text-sm cursor-pointer select-none"
+            onClick={handleCopyrightClick}
+          >
             © 2024 NAWA CAFÉ. All rights reserved.
           </p>
           <div className="flex space-x-6 mt-4 md:mt-0">
@@ -134,7 +153,9 @@ const Footer = () => {
           </div>
         </div>
       </div>
+      <AdminPasswordModal open={showPasswordModal} onOpenChange={setShowPasswordModal} />
     </footer>
+    </>
   );
 };
 

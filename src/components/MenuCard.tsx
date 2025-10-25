@@ -1,5 +1,8 @@
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { Edit, X } from 'lucide-react';
+import { useAdmin } from '@/contexts/AdminContext';
 
 interface MenuCardProps {
   item: {
@@ -10,13 +13,26 @@ interface MenuCardProps {
     image: string;
   };
   cardNumber?: number;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
-const MenuCard = ({ item, cardNumber }: MenuCardProps) => {
+const MenuCard = ({ item, cardNumber, onEdit, onDelete }: MenuCardProps) => {
   const navigate = useNavigate();
+  const { isAdmin } = useAdmin();
 
   const handleClick = () => {
     navigate(`/menu/${item.id}`);
+  };
+
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onEdit?.();
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDelete?.();
   };
 
   return (
@@ -38,6 +54,28 @@ const MenuCard = ({ item, cardNumber }: MenuCardProps) => {
         {cardNumber && (
           <div className="absolute top-2 left-2 w-10 h-10 bg-red-500 rounded-full flex items-center justify-center shadow-lg z-10">
             <span className="text-white font-bold text-lg">{cardNumber}</span>
+          </div>
+        )}
+        
+        {/* Admin Controls */}
+        {isAdmin && (
+          <div className="absolute top-2 right-2 flex gap-2">
+            <Button
+              size="icon"
+              variant="secondary"
+              className="h-8 w-8 bg-white/90 hover:bg-white"
+              onClick={handleEdit}
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button
+              size="icon"
+              variant="destructive"
+              className="h-8 w-8"
+              onClick={handleDelete}
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </div>
         )}
       </div>

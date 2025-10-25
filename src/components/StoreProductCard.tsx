@@ -1,9 +1,10 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, Star } from 'lucide-react';
+import { ShoppingCart, Star, Edit, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
+import { useAdmin } from '@/contexts/AdminContext';
 import { toast } from 'sonner';
 
 interface Product {
@@ -20,11 +21,14 @@ interface Product {
 
 interface StoreProductCardProps {
   product: Product;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
-const StoreProductCard = ({ product }: StoreProductCardProps) => {
+const StoreProductCard = ({ product, onEdit, onDelete }: StoreProductCardProps) => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { isAdmin } = useAdmin();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -44,6 +48,16 @@ const StoreProductCard = ({ product }: StoreProductCardProps) => {
     navigate(`/store/${product.id}`);
   };
 
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onEdit?.();
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDelete?.();
+  };
+
   return (
     <Card 
       className="border-coffee-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 overflow-hidden group cursor-pointer"
@@ -58,6 +72,26 @@ const StoreProductCard = ({ product }: StoreProductCardProps) => {
         <Badge className="absolute top-4 right-4 bg-coffee-600 text-white border-0">
           {product.badge}
         </Badge>
+        {isAdmin && (
+          <div className="absolute top-4 left-4 flex gap-2">
+            <Button
+              size="icon"
+              variant="secondary"
+              className="h-8 w-8 bg-white/90 hover:bg-white"
+              onClick={handleEdit}
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button
+              size="icon"
+              variant="destructive"
+              className="h-8 w-8"
+              onClick={handleDelete}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </div>
       
       <CardHeader>
@@ -75,7 +109,7 @@ const StoreProductCard = ({ product }: StoreProductCardProps) => {
       
       <CardContent>
         <div className="flex items-center justify-between">
-          <span className="text-3xl font-bold text-coffee-600">${product.price}</span>
+          <span className="text-3xl font-bold text-coffee-600">AED {product.price}</span>
           <span className="text-coffee-600">{product.volume}</span>
         </div>
       </CardContent>

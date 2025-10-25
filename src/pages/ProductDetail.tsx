@@ -22,7 +22,7 @@ const ProductDetail = () => {
       id: 1,
       name: "Premium Extra Virgin Olive Oil",
       description: "Cold-pressed from hand-picked olives in the Mediterranean. Rich, fruity flavor with peppery finish. Perfect for drizzling over salads, pasta, or bread. This premium oil is extracted using traditional methods that preserve all the natural antioxidants and polyphenols.",
-      price: 28.99,
+      price: 312,
       image: "/olive-oils/premium-evoo.jpg",
       rating: 5,
       badge: "Bestseller",
@@ -33,7 +33,7 @@ const ProductDetail = () => {
       id: 2,
       name: "Organic Single Estate Olive Oil",
       description: "Certified organic, single-origin olive oil with delicate notes of grass and artichoke. Sourced from a family-owned estate in Spain with over 200 years of olive cultivation tradition.",
-      price: 34.99,
+      price: 349,
       image: "/olive-oils/organic-estate.jpg",
       rating: 5,
       badge: "Organic",
@@ -44,7 +44,7 @@ const ProductDetail = () => {
       id: 3,
       name: "Infused Garlic & Herb Olive Oil",
       description: "Premium olive oil infused with fresh garlic, rosemary, and Mediterranean herbs. Perfect for marinades, roasting vegetables, or as a finishing oil for grilled meats.",
-      price: 24.99,
+      price: 275,
       image: "/olive-oils/garlic-herb.jpg",
       rating: 4,
       badge: "Limited",
@@ -55,7 +55,7 @@ const ProductDetail = () => {
       id: 4,
       name: "Early Harvest Olive Oil",
       description: "Made from green, early-harvest olives for intense flavor and maximum health benefits. Higher in polyphenols and antioxidants with a robust, peppery finish.",
-      price: 39.99,
+      price: 386,
       image: "/olive-oils/early-harvest.jpg",
       rating: 5,
       badge: "Premium",
@@ -66,7 +66,7 @@ const ProductDetail = () => {
       id: 5,
       name: "Lemon Infused Olive Oil",
       description: "Bright and zesty olive oil infused with fresh Mediterranean lemons. Perfect for salads, seafood, grilled chicken, and adding a citrus twist to your favorite dishes.",
-      price: 26.99,
+      price: 257,
       image: "/olive-oils/lemon-infused.jpg",
       rating: 5,
       badge: "New",
@@ -77,7 +77,7 @@ const ProductDetail = () => {
       id: 6,
       name: "Gift Set Collection",
       description: "Curated selection of three premium olive oils in an elegant gift box. Includes our Premium EVOO, Garlic & Herb, and Lemon Infused varieties. Perfect for the olive oil enthusiast.",
-      price: 79.99,
+      price: 661,
       image: "/olive-oils/gift-set.jpg",
       rating: 5,
       badge: "Gift Set",
@@ -173,7 +173,7 @@ const ProductDetail = () => {
                 </p>
                 
                 <div className="text-4xl font-bold text-coffee-600 mb-8">
-                  ${product.price}
+                  AED {product.price}
                 </div>
               </div>
 

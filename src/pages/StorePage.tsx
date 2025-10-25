@@ -1,21 +1,33 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Leaf, Award, Package } from 'lucide-react';
+import { Leaf, Award, Package, Plus } from 'lucide-react';
 import StoreProductCard from '@/components/StoreProductCard';
+import { useAdmin } from '@/contexts/AdminContext';
+import { AdminCardModal } from '@/components/AdminCardModal';
+import { AdminDeleteConfirm } from '@/components/AdminDeleteConfirm';
+import { useToast } from '@/hooks/use-toast';
 
 const StorePage = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-  const products = [
+
+  const { isAdmin } = useAdmin();
+  const { toast } = useToast();
+  const [showCardModal, setShowCardModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [editingCard, setEditingCard] = useState<any>(null);
+  const [deletingCard, setDeletingCard] = useState<any>(null);
+
+  const initialProducts = [
     {
       id: 1,
       name: "Premium Extra Virgin Olive Oil",
       description: "Cold-pressed from hand-picked olives in the Mediterranean. Rich, fruity flavor with peppery finish.",
-      price: 28.99,
+      price: 312,
       image: "/olive-oils/premium-evoo.jpg",
       rating: 5,
       badge: "Bestseller",
@@ -26,7 +38,7 @@ const StorePage = () => {
       id: 2,
       name: "Organic Single Estate Olive Oil",
       description: "Certified organic, single-origin olive oil with delicate notes of grass and artichoke.",
-      price: 34.99,
+      price: 349,
       image: "/olive-oils/organic-estate.jpg",
       rating: 5,
       badge: "Organic",
@@ -37,7 +49,7 @@ const StorePage = () => {
       id: 3,
       name: "Infused Garlic & Herb Olive Oil",
       description: "Premium olive oil infused with fresh garlic, rosemary, and Mediterranean herbs.",
-      price: 24.99,
+      price: 275,
       image: "/olive-oils/garlic-herb.jpg",
       rating: 4,
       badge: "Limited",
@@ -48,7 +60,7 @@ const StorePage = () => {
       id: 4,
       name: "Early Harvest Olive Oil",
       description: "Made from green, early-harvest olives for intense flavor and maximum health benefits.",
-      price: 39.99,
+      price: 386,
       image: "/olive-oils/early-harvest.jpg",
       rating: 5,
       badge: "Premium",
@@ -59,7 +71,7 @@ const StorePage = () => {
       id: 5,
       name: "Lemon Infused Olive Oil",
       description: "Bright and zesty olive oil infused with fresh Mediterranean lemons. Perfect for salads.",
-      price: 26.99,
+      price: 257,
       image: "/olive-oils/lemon-infused.jpg",
       rating: 5,
       badge: "New",
@@ -70,7 +82,7 @@ const StorePage = () => {
       id: 6,
       name: "Gift Set Collection",
       description: "Curated selection of three premium olive oils in an elegant gift box.",
-      price: 79.99,
+      price: 661,
       image: "/olive-oils/gift-set.jpg",
       rating: 5,
       badge: "Gift Set",
@@ -78,6 +90,48 @@ const StorePage = () => {
       origin: "Mixed"
     }
   ];
+
+  const [products, setProducts] = useState(initialProducts);
+
+  const handleAddNew = () => {
+    setEditingCard(null);
+    setShowCardModal(true);
+  };
+
+  const handleEdit = (product: any) => {
+    setEditingCard(product);
+    setShowCardModal(true);
+  };
+
+  const handleDelete = (product: any) => {
+    setDeletingCard(product);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleSave = (data: any) => {
+    if (editingCard) {
+      setProducts(products.map(p => p.id === editingCard.id ? { ...p, ...data } : p));
+    } else {
+      const newId = Math.max(...products.map(p => p.id)) + 1;
+      setProducts([...products, { 
+        id: newId, 
+        ...data, 
+        rating: 5, 
+        badge: 'New', 
+        volume: '500ml', 
+        origin: 'Mediterranean' 
+      }]);
+    }
+  };
+
+  const confirmDelete = () => {
+    setProducts(products.filter(p => p.id !== deletingCard.id));
+    setShowDeleteConfirm(false);
+    toast({
+      title: 'Success',
+      description: 'Card deleted successfully',
+    });
+  };
 
   const features = [
     {
@@ -132,13 +186,29 @@ const StorePage = () => {
       {/* Products Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="container mx-auto">
-          <h2 className="font-playfair text-4xl font-bold text-coffee-900 text-center mb-12">
-            Our Premium Selection
-          </h2>
+          <div className="flex justify-between items-center mb-12">
+            <h2 className="font-playfair text-4xl font-bold text-coffee-900">
+              Our Premium Selection
+            </h2>
+            {isAdmin && (
+              <Button
+                onClick={handleAddNew}
+                className="bg-coffee-600 hover:bg-coffee-700 text-white"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add New Card
+              </Button>
+            )}
+          </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {products.map((product) => (
-              <StoreProductCard key={product.id} product={product} />
+              <StoreProductCard 
+                key={product.id} 
+                product={product}
+                onEdit={() => handleEdit(product)}
+                onDelete={() => handleDelete(product)}
+              />
             ))}
           </div>
         </div>
@@ -208,6 +278,21 @@ const StorePage = () => {
       </section>
 
       <Footer />
+
+      <AdminCardModal
+        open={showCardModal}
+        onOpenChange={setShowCardModal}
+        onSave={handleSave}
+        initialData={editingCard}
+        title={editingCard ? 'Edit Card' : 'Add New Card'}
+      />
+
+      <AdminDeleteConfirm
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        onConfirm={confirmDelete}
+        itemName={deletingCard?.name || ''}
+      />
     </div>
   );
 };

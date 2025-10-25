@@ -1,16 +1,28 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, Calendar, Coffee, Utensils, Clock, MapPin } from 'lucide-react';
+import { Users, Calendar, Coffee, Utensils, Clock, MapPin, Plus, Edit, X } from 'lucide-react';
 import cateringHeroImage from '@/assets/catering-hero.png';
+import { useAdmin } from '@/contexts/AdminContext';
+import { AdminCardModal } from '@/components/AdminCardModal';
+import { AdminDeleteConfirm } from '@/components/AdminDeleteConfirm';
+import { useToast } from '@/hooks/use-toast';
 
 const CateringPage = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-  const services = [
+
+  const { isAdmin } = useAdmin();
+  const { toast } = useToast();
+  const [showCardModal, setShowCardModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [editingCard, setEditingCard] = useState<any>(null);
+  const [deletingCard, setDeletingCard] = useState<any>(null);
+
+  const initialServices = [
     {
       icon: Coffee,
       title: "Coffee Bar Service",
@@ -30,6 +42,45 @@ const CateringPage = () => {
       features: ["Meeting refreshments", "Conference catering", "Team building events"]
     }
   ];
+
+  const [services, setServices] = useState(initialServices);
+
+  const handleAddNew = () => {
+    setEditingCard(null);
+    setShowCardModal(true);
+  };
+
+  const handleEdit = (service: any) => {
+    setEditingCard(service);
+    setShowCardModal(true);
+  };
+
+  const handleDelete = (service: any) => {
+    setDeletingCard(service);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleSave = (data: any) => {
+    if (editingCard) {
+      setServices(services.map(s => s.title === editingCard.title ? { ...s, title: data.name, description: data.description } : s));
+    } else {
+      setServices([...services, {
+        icon: Coffee,
+        title: data.name,
+        description: data.description,
+        features: ["Premium service", "Professional staff", "Custom options"]
+      }]);
+    }
+  };
+
+  const confirmDelete = () => {
+    setServices(services.filter(s => s.title !== deletingCard.title));
+    setShowDeleteConfirm(false);
+    toast({
+      title: 'Success',
+      description: 'Card deleted successfully',
+    });
+  };
 
   const packages = [
     {
@@ -90,12 +141,43 @@ const CateringPage = () => {
       {/* Services Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="container mx-auto">
-          <h2 className="font-playfair text-4xl font-bold text-coffee-900 text-center mb-12">
-            Our Catering Services
-          </h2>
+          <div className="flex justify-between items-center mb-12">
+            <h2 className="font-playfair text-4xl font-bold text-coffee-900">
+              Our Catering Services
+            </h2>
+            {isAdmin && (
+              <Button
+                onClick={handleAddNew}
+                className="bg-coffee-600 hover:bg-coffee-700 text-white"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add New Card
+              </Button>
+            )}
+          </div>
           <div className="grid md:grid-cols-3 gap-8">
             {services.map((service, index) => (
-              <Card key={index} className="border-coffee-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
+              <Card key={index} className="border-coffee-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 relative">
+                {isAdmin && (
+                  <div className="absolute top-4 right-4 flex gap-2 z-10">
+                    <Button
+                      size="icon"
+                      variant="secondary"
+                      className="h-8 w-8 bg-white/90 hover:bg-white"
+                      onClick={() => handleEdit(service)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="destructive"
+                      className="h-8 w-8"
+                      onClick={() => handleDelete(service)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
                 <CardHeader>
                   <div className="w-16 h-16 bg-coffee-100 rounded-full flex items-center justify-center mb-4">
                     <service.icon className="w-8 h-8 text-coffee-600" />
@@ -201,6 +283,21 @@ const CateringPage = () => {
       </section>
 
       <Footer />
+
+      <AdminCardModal
+        open={showCardModal}
+        onOpenChange={setShowCardModal}
+        onSave={handleSave}
+        initialData={editingCard ? { name: editingCard.title, description: editingCard.description, price: 0, image: '' } : undefined}
+        title={editingCard ? 'Edit Card' : 'Add New Card'}
+      />
+
+      <AdminDeleteConfirm
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        onConfirm={confirmDelete}
+        itemName={deletingCard?.title || ''}
+      />
     </div>
   );
 };
