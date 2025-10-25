@@ -1,13 +1,26 @@
-
-import { Coffee, Star } from 'lucide-react';
-import { useState } from 'react';
+import { Coffee, Star, Save, LogOut } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { AdminPasswordModal } from './AdminPasswordModal';
+import { useAdmin } from '@/contexts/AdminContext';
+import { Button } from './ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 const Footer = () => {
   const [clickCount, setClickCount] = useState(0);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const { isAdmin, setIsAdmin, hasPendingChanges, clearPendingChanges } = useAdmin();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (clickCount > 0) {
+      const timer = setTimeout(() => setClickCount(0), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [clickCount]);
 
   const handleCopyrightClick = () => {
+    if (isAdmin) return;
+    
     const newCount = clickCount + 1;
     setClickCount(newCount);
     
@@ -15,6 +28,23 @@ const Footer = () => {
       setShowPasswordModal(true);
       setClickCount(0);
     }
+  };
+
+  const handleLogout = () => {
+    setIsAdmin(false);
+    clearPendingChanges();
+    toast({
+      title: 'Logged out',
+      description: 'Admin mode deactivated. All unsaved changes were discarded.',
+    });
+  };
+
+  const handleSave = () => {
+    clearPendingChanges();
+    toast({
+      title: 'Changes saved',
+      description: 'All changes have been applied successfully.',
+    });
   };
 
   return (
@@ -133,23 +163,52 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-coffee-700 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p 
-            className="text-cream-300 text-sm cursor-pointer select-none"
-            onClick={handleCopyrightClick}
-          >
-            © 2024 NAWA CAFÉ. All rights reserved.
-          </p>
-          <div className="flex space-x-6 mt-4 md:mt-0">
-            <button className="text-cream-300 hover:text-cream-100 transition-colors duration-200 text-sm">
-              Privacy Policy
-            </button>
-            <button className="text-cream-300 hover:text-cream-100 transition-colors duration-200 text-sm">
-              Terms of Service
-            </button>
-            <button className="text-cream-300 hover:text-cream-100 transition-colors duration-200 text-sm">
-              Cookie Policy
-            </button>
+        <div className="border-t border-coffee-700 mt-8 pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="flex items-center gap-4">
+              <p 
+                className={`text-cream-300 text-sm ${!isAdmin ? 'cursor-pointer select-none' : ''}`}
+                onClick={handleCopyrightClick}
+              >
+                © 2024 NAWA CAFÉ. All rights reserved.
+              </p>
+              
+              {isAdmin && (
+                <div className="flex gap-2">
+                  {hasPendingChanges() && (
+                    <Button
+                      onClick={handleSave}
+                      className="bg-coffee-600 hover:bg-coffee-700 text-white"
+                      size="sm"
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      Save Changes
+                    </Button>
+                  )}
+                  <Button
+                    onClick={handleLogout}
+                    variant="outline"
+                    size="sm"
+                    className="text-white border-white hover:bg-white/20"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </Button>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex space-x-6">
+              <button className="text-cream-300 hover:text-cream-100 transition-colors duration-200 text-sm">
+                Privacy Policy
+              </button>
+              <button className="text-cream-300 hover:text-cream-100 transition-colors duration-200 text-sm">
+                Terms of Service
+              </button>
+              <button className="text-cream-300 hover:text-cream-100 transition-colors duration-200 text-sm">
+                Cookie Policy
+              </button>
+            </div>
           </div>
         </div>
       </div>

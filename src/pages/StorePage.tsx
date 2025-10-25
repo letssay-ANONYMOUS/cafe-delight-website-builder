@@ -15,7 +15,7 @@ const StorePage = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  const { isAdmin } = useAdmin();
+  const { isAdmin, addPendingChange } = useAdmin();
   const { toast } = useToast();
   const [showCardModal, setShowCardModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -109,6 +109,13 @@ const StorePage = () => {
   };
 
   const handleSave = (data: any) => {
+    addPendingChange({
+      type: editingCard ? 'edit' : 'add',
+      page: 'store',
+      data,
+      id: editingCard?.id
+    });
+    
     if (editingCard) {
       setProducts(products.map(p => p.id === editingCard.id ? { ...p, ...data } : p));
     } else {
@@ -125,11 +132,17 @@ const StorePage = () => {
   };
 
   const confirmDelete = () => {
+    addPendingChange({
+      type: 'delete',
+      page: 'store',
+      id: deletingCard.id
+    });
+    
     setProducts(products.filter(p => p.id !== deletingCard.id));
     setShowDeleteConfirm(false);
     toast({
-      title: 'Success',
-      description: 'Card deleted successfully',
+      title: 'Changes staged',
+      description: 'Card deletion staged. Click Save in footer to apply.',
     });
   };
 
@@ -285,6 +298,7 @@ const StorePage = () => {
         onSave={handleSave}
         initialData={editingCard}
         title={editingCard ? 'Edit Card' : 'Add New Card'}
+        page="store"
       />
 
       <AdminDeleteConfirm

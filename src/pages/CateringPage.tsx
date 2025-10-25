@@ -15,7 +15,7 @@ const CateringPage = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  const { isAdmin } = useAdmin();
+  const { isAdmin, addPendingChange } = useAdmin();
   const { toast } = useToast();
   const [showCardModal, setShowCardModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -61,6 +61,13 @@ const CateringPage = () => {
   };
 
   const handleSave = (data: any) => {
+    addPendingChange({
+      type: editingCard ? 'edit' : 'add',
+      page: 'catering',
+      data,
+      id: editingCard?.title
+    });
+    
     if (editingCard) {
       setServices(services.map(s => s.title === editingCard.title ? { ...s, title: data.name, description: data.description } : s));
     } else {
@@ -74,11 +81,17 @@ const CateringPage = () => {
   };
 
   const confirmDelete = () => {
+    addPendingChange({
+      type: 'delete',
+      page: 'catering',
+      id: deletingCard.title
+    });
+    
     setServices(services.filter(s => s.title !== deletingCard.title));
     setShowDeleteConfirm(false);
     toast({
-      title: 'Success',
-      description: 'Card deleted successfully',
+      title: 'Changes staged',
+      description: 'Card deletion staged. Click Save in footer to apply.',
     });
   };
 
@@ -290,6 +303,7 @@ const CateringPage = () => {
         onSave={handleSave}
         initialData={editingCard ? { name: editingCard.title, description: editingCard.description, price: 0, image: '' } : undefined}
         title={editingCard ? 'Edit Card' : 'Add New Card'}
+        page="catering"
       />
 
       <AdminDeleteConfirm

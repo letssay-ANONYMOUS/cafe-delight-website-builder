@@ -1,9 +1,15 @@
-import { Search } from 'lucide-react';
+import { Search, Plus, FolderPlus } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { useState, lazy, Suspense } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { menuStructure } from '@/data/menuData';
+import { useAdmin } from '@/contexts/AdminContext';
+import { AdminCardModal } from './AdminCardModal';
+import { AdminSectionModal } from './AdminSectionModal';
+import { AdminDeleteConfirm } from './AdminDeleteConfirm';
+import { useToast } from '@/hooks/use-toast';
 
 // Lazy load the card component for better performance
 const MenuCard = lazy(() => import('./MenuCard'));
@@ -11,6 +17,13 @@ const MenuCard = lazy(() => import('./MenuCard'));
 const Menu = () => {
   const [selectedCard, setSelectedCard] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const { isAdmin, addPendingChange } = useAdmin();
+  const { toast } = useToast();
+  const [showCardModal, setShowCardModal] = useState(false);
+  const [showSectionModal, setShowSectionModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [editingCard, setEditingCard] = useState<any>(null);
+  const [deletingCard, setDeletingCard] = useState<any>(null);
 
   const categories = [
     { id: 'nawa-breakfast', name: 'NAWA Breakfast', image: 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?auto=format&fit=crop&w=300&q=80' },
@@ -49,6 +62,59 @@ const Menu = () => {
     }
   };
 
+  const menuCategories = categories.map(cat => ({
+    id: cat.id,
+    name: cat.name,
+    sections: Object.keys(menuStructure[cat.id as keyof typeof menuStructure] || {})
+  }));
+
+  const handleAddNew = () => {
+    setEditingCard(null);
+    setShowCardModal(true);
+  };
+
+  const handleEdit = (item: any) => {
+    setEditingCard(item);
+    setShowCardModal(true);
+  };
+
+  const handleDelete = (item: any) => {
+    setDeletingCard(item);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleSaveCard = (data: any) => {
+    addPendingChange({
+      type: editingCard ? 'edit' : 'add',
+      page: 'menu',
+      category: data.category,
+      section: data.section,
+      data,
+      id: editingCard?.id
+    });
+  };
+
+  const confirmDelete = () => {
+    addPendingChange({
+      type: 'delete',
+      page: 'menu',
+      id: deletingCard.id
+    });
+    setShowDeleteConfirm(false);
+    toast({
+      title: 'Changes staged',
+      description: 'Card deletion staged. Click Save in footer to apply.',
+    });
+  };
+
+  const handleSaveSection = (type: 'category' | 'section', data: any) => {
+    addPendingChange({
+      type: 'add',
+      page: 'menu',
+      data: { type, ...data }
+    });
+  };
+
   return (
     <section className="min-h-screen bg-gradient-to-b from-[#4a5f4a]/30 via-[#5a6f5a]/20 to-[#4a5f4a]/30 backdrop-blur-sm">
       {/* Header with Search */}
@@ -66,6 +132,25 @@ const Menu = () => {
                 className="pl-10 bg-[#c9a962] border-none text-coffee-900 placeholder:text-coffee-700 rounded-lg"
               />
             </div>
+            {isAdmin && (
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleAddNew}
+                  className="bg-coffee-600 hover:bg-coffee-700 text-white"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add New Card
+                </Button>
+                <Button
+                  onClick={() => setShowSectionModal(true)}
+                  variant="outline"
+                  className="bg-coffee-100 hover:bg-coffee-200 text-coffee-900"
+                >
+                  <FolderPlus className="w-4 h-4 mr-2" />
+                  Add Category/Section
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -136,6 +221,8 @@ const Menu = () => {
                               key={item.id}
                               item={item}
                               cardNumber={currentNumber}
+                              onEdit={() => handleEdit(item)}
+                              onDelete={() => handleDelete(item)}
                             />
                           );
                         })}
@@ -162,6 +249,30 @@ const Menu = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <AdminCardModal
+        open={showCardModal}
+        onOpenChange={setShowCardModal}
+        onSave={handleSaveCard}
+        initialData={editingCard}
+        title={editingCard ? 'Edit Card' : 'Add New Card'}
+        page="menu"
+        categories={menuCategories}
+      />
+
+      <AdminSectionModal
+        open={showSectionModal}
+        onOpenChange={setShowSectionModal}
+        onSave={handleSaveSection}
+        existingCategories={categories.map(c => ({ id: c.id, name: c.name }))}
+      />
+
+      <AdminDeleteConfirm
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        onConfirm={confirmDelete}
+        itemName={deletingCard?.name || ''}
+      />
     </section>
   );
 };
