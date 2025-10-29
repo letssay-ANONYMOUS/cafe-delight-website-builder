@@ -63,44 +63,30 @@ const CheckoutPage = () => {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
 
-      // Prepare order data for webhook
-      const orderData = {
-        customerName: formData.name,
-        phoneNumber: formData.phone,
-        orderTimestamp: new Date().toISOString(),
-        orderItems: cartItems.map(item => ({
-          name: item.name,
-          quantity: item.quantity,
-          price: item.price,
-          total: item.price * item.quantity
-        })),
-        totalAmount: total,
-        paymentStatus: "Pending",
-        paymentIntentId: data.paymentIntentId,
-        additionalNotes: formData.notes || "None",
-      };
+      console.log('Payment intent created:', data);
 
-      // Send to Make.com webhook
-      fetch('https://hook.eu2.make.com/gxuupichxkt4ad8ey6trq3x3s1hnw56k', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        mode: 'no-cors',
-        body: JSON.stringify(orderData),
-      }).catch(err => console.log('Webhook notification sent'));
+      if (!data?.redirectUrl) {
+        throw new Error('No redirect URL received from payment provider');
+      }
 
-      // Clear cart and redirect to Ziina payment page
+      // Clear cart before redirect
       clearCart();
+      
+      // Open Ziina payment page in same window
+      console.log('Redirecting to:', data.redirectUrl);
       window.location.href = data.redirectUrl;
+      
     } catch (error) {
       console.error('Error creating payment:', error);
       setLoading(false);
       toast({
         title: "Payment Error",
-        description: "Unable to process payment. Please try again.",
+        description: error.message || "Unable to process payment. Please try again.",
         variant: "destructive",
       });
     }
