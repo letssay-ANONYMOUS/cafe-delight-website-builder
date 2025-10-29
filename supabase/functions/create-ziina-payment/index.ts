@@ -36,7 +36,7 @@ serve(async (req) => {
         currency_code: "AED",
         success_url: `${origin}/payment-success?payment_intent_id={PAYMENT_INTENT_ID}`,
         cancel_url: `${origin}/`,
-        test: false, // Production mode
+        test: true, // Set to true for testing, false for production
       }),
     });
 
