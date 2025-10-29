@@ -218,14 +218,14 @@ const CheckoutPage = () => {
                           {cartItems.map((item) => (
                             <div key={item.id} className="flex justify-between text-sm">
                               <span className="text-coffee-700">{item.name} × {item.quantity}</span>
-                              <span className="text-coffee-700">${(item.price * item.quantity).toFixed(2)}</span>
+                              <span className="text-coffee-700">AED {(item.price * item.quantity).toFixed(2)}</span>
                             </div>
                           ))}
                         </div>
                         <div className="border-t border-coffee-200 pt-4">
                           <div className="flex justify-between text-lg font-semibold text-coffee-800">
                             <span>Total</span>
-                            <span>${total.toFixed(2)}</span>
+                            <span>AED {total.toFixed(2)}</span>
                           </div>
                         </div>
                       </div>

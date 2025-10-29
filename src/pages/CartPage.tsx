@@ -59,7 +59,7 @@ const CartPage = () => {
                           />
                            <div className="flex-1">
                             <h3 className="font-semibold text-lg text-coffee-800 mb-2">{item.name}</h3>
-                            <p className="text-coffee-600 font-medium mb-4">${item.price.toFixed(2)}</p>
+                            <p className="text-coffee-600 font-medium mb-4">AED {item.price.toFixed(2)}</p>
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-3">
                                 <Button
@@ -107,7 +107,7 @@ const CartPage = () => {
                         <div className="border-t border-coffee-200 pt-4">
                           <div className="flex justify-between text-lg font-semibold text-coffee-800">
                             <span>Total</span>
-                            <span>${total.toFixed(2)}</span>
+                            <span>AED {total.toFixed(2)}</span>
                           </div>
                         </div>
                       </div>

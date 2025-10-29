@@ -98,19 +98,19 @@ const CateringPage = () => {
   const packages = [
     {
       name: "Essentials",
-      price: "Starting at $15/person",
+      price: "Starting at AED 55/person",
       description: "Perfect for small gatherings and meetings",
       includes: ["Coffee & tea station", "Pastries & light snacks", "Setup & cleanup", "2-hour service"]
     },
     {
       name: "Premium",
-      price: "Starting at $35/person",
+      price: "Starting at AED 130/person",
       description: "Ideal for special occasions",
       includes: ["Full coffee bar", "Gourmet sandwiches & salads", "Dessert selection", "4-hour service", "Professional staff"]
     },
     {
       name: "Deluxe",
-      price: "Starting at $65/person",
+      price: "Starting at AED 240/person",
       description: "Complete luxury catering experience",
       includes: ["Signature coffee drinks", "Multi-course meal service", "Premium desserts", "Full-day service", "Dedicated event coordinator"]
     }

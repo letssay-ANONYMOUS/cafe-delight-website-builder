@@ -35,8 +35,8 @@ serve(async (req) => {
         amount: amountInFils,
         currency_code: "AED",
         success_url: `${origin}/payment-success?payment_intent_id={PAYMENT_INTENT_ID}`,
-        cancel_url: `${origin}/checkout`,
-        test: true, // Set to false for production
+        cancel_url: `${origin}/`,
+        test: false, // Production mode
       }),
     });
 
@@ -47,6 +47,44 @@ serve(async (req) => {
     }
 
     const paymentIntent = await paymentIntentResponse.json();
+
+    // Send order details to n8n webhook
+    const webhookData = {
+      customerName,
+      phoneNumber,
+      orderTimestamp: new Date().toISOString(),
+      timeFormatted: new Date().toLocaleString('en-AE', { timeZone: 'Asia/Dubai' }),
+      orderItems: orderItems.map((item: any) => ({
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price,
+        total: item.total
+      })),
+      totalAmount: amount,
+      currency: "AED",
+      paymentIntentId: paymentIntent.id,
+      additionalNotes,
+      paymentStatus: "Initiated"
+    };
+
+    // Send to n8n webhook (GET request with query params)
+    const webhookUrl = new URL('https://hoi-there.app.n8n.cloud/webhook/ca4ea201-6cb4-4476-b7b5-d5c12894f9b1');
+    webhookUrl.searchParams.append('customerName', webhookData.customerName);
+    webhookUrl.searchParams.append('phoneNumber', webhookData.phoneNumber);
+    webhookUrl.searchParams.append('time', webhookData.timeFormatted);
+    webhookUrl.searchParams.append('totalAmount', webhookData.totalAmount.toString());
+    webhookUrl.searchParams.append('currency', webhookData.currency);
+    webhookUrl.searchParams.append('items', JSON.stringify(webhookData.orderItems));
+    webhookUrl.searchParams.append('notes', webhookData.additionalNotes);
+    webhookUrl.searchParams.append('paymentIntentId', webhookData.paymentIntentId);
+
+    try {
+      await fetch(webhookUrl.toString(), { method: 'GET' });
+      console.log('Webhook notification sent');
+    } catch (webhookError) {
+      console.error('Webhook error:', webhookError);
+      // Don't fail the payment if webhook fails
+    }
 
     return new Response(
       JSON.stringify({
