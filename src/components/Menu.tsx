@@ -2,7 +2,7 @@ import { Search, Plus, FolderPlus } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useState, lazy, Suspense, useEffect } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { menuStructure } from '@/data/menuData';
 import { useAdmin } from '@/contexts/AdminContext';
@@ -10,7 +10,6 @@ import { AdminCardModal } from './AdminCardModal';
 import { AdminSectionModal } from './AdminSectionModal';
 import { AdminDeleteConfirm } from './AdminDeleteConfirm';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 
 // Lazy load the card component for better performance
 const MenuCard = lazy(() => import('./MenuCard'));
@@ -25,33 +24,6 @@ const Menu = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [editingCard, setEditingCard] = useState<any>(null);
   const [deletingCard, setDeletingCard] = useState<any>(null);
-  const [menuItems, setMenuItems] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // Fetch menu items from database
-  useEffect(() => {
-    const fetchMenuItems = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('menu_items')
-          .select('*')
-          .eq('published', true)
-          .order('id', { ascending: true });
-
-        if (error) throw error;
-        
-        // Sort by ID to ensure exact CSV order
-        const sortedData = (data || []).sort((a: any, b: any) => Number(a.id) - Number(b.id));
-        setMenuItems(sortedData);
-      } catch (error) {
-        console.error('Error fetching menu items:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMenuItems();
-  }, []);
 
   const categories = [
     { id: 'nawa-breakfast', name: 'NAWA Breakfast', image: 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?auto=format&fit=crop&w=300&q=80' },
@@ -212,50 +184,56 @@ const Menu = () => {
 
       {/* Menu Cards Grid */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-        {loading ? (
-          <div className="flex justify-center py-20">
-            <div className="w-12 h-12 border-4 border-[#c9a962] border-t-transparent rounded-full animate-spin" />
-          </div>
-        ) : (
-          <div className="mb-16 scroll-mt-32">
-            {/* Menu Header */}
-            <div className="mb-8">
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
-                NAWA Menu
-              </h2>
-            </div>
-
-            {/* All Menu Items Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
-              <Suspense fallback={
-                <div className="col-span-full flex justify-center py-8">
-                  <div className="w-8 h-8 border-4 border-[#c9a962] border-t-transparent rounded-full animate-spin" />
+        {(() => {
+          let globalCardNumber = 1;
+          
+          return categories.map((category) => {
+            const categoryStructure = menuStructure[category.id as keyof typeof menuStructure];
+            if (!categoryStructure) return null;
+            
+            return (
+              <div key={category.id} id={category.id} className="mb-16 scroll-mt-32">
+                {/* Section Header */}
+                <div className="mb-8">
+                  <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
+                    {category.name}
+                  </h2>
                 </div>
-              }>
-                {menuItems.map((item, index) => {
-                  // Transform database fields to match MenuCard expectations
-                  const transformedItem = {
-                    id: item.id,
-                    name: item.title,
-                    image: item.image_url,
-                    price: Number(item.price),
-                    description: item.description
-                  };
-                  
-                  return (
-                    <MenuCard
-                      key={item.id}
-                      item={transformedItem}
-                      cardNumber={index + 1}
-                      onEdit={() => handleEdit(item)}
-                      onDelete={() => handleDelete(item)}
-                    />
-                  );
-                })}
-              </Suspense>
-            </div>
-          </div>
-        )}
+
+                {/* Subsections */}
+                {Object.entries(categoryStructure).map(([subsectionName, items]) => (
+                  <div key={subsectionName} className="mb-12">
+                    <h3 className="text-xl md:text-2xl font-semibold text-[#c9a962] mb-6">
+                      {subsectionName}
+                    </h3>
+                    
+                    {/* Items Grid with Lazy Loading - Mobile shows 2 cols, tablet/desktop show 3-4 */}
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+                      <Suspense fallback={
+                        <div className="col-span-full flex justify-center py-8">
+                          <div className="w-8 h-8 border-4 border-[#c9a962] border-t-transparent rounded-full animate-spin" />
+                        </div>
+                      }>
+                        {items.map((item) => {
+                          const currentNumber = globalCardNumber++;
+                          return (
+                            <MenuCard
+                              key={item.id}
+                              item={item}
+                              cardNumber={currentNumber}
+                              onEdit={() => handleEdit(item)}
+                              onDelete={() => handleDelete(item)}
+                            />
+                          );
+                        })}
+                      </Suspense>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          });
+        })()}
       </div>
 
       {/* Modal for Card Details */}
