@@ -214,150 +214,44 @@ const Menu = () => {
             <div className="w-12 h-12 border-4 border-[#c9a962] border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
-          (() => {
-            let globalCardNumber = 1;
-            
-            // For NAWA Breakfast category only
-            const nawaBreakfastCategory = categories.find(c => c.id === 'nawa-breakfast');
-            if (!nawaBreakfastCategory) return null;
+          <div className="mb-16 scroll-mt-32">
+            {/* Menu Header */}
+            <div className="mb-8">
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
+                NAWA Menu
+              </h2>
+            </div>
 
-            // Get items for NAWA Breakfast from database
-            const breakfastItems = menuItems.filter(item => 
-              item.category === 'Breakfast' || 
-              item.category === 'Croissants' ||
-              item.category === 'Pancakes' ||
-              item.category === 'French Toast'
-            );
-
-            return (
-              <div key="nawa-breakfast" id="nawa-breakfast" className="mb-16 scroll-mt-32">
-                {/* Section Header */}
-                <div className="mb-8">
-                  <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
-                    {nawaBreakfastCategory.name}
-                  </h2>
+            {/* All Menu Items Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+              <Suspense fallback={
+                <div className="col-span-full flex justify-center py-8">
+                  <div className="w-8 h-8 border-4 border-[#c9a962] border-t-transparent rounded-full animate-spin" />
                 </div>
-
-                {/* Breakfast Items */}
-                <div className="mb-12">
-                  <h3 className="text-xl md:text-2xl font-semibold text-[#c9a962] mb-6">
-                    Savoury
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
-                    <Suspense fallback={
-                      <div className="col-span-full flex justify-center py-8">
-                        <div className="w-8 h-8 border-4 border-[#c9a962] border-t-transparent rounded-full animate-spin" />
-                      </div>
-                    }>
-                      {breakfastItems
-                        .filter(item => item.category === 'Breakfast')
-                        .slice(0, 12)
-                        .map((item) => {
-                          const currentNumber = globalCardNumber++;
-                          return (
-                            <MenuCard
-                              key={item.id}
-                              item={item}
-                              cardNumber={currentNumber}
-                              onEdit={() => handleEdit(item)}
-                              onDelete={() => handleDelete(item)}
-                            />
-                          );
-                        })}
-                    </Suspense>
-                  </div>
-                </div>
-
-                {/* Arabic Breakfast */}
-                <div className="mb-12">
-                  <h3 className="text-xl md:text-2xl font-semibold text-[#c9a962] mb-6">
-                    Arabic Breakfast
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
-                    <Suspense fallback={
-                      <div className="col-span-full flex justify-center py-8">
-                        <div className="w-8 h-8 border-4 border-[#c9a962] border-t-transparent rounded-full animate-spin" />
-                      </div>
-                    }>
-                      {breakfastItems
-                        .filter(item => item.category === 'Breakfast')
-                        .slice(12, 13)
-                        .map((item) => {
-                          const currentNumber = globalCardNumber++;
-                          return (
-                            <MenuCard
-                              key={item.id}
-                              item={item}
-                              cardNumber={currentNumber}
-                              onEdit={() => handleEdit(item)}
-                              onDelete={() => handleDelete(item)}
-                            />
-                          );
-                        })}
-                    </Suspense>
-                  </div>
-                </div>
-
-                {/* Sweet (Pancakes & French Toast) */}
-                <div className="mb-12">
-                  <h3 className="text-xl md:text-2xl font-semibold text-[#c9a962] mb-6">
-                    Sweet
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
-                    <Suspense fallback={
-                      <div className="col-span-full flex justify-center py-8">
-                        <div className="w-8 h-8 border-4 border-[#c9a962] border-t-transparent rounded-full animate-spin" />
-                      </div>
-                    }>
-                      {breakfastItems
-                        .filter(item => item.category === 'Pancakes' || item.category === 'French Toast')
-                        .map((item) => {
-                          const currentNumber = globalCardNumber++;
-                          return (
-                            <MenuCard
-                              key={item.id}
-                              item={item}
-                              cardNumber={currentNumber}
-                              onEdit={() => handleEdit(item)}
-                              onDelete={() => handleDelete(item)}
-                            />
-                          );
-                        })}
-                    </Suspense>
-                  </div>
-                </div>
-
-                {/* Croissants */}
-                <div className="mb-12">
-                  <h3 className="text-xl md:text-2xl font-semibold text-[#c9a962] mb-6">
-                    Croissant
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
-                    <Suspense fallback={
-                      <div className="col-span-full flex justify-center py-8">
-                        <div className="w-8 h-8 border-4 border-[#c9a962] border-t-transparent rounded-full animate-spin" />
-                      </div>
-                    }>
-                      {breakfastItems
-                        .filter(item => item.category === 'Croissants')
-                        .map((item) => {
-                          const currentNumber = globalCardNumber++;
-                          return (
-                            <MenuCard
-                              key={item.id}
-                              item={item}
-                              cardNumber={currentNumber}
-                              onEdit={() => handleEdit(item)}
-                              onDelete={() => handleDelete(item)}
-                            />
-                          );
-                        })}
-                    </Suspense>
-                  </div>
-                </div>
-              </div>
-            );
-          })()
+              }>
+                {menuItems.map((item, index) => {
+                  // Transform database fields to match MenuCard expectations
+                  const transformedItem = {
+                    id: item.id,
+                    name: item.title,
+                    image: item.image_url,
+                    price: Number(item.price),
+                    description: item.description
+                  };
+                  
+                  return (
+                    <MenuCard
+                      key={item.id}
+                      item={transformedItem}
+                      cardNumber={index + 1}
+                      onEdit={() => handleEdit(item)}
+                      onDelete={() => handleDelete(item)}
+                    />
+                  );
+                })}
+              </Suspense>
+            </div>
+          </div>
         )}
       </div>
 
