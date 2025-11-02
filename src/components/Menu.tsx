@@ -207,26 +207,9 @@ const Menu = () => {
                       {subsectionName}
                     </h3>
                     
-                    {/* Items Grid with Lazy Loading - Mobile shows 2 cols, tablet/desktop show 3-4 */}
+                    {/* Items Grid - Currently Empty */}
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
-                      <Suspense fallback={
-                        <div className="col-span-full flex justify-center py-8">
-                          <div className="w-8 h-8 border-4 border-[#c9a962] border-t-transparent rounded-full animate-spin" />
-                        </div>
-                      }>
-                        {items.map((item) => {
-                          const currentNumber = globalCardNumber++;
-                          return (
-                            <MenuCard
-                              key={item.id}
-                              item={item}
-                              cardNumber={currentNumber}
-                              onEdit={() => handleEdit(item)}
-                              onDelete={() => handleDelete(item)}
-                            />
-                          );
-                        })}
-                      </Suspense>
+                      {/* Cards temporarily removed */}
                     </div>
                   </div>
                 ))}
