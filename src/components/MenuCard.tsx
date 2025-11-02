@@ -47,7 +47,8 @@ const MenuCard = ({ item, cardNumber, onEdit, onDelete }: MenuCardProps) => {
         <img
           src={item.image}
           alt={item.name}
-          loading="lazy"
+          loading="eager"
+          decoding="async"
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
         <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-300" />
@@ -83,8 +84,8 @@ const MenuCard = ({ item, cardNumber, onEdit, onDelete }: MenuCardProps) => {
       </div>
 
       {/* Golden Footer */}
-      <div className="bg-[#c9a962]/90 backdrop-blur-sm p-3 space-y-2">
-        <h3 className="font-semibold text-white text-sm md:text-base leading-tight">
+      <div className="bg-[#c9a962]/90 backdrop-blur-sm p-3">
+        <h3 className="font-semibold text-white text-sm md:text-base leading-tight mb-2">
           {item.name}
         </h3>
         
@@ -96,11 +97,6 @@ const MenuCard = ({ item, cardNumber, onEdit, onDelete }: MenuCardProps) => {
             Click for details
           </p>
         </div>
-        
-        {/* Description - Hidden on mobile */}
-        <p className="text-white/70 text-xs leading-relaxed line-clamp-2 hidden md:block">
-          {item.description}
-        </p>
       </div>
     </Card>
   );
