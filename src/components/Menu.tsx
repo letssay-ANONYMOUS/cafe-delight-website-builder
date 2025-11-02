@@ -39,7 +39,10 @@ const Menu = () => {
           .order('id', { ascending: true });
 
         if (error) throw error;
-        setMenuItems(data || []);
+        
+        // Sort by ID to ensure exact CSV order
+        const sortedData = (data || []).sort((a: any, b: any) => Number(a.id) - Number(b.id));
+        setMenuItems(sortedData);
       } catch (error) {
         console.error('Error fetching menu items:', error);
       } finally {
