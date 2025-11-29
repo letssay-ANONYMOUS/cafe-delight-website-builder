@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -14,27 +14,30 @@ const MenuItemDetail = () => {
   const { addToCart } = useCart();
   const { toast } = useToast();
 
+  const handleBack = useCallback(() => {
+    navigate('/menu');
+  }, [navigate]);
+
   useEffect(() => {
-    // Restore scroll position if available
-    const savedScrollY = sessionStorage.getItem('menuScrollY');
-    if (savedScrollY) {
-      window.scrollTo(0, parseInt(savedScrollY));
-      sessionStorage.removeItem('menuScrollY');
-    } else {
-      window.scrollTo(0, 0);
-    }
+    // Always scroll to top when entering the detail page
+    window.scrollTo(0, 0);
   }, []);
+
+  // Handle ESC key to go back
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleBack();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleBack]);
 
   // Find the item across all categories
   const allItems = getAllMenuItems();
   const item = allItems.find(item => item.id === Number(id));
 
-  const handleBack = () => {
-    // Save current scroll position before navigating back
-    const scrollY = window.scrollY.toString();
-    sessionStorage.setItem('menuScrollY', scrollY);
-    navigate('/menu');
-  };
 
   const handleAddToCart = () => {
     if (!item) return;
