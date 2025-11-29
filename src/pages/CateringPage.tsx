@@ -130,20 +130,21 @@ const CateringPage = () => {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
-              <h1 className="font-playfair text-5xl md:text-7xl font-bold mb-6 animate-fade-in drop-shadow-lg">
+            <div className="container mx-auto px-6 sm:px-8 lg:px-12 text-center text-white">
+              <h1 className="font-playfair text-5xl md:text-7xl font-bold mb-8 animate-fade-in drop-shadow-lg">
                 Catering Services
               </h1>
-              <p className="text-xl md:text-2xl max-w-3xl mx-auto mb-8 animate-fade-in drop-shadow-md">
+              <p className="text-xl md:text-2xl max-w-3xl mx-auto mb-10 animate-fade-in drop-shadow-md leading-relaxed">
                 Elevate your events with our premium catering services. From intimate gatherings to large corporate events, 
                 we bring the café experience to you.
               </p>
-              <div className="flex flex-wrap justify-center gap-4 animate-scale-in">
-                <Button size="lg" className="bg-[#c9a962] hover:bg-[#b89952] text-white rounded-full px-8 shadow-lg">
+              <div className="animate-scale-in">
+                <Button 
+                  size="lg" 
+                  className="bg-[#c9a962] hover:bg-[#b89952] text-white rounded-full px-10 py-6 text-lg shadow-lg"
+                  onClick={() => document.getElementById('cta-section')?.scrollIntoView({ behavior: 'smooth' })}
+                >
                   Get a Quote
-                </Button>
-                <Button size="lg" variant="outline" className="rounded-full px-8 border-white text-white hover:bg-white/20 backdrop-blur-sm shadow-lg">
-                  View Sample Menu
                 </Button>
               </div>
             </div>
@@ -152,12 +153,15 @@ const CateringPage = () => {
       </section>
 
       {/* Services Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
+      <section className="py-20 px-6 sm:px-8 lg:px-12 bg-gradient-to-b from-cream-50/50 to-white">
         <div className="container mx-auto">
-          <div className="flex justify-between items-center mb-12">
-            <h2 className="font-playfair text-4xl font-bold text-coffee-900">
-              Our Catering Services
-            </h2>
+          <div className="flex justify-between items-center mb-16">
+            <div>
+              <span className="text-[#c9a962] font-medium uppercase tracking-wider text-sm mb-2 block">What We Offer</span>
+              <h2 className="font-playfair text-4xl md:text-5xl font-bold text-coffee-900">
+                Our Catering Services
+              </h2>
+            </div>
             {isAdmin && (
               <Button
                 onClick={handleAddNew}
@@ -215,11 +219,17 @@ const CateringPage = () => {
       </section>
 
       {/* Packages Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-cream-50 to-coffee-50">
+      <section className="py-20 px-6 sm:px-8 lg:px-12 bg-gradient-to-br from-cream-50 to-coffee-50">
         <div className="container mx-auto">
-          <h2 className="font-playfair text-4xl font-bold text-coffee-900 text-center mb-12">
-            Catering Packages
-          </h2>
+          <div className="text-center mb-16">
+            <span className="text-[#c9a962] font-medium uppercase tracking-wider text-sm mb-2 block">Choose Your Plan</span>
+            <h2 className="font-playfair text-4xl md:text-5xl font-bold text-coffee-900">
+              Catering Packages
+            </h2>
+            <p className="text-coffee-600 mt-4 max-w-2xl mx-auto text-lg">
+              Select from our carefully crafted packages designed to suit every occasion and budget.
+            </p>
+          </div>
           <div className="grid md:grid-cols-3 gap-8">
             {packages.map((pkg, index) => (
               <Card key={index} className="border-coffee-200 hover:shadow-2xl transition-all duration-300 hover:scale-105">
@@ -248,11 +258,14 @@ const CateringPage = () => {
       </section>
 
       {/* Event Types Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
+      <section className="py-20 px-6 sm:px-8 lg:px-12">
         <div className="container mx-auto">
-          <h2 className="font-playfair text-4xl font-bold text-coffee-900 text-center mb-12">
-            Perfect For Every Occasion
-          </h2>
+          <div className="text-center mb-16">
+            <span className="text-[#c9a962] font-medium uppercase tracking-wider text-sm mb-2 block">Versatile Solutions</span>
+            <h2 className="font-playfair text-4xl md:text-5xl font-bold text-coffee-900">
+              Perfect For Every Occasion
+            </h2>
+          </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               { icon: Users, title: "Corporate Events", desc: "Meetings & conferences" },
@@ -275,18 +288,22 @@ const CateringPage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-coffee-700 via-coffee-600 to-coffee-700 text-white">
-        <div className="container mx-auto text-center">
-          <h2 className="font-playfair text-4xl md:text-5xl font-bold mb-6">
+      <section id="cta-section" className="py-24 px-6 sm:px-8 lg:px-12 bg-gradient-to-r from-coffee-700 via-coffee-600 to-coffee-700 text-white relative overflow-hidden">
+        {/* Decorative elements */}
+        <div className="absolute top-0 left-0 w-64 h-64 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-white/5 rounded-full translate-x-1/3 translate-y-1/3" />
+        
+        <div className="container mx-auto text-center relative z-10">
+          <h2 className="font-playfair text-4xl md:text-6xl font-bold mb-8">
             Ready to Plan Your Event?
           </h2>
-          <p className="text-xl text-cream-100 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl md:text-2xl text-cream-100 mb-12 max-w-3xl mx-auto leading-relaxed">
             Contact us today for a personalized quote and let us make your event unforgettable.
           </p>
           <div className="flex justify-center">
             <Button 
               size="lg" 
-              className="bg-white text-coffee-600 hover:bg-cream-50 rounded-full px-8"
+              className="bg-white text-coffee-600 hover:bg-cream-50 rounded-full px-12 py-6 text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300"
               onClick={() => window.location.href = 'mailto:nawacafe22@gmail.com?subject=Catering Inquiry&body=Hello NAWA Café Team, I would like to inquire about your catering services. Please contact me at: 037800030 or 0506584176'}
             >
               Connect With Us
