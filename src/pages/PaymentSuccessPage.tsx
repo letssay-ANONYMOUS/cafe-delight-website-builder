@@ -12,7 +12,7 @@ const PaymentSuccessPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [verifying, setVerifying] = useState(true);
-  const paymentIntentId = searchParams.get('payment_intent_id');
+  const sessionId = searchParams.get('session_id');
 
   useEffect(() => {
     // Simulate payment verification
@@ -64,9 +64,9 @@ const PaymentSuccessPage = () => {
                   Your payment has been processed successfully. We'll start preparing your order right away.
                 </p>
 
-                {paymentIntentId && (
+                {sessionId && (
                   <p className="text-sm text-coffee-400 mb-8">
-                    Payment Reference: {paymentIntentId}
+                    Payment Reference: {sessionId}
                   </p>
                 )}
 
