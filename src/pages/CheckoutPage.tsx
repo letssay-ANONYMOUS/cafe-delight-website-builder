@@ -47,8 +47,8 @@ const CheckoutPage = () => {
     setLoading(true);
 
     try {
-      // Create payment intent with Ziina
-      const { data, error } = await supabase.functions.invoke('create-ziina-payment', {
+      // Create Stripe Checkout session
+      const { data, error } = await supabase.functions.invoke('create-stripe-checkout', {
         body: {
           amount: total,
           customerName: formData.name,
@@ -68,18 +68,18 @@ const CheckoutPage = () => {
         throw error;
       }
 
-      console.log('Payment intent created:', data);
+      console.log('Stripe session created:', data);
 
-      if (!data?.redirectUrl) {
-        throw new Error('No redirect URL received from payment provider');
+      if (!data?.url) {
+        throw new Error('No redirect URL received from Stripe');
       }
 
       // Clear cart before redirect
       clearCart();
       
-      // Open Ziina payment page in same window
-      console.log('Redirecting to:', data.redirectUrl);
-      window.location.href = data.redirectUrl;
+      // Redirect to Stripe Checkout
+      console.log('Redirecting to:', data.url);
+      window.location.href = data.url;
       
     } catch (error) {
       console.error('Error creating payment:', error);
@@ -117,9 +117,9 @@ const CheckoutPage = () => {
               <div className="lg:col-span-2">
                 <Card>
                   <CardContent className="p-6 md:p-8">
-                  <div className="flex items-center gap-2 mb-6">
+                    <div className="flex items-center gap-2 mb-6">
                       <Lock className="w-5 h-5 text-green-600" />
-                      <span className="text-sm text-coffee-600">Secure payment powered by Ziina</span>
+                      <span className="text-sm text-coffee-600">Secure payment powered by Stripe</span>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
@@ -169,12 +169,12 @@ const CheckoutPage = () => {
 
                       <div className="bg-cream-100 p-4 rounded-lg">
                         <p className="text-sm text-coffee-700 mb-2">
-                          You'll be redirected to Ziina's secure payment page where you can pay with:
+                          You'll be redirected to Stripe's secure payment page where you can pay with:
                         </p>
                         <ul className="text-sm text-coffee-600 list-disc list-inside space-y-1">
                           <li>Credit/Debit Card</li>
-                          <li>Apple Pay (if available)</li>
-                          <li>Google Pay (if available)</li>
+                          <li>Apple Pay</li>
+                          <li>Google Pay</li>
                         </ul>
                       </div>
 

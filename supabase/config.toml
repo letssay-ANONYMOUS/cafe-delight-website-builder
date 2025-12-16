@@ -1,1 +1,4 @@
 project_id = "lomqlmqsoyayuegheetv"
+
+[functions.create-stripe-checkout]
+verify_jwt = false
