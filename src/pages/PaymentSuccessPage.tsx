@@ -16,7 +16,6 @@ const PaymentSuccessPage = () => {
 
   useEffect(() => {
     // Simulate payment verification
-    // In production, you would verify the payment status with Ziina API
     const timer = setTimeout(() => {
       setVerifying(false);
       toast({
