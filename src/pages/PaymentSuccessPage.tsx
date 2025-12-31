@@ -39,52 +39,45 @@ const PaymentSuccessPage = () => {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col">
       <Header />
       
-      <section className="py-20 bg-cream-50">
+      <section className="flex-1 flex items-center justify-center py-20 bg-cream-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl mx-auto">
-            <Card>
-              <CardContent className="p-12 text-center">
-                <div className="mb-6">
-                  <CheckCircle2 className="w-20 h-20 text-green-600 mx-auto" />
-                </div>
-                
-                <h1 className="font-playfair text-4xl font-bold text-coffee-800 mb-4">
-                  Payment Successful!
-                </h1>
-                
-                <p className="text-lg text-coffee-600 mb-2">
-                  Thank you for your order!
-                </p>
-                
-                <p className="text-coffee-500 mb-8">
-                  Your payment has been processed successfully. We'll start preparing your order right away.
-                </p>
+          <div className="max-w-md mx-auto text-center">
+            {/* Starburst Badge with Checkmark */}
+            <div className="relative w-32 h-32 mx-auto mb-8">
+              <svg viewBox="0 0 100 100" className="w-full h-full">
+                <path
+                  d="M50 0 L54 20 L60 2 L61 22 L70 5 L68 25 L80 10 L75 29 L88 17 L80 34 L95 25 L85 40 L100 35 L90 47 L100 50 L90 53 L100 65 L85 60 L95 75 L80 66 L88 83 L75 71 L80 90 L68 75 L70 95 L61 78 L60 98 L54 80 L50 100 L46 80 L40 98 L39 78 L30 95 L32 75 L20 90 L25 71 L12 83 L20 66 L5 75 L15 60 L0 65 L10 53 L0 50 L10 47 L0 35 L15 40 L5 25 L20 34 L12 17 L25 29 L20 10 L32 25 L30 5 L39 22 L40 2 L46 20 Z"
+                  fill="#22c55e"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <CheckCircle2 className="w-12 h-12 text-white" strokeWidth={3} />
+              </div>
+            </div>
+            
+            <h1 className="font-playfair text-3xl font-bold text-coffee-800 mb-4">
+              Thank You!
+            </h1>
+            
+            <p className="text-lg text-coffee-600 mb-2">
+              Your order has been placed successfully.
+            </p>
+            
+            {sessionId && (
+              <p className="text-coffee-500 mb-8">
+                Order Reference: <span className="font-semibold">{sessionId.slice(-8).toUpperCase()}</span>
+              </p>
+            )}
 
-                {sessionId && (
-                  <p className="text-sm text-coffee-400 mb-8">
-                    Payment Reference: {sessionId}
-                  </p>
-                )}
-
-                <div className="flex gap-4 justify-center">
-                  <Button
-                    onClick={() => navigate('/')}
-                    className="bg-coffee-600 hover:bg-coffee-700"
-                  >
-                    Back to Home
-                  </Button>
-                  <Button
-                    onClick={() => navigate('/menu')}
-                    variant="outline"
-                  >
-                    Continue Shopping
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <Button
+              onClick={() => navigate('/')}
+              className="bg-coffee-600 hover:bg-coffee-700 px-8 py-3"
+            >
+              Go Home
+            </Button>
           </div>
         </div>
       </section>
