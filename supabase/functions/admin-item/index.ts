@@ -1,25 +1,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
-const getCorsHeaders = (origin: string | null) => {
-  const allowedOrigin = origin || '*';
-  return {
-    'Access-Control-Allow-Origin': allowedOrigin,
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, cookie',
-    'Access-Control-Allow-Credentials': 'true',
-  };
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-admin-token',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
 const checkAuth = async (req: Request): Promise<boolean> => {
-  const cookieHeader = req.headers.get('cookie');
-  if (!cookieHeader) return false;
-  
-  const cookies = cookieHeader.split(';').map(c => c.trim());
-  const sessionCookie = cookies.find(c => c.startsWith('admin_session='));
-  
-  if (!sessionCookie) return false;
-
-  const token = sessionCookie.split('=')[1];
+  const token = req.headers.get('x-admin-token');
   const sessionSecret = Deno.env.get('SESSION_SECRET');
   
   if (!sessionSecret || !token || !token.includes(':')) return false;
@@ -53,9 +42,6 @@ const checkAuth = async (req: Request): Promise<boolean> => {
 };
 
 serve(async (req) => {
-  const origin = req.headers.get('origin');
-  const corsHeaders = getCorsHeaders(origin);
-
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
