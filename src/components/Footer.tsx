@@ -1,15 +1,17 @@
-import { Coffee, Star, Save, LogOut } from 'lucide-react';
+import { Coffee, Star, Save, LogOut, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { AdminPasswordModal } from './AdminPasswordModal';
 import { useAdmin } from '@/contexts/AdminContext';
 import { Button } from './ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
+import { adminService } from '@/services/adminService';
 
 const Footer = () => {
   const [clickCount, setClickCount] = useState(0);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const { isAdmin, setIsAdmin, hasPendingChanges, clearPendingChanges } = useAdmin();
+  const [isSaving, setIsSaving] = useState(false);
+  const { isAdmin, setIsAdmin, pendingChanges, hasPendingChanges, clearPendingChanges } = useAdmin();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -31,7 +33,8 @@ const Footer = () => {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await adminService.logout();
     setIsAdmin(false);
     clearPendingChanges();
     toast({
@@ -40,12 +43,88 @@ const Footer = () => {
     });
   };
 
-  const handleSave = () => {
-    clearPendingChanges();
-    toast({
-      title: 'Changes saved',
-      description: 'All changes have been applied successfully.',
-    });
+  const handleSave = async () => {
+    if (!hasPendingChanges()) return;
+    
+    setIsSaving(true);
+    let successCount = 0;
+    let errorCount = 0;
+
+    try {
+      for (const change of pendingChanges) {
+        if (change.page !== 'menu') {
+          // For now, only menu items are stored in database
+          successCount++;
+          continue;
+        }
+
+        if (change.type === 'add' && change.data) {
+          const result = await adminService.createMenuItem({
+            title: change.data.name,
+            price: change.data.price,
+            description: change.data.description,
+            image_url: change.data.image,
+            category: change.category || change.data.category || 'uncategorized',
+            published: true,
+          });
+          
+          if (result.success) {
+            successCount++;
+          } else {
+            errorCount++;
+            console.error('Failed to create item:', result.error);
+          }
+        } else if (change.type === 'edit' && change.id && change.data) {
+          const result = await adminService.updateMenuItem(String(change.id), {
+            title: change.data.name,
+            price: change.data.price,
+            description: change.data.description,
+            image_url: change.data.image,
+            category: change.category || change.data.category,
+          });
+          
+          if (result.success) {
+            successCount++;
+          } else {
+            errorCount++;
+            console.error('Failed to update item:', result.error);
+          }
+        } else if (change.type === 'delete' && change.id) {
+          const result = await adminService.deleteMenuItem(String(change.id));
+          
+          if (result.success) {
+            successCount++;
+          } else {
+            errorCount++;
+            console.error('Failed to delete item:', result.error);
+          }
+        }
+      }
+
+      clearPendingChanges();
+
+      if (errorCount === 0) {
+        toast({
+          title: 'Changes saved',
+          description: `${successCount} change(s) applied successfully.`,
+        });
+      } else {
+        toast({
+          title: 'Partial success',
+          description: `${successCount} succeeded, ${errorCount} failed. Check console for details.`,
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Save error:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to save changes. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -187,9 +266,19 @@ const Footer = () => {
                       onClick={handleSave}
                       className="bg-coffee-600 hover:bg-coffee-700 text-white"
                       size="sm"
+                      disabled={isSaving}
                     >
-                      <Save className="w-4 h-4 mr-2" />
-                      Save Changes
+                      {isSaving ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="w-4 h-4 mr-2" />
+                          Save Changes
+                        </>
+                      )}
                     </Button>
                   )}
                   <Button
@@ -197,6 +286,7 @@ const Footer = () => {
                     variant="outline"
                     size="sm"
                     className="text-white border-white hover:bg-white/20"
+                    disabled={isSaving}
                   >
                     <LogOut className="w-4 h-4 mr-2" />
                     Logout
