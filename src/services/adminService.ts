@@ -1,6 +1,5 @@
-import { supabase } from '@/integrations/supabase/client';
-
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const ADMIN_TOKEN_KEY = 'admin_session_token';
 
 interface MenuItemData {
   title: string;
@@ -11,6 +10,11 @@ interface MenuItemData {
   published?: boolean;
 }
 
+const getAuthHeaders = () => {
+  const token = localStorage.getItem(ADMIN_TOKEN_KEY);
+  return token ? { 'X-Admin-Token': token } : {};
+};
+
 export const adminService = {
   async login(password: string): Promise<{ success: boolean; error?: string }> {
     try {
@@ -20,13 +24,17 @@ export const adminService = {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ password }),
-        credentials: 'include',
       });
 
       const data = await response.json();
       
       if (!response.ok) {
         return { success: false, error: data.error || 'Login failed' };
+      }
+
+      // Store token in localStorage
+      if (data.token) {
+        localStorage.setItem(ADMIN_TOKEN_KEY, data.token);
       }
 
       return { success: true };
@@ -37,37 +45,28 @@ export const adminService = {
   },
 
   async logout(): Promise<{ success: boolean }> {
-    try {
-      const response = await fetch(`${SUPABASE_URL}/functions/v1/admin-logout`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      });
-
-      return { success: response.ok };
-    } catch (error) {
-      console.error('Logout error:', error);
-      return { success: false };
-    }
+    localStorage.removeItem(ADMIN_TOKEN_KEY);
+    return { success: true };
   },
 
-  async checkSession(): Promise<boolean> {
-    try {
-      const response = await fetch(`${SUPABASE_URL}/functions/v1/admin-session`, {
-        method: 'GET',
-        credentials: 'include',
-      });
-
-      if (!response.ok) return false;
-      
-      const data = await response.json();
-      return data.authenticated === true;
-    } catch (error) {
-      console.error('Session check error:', error);
+  checkSession(): boolean {
+    const token = localStorage.getItem(ADMIN_TOKEN_KEY);
+    if (!token) return false;
+    
+    // Check if token is expired (8 hours)
+    const parts = token.split(':');
+    if (parts.length < 2) return false;
+    
+    const timestamp = parseInt(parts[0], 10);
+    const now = Date.now();
+    const eightHours = 8 * 60 * 60 * 1000;
+    
+    if (now - timestamp > eightHours) {
+      localStorage.removeItem(ADMIN_TOKEN_KEY);
       return false;
     }
+    
+    return true;
   },
 
   async createMenuItem(itemData: MenuItemData): Promise<{ success: boolean; item?: any; error?: string }> {
@@ -76,6 +75,7 @@ export const adminService = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...getAuthHeaders(),
         },
         body: JSON.stringify({ 
           action: 'create',
@@ -86,7 +86,6 @@ export const adminService = {
           category: itemData.category,
           published: itemData.published ?? true,
         }),
-        credentials: 'include',
       });
 
       const data = await response.json();
@@ -108,13 +107,13 @@ export const adminService = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...getAuthHeaders(),
         },
         body: JSON.stringify({ 
           id,
           action: 'update',
           ...itemData,
         }),
-        credentials: 'include',
       });
 
       const data = await response.json();
@@ -136,12 +135,12 @@ export const adminService = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...getAuthHeaders(),
         },
         body: JSON.stringify({ 
           id,
           action: 'delete',
         }),
-        credentials: 'include',
       });
 
       const data = await response.json();
@@ -161,7 +160,9 @@ export const adminService = {
     try {
       const response = await fetch(`${SUPABASE_URL}/functions/v1/admin-items`, {
         method: 'GET',
-        credentials: 'include',
+        headers: {
+          ...getAuthHeaders(),
+        },
       });
 
       const data = await response.json();

@@ -1,20 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 
-const getCorsHeaders = (origin: string | null) => {
-  // Allow requests from the app's origin
-  const allowedOrigin = origin || '*';
-  return {
-    'Access-Control-Allow-Origin': allowedOrigin,
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-    'Access-Control-Allow-Credentials': 'true',
-  };
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
 serve(async (req) => {
-  const origin = req.headers.get('origin');
-  const corsHeaders = getCorsHeaders(origin);
-
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -61,19 +54,16 @@ serve(async (req) => {
     const signature = await crypto.subtle.sign('HMAC', key, data);
     const token = `${timestamp}:${btoa(String.fromCharCode(...new Uint8Array(signature)))}`;
 
-    // Set cookie with token - use SameSite=None for cross-origin
-    const cookie = `admin_session=${token}; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=28800`;
-
     console.log('Session created successfully');
 
+    // Return token in JSON response (client will store in localStorage)
     return new Response(
-      JSON.stringify({ success: true }),
+      JSON.stringify({ success: true, token }),
       {
         status: 200,
         headers: {
           ...corsHeaders,
           'Content-Type': 'application/json',
-          'Set-Cookie': cookie,
         },
       }
     );
