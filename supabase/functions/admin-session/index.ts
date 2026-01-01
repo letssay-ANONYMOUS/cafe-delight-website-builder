@@ -1,12 +1,18 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, cookie',
-  'Access-Control-Allow-Credentials': 'true',
+const getCorsHeaders = (origin: string | null) => {
+  const allowedOrigin = origin || '*';
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, cookie',
+    'Access-Control-Allow-Credentials': 'true',
+  };
 };
 
 serve(async (req) => {
+  const origin = req.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -44,13 +50,44 @@ serve(async (req) => {
       );
     }
 
-    // Validate token (basic validation - in production, use proper JWT)
-    if (token && token.length > 0) {
-      console.log('Valid session found');
-      return new Response(
-        JSON.stringify({ authenticated: true }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    // Validate token - check timestamp and signature
+    if (token && token.includes(':')) {
+      const [timestampStr, signatureBase64] = token.split(':');
+      const timestamp = parseInt(timestampStr, 10);
+      
+      // Check if session is expired (8 hours = 28800 seconds)
+      const now = Date.now();
+      const maxAge = 28800 * 1000; // 8 hours in milliseconds
+      
+      if (now - timestamp > maxAge) {
+        console.log('Session expired');
+        return new Response(
+          JSON.stringify({ authenticated: false }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Verify signature
+      const encoder = new TextEncoder();
+      const data = encoder.encode(`admin:${timestamp}`);
+      const key = await crypto.subtle.importKey(
+        'raw',
+        encoder.encode(sessionSecret),
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['verify']
       );
+      
+      const signatureBytes = Uint8Array.from(atob(signatureBase64), c => c.charCodeAt(0));
+      const isValid = await crypto.subtle.verify('HMAC', key, signatureBytes, data);
+      
+      if (isValid) {
+        console.log('Valid session found');
+        return new Response(
+          JSON.stringify({ authenticated: true }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     console.log('Invalid session token');

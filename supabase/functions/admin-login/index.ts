@@ -1,13 +1,20 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Credentials': 'true',
+const getCorsHeaders = (origin: string | null) => {
+  // Allow requests from the app's origin
+  const allowedOrigin = origin || '*';
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Credentials': 'true',
+  };
 };
 
 serve(async (req) => {
+  const origin = req.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -42,7 +49,8 @@ serve(async (req) => {
 
     // Create a simple session token
     const encoder = new TextEncoder();
-    const data = encoder.encode(`admin:${Date.now()}`);
+    const timestamp = Date.now();
+    const data = encoder.encode(`admin:${timestamp}`);
     const key = await crypto.subtle.importKey(
       'raw',
       encoder.encode(sessionSecret),
@@ -51,10 +59,10 @@ serve(async (req) => {
       ['sign']
     );
     const signature = await crypto.subtle.sign('HMAC', key, data);
-    const token = btoa(String.fromCharCode(...new Uint8Array(signature)));
+    const token = `${timestamp}:${btoa(String.fromCharCode(...new Uint8Array(signature)))}`;
 
-    // Set cookie with token
-    const cookie = `admin_session=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=28800`;
+    // Set cookie with token - use SameSite=None for cross-origin
+    const cookie = `admin_session=${token}; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=28800`;
 
     console.log('Session created successfully');
 
