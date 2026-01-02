@@ -18,9 +18,9 @@ export const menuStructure = {
       { id: 13, name: 'ARABIC BREAKFAST & SPECIAL TEA', description: 'ENJOY ARABIC BREAKFAST CONSISTING OF SEVERAL DELICIOUS DISHES AND FRESH BREAD WITH SPECIAL NAWA TEA, SHAKSHUKA, FAMOUS GREEN BROAD BEANS, TAHINA AND GREEK YOGHURT AND GRILL TOMATOS FALAFEL, HUMMUS, GRILL HALLOUMI, PICKLES, FRIED CRISPY KALAMATA OLIVES, HONEY.', price: 155, image: '/menu-images/arabic-breakfast-1.jpg' },
     ],
     'Sweets': [
-      { id: 14, name: 'NAWA Pancake', description: 'Fluffy pancake drizzled with sticky sauce with berries on the top.', price: 42, image: '/menu-images/pancake-1.jpg' },
-      { id: 15, name: 'NAWA Classic French Toast', description: 'Brioche toast with salted caramel sauce and whipped cream on the side, topped with caramelized pecan nuts.', price: 46, image: '/menu-images/pancake-2.jpg' },
-      { id: 16, name: 'NAWA Signature French Toast', description: 'Brioche toast filled with nutella fondue, topped with mixed berries, raspberry jelly, peanut butter and peanuts.', price: 50, image: '/menu-images/pancake-3.jpg' },
+      { id: 14, name: 'French Toast Bites', description: 'Our French Toast Bites are perfect for sharing or enjoying as a delicious morning treat. Made from thick slices of golden, fluffy French toast, these bite-sized pieces are dusted with cinnamon sugar and served with a side of warm maple syrup for dipping. Indulge in the classic flavors of French toast in a fun and convenient way with our French Toast Bites. Bon appétit!', price: 35, image: '/menu-images/pancake-1.jpg' },
+      { id: 15, name: 'Granola With Chia Yogurt', description: '', price: 45, image: '/menu-images/pancake-2.jpg' },
+      { id: 16, name: 'Vermicelli Pancake', description: '', price: 46, image: '/menu-images/pancake-3.jpg' },
       { id: 17, name: 'French Toast Bites', description: 'Our French Toast Bites are perfect for sharing or enjoying as a delicious morning treat. Made from thick slices of golden, fluffy French toast, these bite-sized pieces are dusted with cinnamon sugar and served with a side of warm maple syrup for dipping. Indulge in the classic flavors of French toast in a fun and convenient way with our French Toast Bites. Bon appétit!', price: 35, image: '/menu-images/pancake-4.jpg' },
       { id: 18, name: 'Granola with Chia yogurt', description: '', price: 45, image: '/menu-images/pancake-5.jpg' },
       { id: 19, name: 'Vermicelli Pancake', description: '', price: 46, image: '/menu-images/pancake-6.jpg' },
