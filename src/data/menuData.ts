@@ -1,14 +1,14 @@
 export const menuStructure = {
   'nawa-breakfast': {
     'Savoury': [
-      { id: 1, name: 'Zattar babka', description: 'Toast babka bread stuffed with labneh, zattar glazed on the side, labneh zattar kalamata olives, gherkin wedge.', price: 40, image: '/menu-images/savoury-1.jpg' },
+      { id: 1, name: 'Zattar babka', description: 'Toast babka bread stuffed with labneh, zattar glazed on the side, labneh zattar kalamata olives, gherkin wedge.', price: 42, image: '/menu-images/savoury-1.jpg' },
       { id: 2, name: 'GOURMET BREAKFAST SANDWICH', description: 'GOURMET SANDWICH WITH PANCAKE TACO PIE, LAMB SAUSAGE, BACON SLICE, SCRAMBLED EGGS, MAPLE SRIRACHA SAUCE, MOZZARELLA CHEESE COATED WITH CRUNCHY CUBE TOAST.', price: 42, image: '/menu-images/savoury-2.jpg' },
       { id: 3, name: 'NEW NAWA🥘🔥 SHAKSHUKA🥘🔥🍅🍅🧀🐣🧄🧅🌶️', description: 'Shakshouka 🥘🔥 is a 🐣🇹🇳 Tunisian dish of eggs🐣 mix with cheese🫑🧀 in a sauce of tomatoes🍅🍅, olive oil, peppers, onion🧅, and garlic🧄, commonly spiced with cumin, paprika, and cayenne pepper. Shakshouka is a popular dish throughout North Africa and the Middle East.', price: 48, image: '/menu-images/savoury-3.jpg' },
       { id: 4, name: 'NAWA EGG FLORENTINE', description: 'ITS A ENGLISH MUFFIN BASED WITH LABNEH AND TOP WITH MUSHROOM BEEF BACON BABY SPINACH AND FRESHLY MADE HOLLANDAISE SAUCE.', price: 47, image: '/menu-images/savoury-4.jpg' },
       { id: 5, name: 'Creamy Mushroom Toasty', description: '', price: 42, image: '/menu-images/savoury-5.jpg' },
-      { id: 6, name: 'Loaded avocado toast', description: 'Sourdough bread, Avocado mashed, sauté baby spinach, scramble egg, beetroot mayo.', price: 49, image: '/menu-images/savoury-6.jpg' },
-      { id: 7, name: 'Turkish Eggs', description: 'Special sesame simit bread on a bed of yogurt sauce topped with poached eggs and sprinkled with home-made chili oil.', price: 40, image: '/menu-images/savoury-7.jpg' },
-      { id: 8, name: 'Creamy Mushroom Toasty', description: '', price: 42, image: '/menu-images/savoury-8.jpg' },
+      { id: 6, name: 'Loaded avocado toast', description: 'Sourdough bread, Avocado mashed, sauté baby spinach, scramble egg, beetroot mayo.', price: 51, image: '/menu-images/savoury-6.jpg' },
+      { id: 7, name: 'Turkish Eggs', description: 'Special sesame simit bread on a bed of yogurt sauce topped with poached eggs and sprinkled with home-made chili oil.', price: 42, image: '/menu-images/card-7-turkish-eggs.jpg' },
+      { id: 8, name: 'Creamy Mushroom Toasty', description: '', price: 42, image: '/menu-images/card-8-dish.jpg' },
       { id: 9, name: 'Halloumi Pesto Toast', description: 'Sour dough toast with sun-dried tomato pesto, grilled halloumi and tomatoes on top. Garnished with parmesan cheese, sliced black olives, cherry tomato, molasses, pomegranate seeds and zaatar, with mixed lettuce on the side.', price: 43, image: '/menu-images/savoury-9.jpg' },
       { id: 10, name: 'Zattar babka', description: 'Toast babka bread stuffed with labneh, zattar glazed on the side, labneh zattar kalamata olives, gherkin wedge.', price: 40, image: '/menu-images/savoury-10.jpg' },
       { id: 11, name: 'Truffle Omelette Toast', description: 'Sour dough toast topped with mixed cheese, omelette cooked with cheese and truffle mushroom. Garnished with parmesan cheese, pomegranate seeds, micro greens and mixed salad leaves on the side.', price: 46, image: '/menu-images/savoury-11.jpg' },
