@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,42 +13,38 @@ serve(async (req) => {
   try {
     const { amount, customerName, phoneNumber, orderItems, additionalNotes } = await req.json();
 
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) {
-      throw new Error("STRIPE_SECRET_KEY not configured");
+    const ziinaApiKey = Deno.env.get("ZIINA_API_KEY");
+    if (!ziinaApiKey) {
+      throw new Error("ZIINA_API_KEY not configured");
     }
-
-    const stripe = new Stripe(stripeKey, {
-      apiVersion: "2025-08-27.basil",
-    });
 
     const origin = req.headers.get("origin") || "http://localhost:8080";
 
-    // Create line items from order items
-    const lineItems = orderItems.map((item: any) => ({
-      price_data: {
-        currency: "aed",
-        product_data: {
-          name: item.name,
-        },
-        unit_amount: Math.round(item.price * 100), // Convert to fils
+    // Create Ziina payment intent
+    const ziinaResponse = await fetch("https://api-v2.ziina.com/api/payment_intent", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${ziinaApiKey}`,
       },
-      quantity: item.quantity,
-    }));
-
-    // Create Stripe Checkout Session
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: lineItems,
-      mode: "payment",
-      success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/checkout`,
-      metadata: {
-        customerName,
-        phoneNumber,
-        additionalNotes: additionalNotes || "None",
-      },
+      body: JSON.stringify({
+        amount: Math.round(amount * 100), // Convert to fils
+        currency_code: "AED",
+        message: `Order for ${customerName}`,
+        success_url: `${origin}/payment-success`,
+        cancel_url: `${origin}/checkout`,
+        test: false,
+      }),
     });
+
+    if (!ziinaResponse.ok) {
+      const errorData = await ziinaResponse.text();
+      console.error("Ziina API error:", errorData);
+      throw new Error(`Ziina API error: ${ziinaResponse.status}`);
+    }
+
+    const ziinaData = await ziinaResponse.json();
+    console.log("Ziina payment intent created:", ziinaData.id);
 
     // Send order details to n8n webhook
     const webhookData = {
@@ -65,7 +60,7 @@ serve(async (req) => {
       })),
       totalAmount: amount,
       currency: "AED",
-      sessionId: session.id,
+      paymentIntentId: ziinaData.id,
       additionalNotes,
       paymentStatus: "Initiated"
     };
@@ -78,8 +73,8 @@ serve(async (req) => {
     webhookUrl.searchParams.append('totalAmount', webhookData.totalAmount.toString());
     webhookUrl.searchParams.append('currency', webhookData.currency);
     webhookUrl.searchParams.append('items', JSON.stringify(webhookData.orderItems));
-    webhookUrl.searchParams.append('notes', webhookData.additionalNotes);
-    webhookUrl.searchParams.append('sessionId', webhookData.sessionId);
+    webhookUrl.searchParams.append('notes', webhookData.additionalNotes || '');
+    webhookUrl.searchParams.append('paymentIntentId', webhookData.paymentIntentId);
 
     try {
       await fetch(webhookUrl.toString(), { method: 'GET' });
@@ -89,12 +84,10 @@ serve(async (req) => {
       // Don't fail the payment if webhook fails
     }
 
-    console.log('Stripe Checkout session created:', session.id);
-
     return new Response(
       JSON.stringify({
-        url: session.url,
-        sessionId: session.id,
+        url: ziinaData.redirect_url,
+        paymentIntentId: ziinaData.id,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
