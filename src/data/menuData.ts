@@ -67,8 +67,10 @@ export const menuStructure = {
       { id: 52, name: 'Iced Pistachio Latte', description: '', price: 37, image: '/menu-images/card-52-coffee.jpg' },
       { id: 53, name: 'Iced Salted Caramel', description: '', price: 32, image: '/menu-images/card-53-coffee.jpg' },
       { id: 54, name: 'DIRTY ESPRESSO', description: 'A dirty espresso, also known as dirty coffee, is a coffee beverage made by pouring cold foaming creamy milk over a shot of espresso, typically with ice or stirring. It is known for its layered appearance, with the cold creamy milk sitting on top of the hot espresso, creating a unique interplay of temperatures and flavors.', price: 28, image: '/menu-images/card-54-coffee.jpg' },
-      { id: 55, name: 'CREAMY ESPRESSO', description: '', price: 35, image: '/menu-images/cold-coffee-14.jpg' },
-      { id: 56, name: 'NAWA Tiramisu Latte', description: '', price: 34, image: '/menu-images/cold-coffee-15.jpg' },
+      { id: 55, name: 'CREAMY MANGO ESPRESSO', description: '', price: 37, image: '/menu-images/card-55-coffee.jpg' },
+      { id: 56, name: 'CAFELLO LATTE', description: '', price: 30, image: '/menu-images/card-56-coffee.jpg' },
+      { id: 57, name: 'ICED ❄️ PECAN 🌰 LATTE', description: 'Delicious iced pecan 🌰 crunch latte pairs blonde espresso with pecan 🌰 syrup and milk, topped with a light and airy cold foam.', price: 32, image: '/menu-images/card-57-coffee.jpg' },
+      { id: 58, name: 'CREAMY ESPRESSO', description: '', price: 35, image: '/menu-images/card-58-coffee.jpg' },
     ],
   },
   'manual-brew': {
