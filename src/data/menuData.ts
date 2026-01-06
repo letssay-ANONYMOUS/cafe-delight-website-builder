@@ -26,10 +26,10 @@ export const menuStructure = {
       { id: 19, name: 'NAWA Pancake', description: 'Fluffy pancake drizzled with sticky sauce with berries on the top.', price: 42, image: '/menu-images/pancake-6.jpg' },
     ],
     'Croissant': [
-      { id: 20, name: 'Plain Croissant', description: 'Daily fresh oven-baked butter croissant.', price: 20, image: '/menu-images/card-20-croissant.jpg' },
+      { id: 20, name: 'Plain Croissant', description: 'Daily fresh oven-baked butter croissant.', price: 20, image: '/menu-images/croissant-1.jpg' },
       { id: 21, name: 'Mix Cheese Croissant', description: 'Daily fresh oven-baked butter croissant filled with 4 variety of cheeses.', price: 25, image: '/menu-images/croissant-2.jpg' },
       { id: 22, name: 'Feta Cheese Croissant', description: '', price: 25, image: '/menu-images/croissant-3.jpg' },
-      { id: 23, name: 'Egg Croissant', description: 'Our Egg Croissant features a fluffy croissant filled with creamy scrambled eggs and melted cheese. This breakfast classic is the perfect way to start your day with a satisfying and delicious meal.', price: 32, image: '/menu-images/card-23-egg-croissant.jpg' },
+      { id: 23, name: 'Egg Croissant', description: 'Our Egg Croissant features a fluffy croissant filled with creamy scrambled eggs and melted cheese. This breakfast classic is the perfect way to start your day with a satisfying and delicious meal.', price: 32, image: '/menu-images/croissant-4.jpg' },
     ],
   },
   'coffee': {
@@ -42,7 +42,7 @@ export const menuStructure = {
       { id: 29, name: 'Café Latte', description: 'Whole shot espresso with fresh hot milk.', price: 25, image: '/menu-images/coffee-6.jpg' },
       { id: 30, name: 'Flat White', description: 'Whole shot espresso with fresh creamy milk.', price: 24, image: '/menu-images/coffee-7.jpg' },
       { id: 31, name: 'Cappuccino', description: 'Whole shot espresso with perfectly foamed milk.', price: 25, image: '/menu-images/coffee-8.jpg' },
-      { id: 32, name: 'Spanish Latte', description: 'Whole shot espresso with special milk mixture.', price: 28, image: '/menu-images/card-32-croissant-salad.jpg' },
+      { id: 32, name: 'Spanish Latte', description: 'Whole shot espresso with special milk mixture.', price: 28, image: '/menu-images/coffee-9.jpg' },
       { id: 33, name: 'Spanish Picollo', description: '', price: 24, image: '/menu-images/coffee-10.jpg' },
       { id: 34, name: 'Spanish Cortado', description: 'Double restreto with a special milk mixture.', price: 24, image: '/menu-images/coffee-11.jpg' },
       { id: 35, name: 'Caramel Latte', description: 'Whole shot espresso with Caramel flavored syrup.', price: 28, image: '/menu-images/coffee-12.jpg' },
