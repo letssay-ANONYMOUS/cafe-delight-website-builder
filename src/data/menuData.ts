@@ -77,8 +77,28 @@ export const menuStructure = {
     'Manual Brew': [
       { id: 57, name: 'V60', description: 'Manually brewed coffee beans of your choice filtered with hot water or served with ice.', price: 0, image: '/menu-images/manual-brew-1.jpg' },
       { id: 58, name: 'Chemex', description: '', price: 0, image: '/menu-images/manual-brew-2.jpg' },
-      { id: 59, name: 'Aero Press', description: 'Immersion process of brewing coffee of your choice.', price: 32, image: '/menu-images/card-59-coffee.jpg' },
-      { id: 60, name: 'Cold Brew', description: 'Infused coffee grounds in the amount of time.', price: 32, image: '/menu-images/card-60-coffee.jpg' },
+      { id: 59, name: 'Aero Press', description: 'Immersion process of brewing coffee of your choice.', price: 32, image: '/menu-images/card-59-coffee.jpg', options: [
+        { groupName: 'Choice Of: Manual Brew', selectHint: 'Select 1 of 5', maxSelect: 5, required: true, choices: [
+          { name: 'COLOMBIA PASSION FRUITS 🥭🍊', price: 35 },
+          { name: 'COLOMBIA WATER MELON🍉🫧', price: 35 },
+          { name: 'COLOMBIA PINACOLADA🍌🥭🍹', price: 35 },
+          { name: 'ETHIOPIA SIDAMA🍊🍓🥝', price: 32 },
+          { name: 'BRAZIL CHOCLATE🍫🍹🍭', price: 30 },
+        ]},
+        { groupName: 'Hot or Cold', selectHint: 'Select 1 of 2', maxSelect: 5, required: true, choices: [
+          { name: 'Hot', price: 0 },
+          { name: 'Iced', price: 0 },
+        ]},
+      ]},
+      { id: 60, name: 'Cold Brew', description: 'Infused coffee grounds in the amount of time.', price: 32, image: '/menu-images/card-60-coffee.jpg', options: [
+        { groupName: 'Choice Of: Manual Brew', selectHint: 'Select 1 of 5', maxSelect: 1, required: true, choices: [
+          { name: 'COLOMBIA PASSION FRUITS 🥭🍊', price: 35 },
+          { name: 'COLOMBIA WATER MELON🍉🫧', price: 35 },
+          { name: 'COLOMBIA PINACOLADA🍌🥭🍹', price: 35 },
+          { name: 'ETHIOPIA SIDAMA🍊🍓🥝', price: 32 },
+          { name: 'BRAZIL CHOCLATE🍫🍹🍭', price: 30 },
+        ]},
+      ]},
     ],
   },
   'offer': {
