@@ -34,10 +34,10 @@ export const menuStructure = {
   },
   'coffee': {
     'Hot Coffee': [
-      { id: 24, name: 'Espresso', description: '', price: 19, image: '/menu-images/coffee-1.jpg' },
-      { id: 25, name: 'Americano', description: 'Whole shot espresso with hot steamy water.', price: 21, image: '/menu-images/coffee-2.jpg' },
-      { id: 26, name: 'Macchiato', description: 'Whole shot espresso with micro foamed milk.', price: 21, image: '/menu-images/coffee-3.jpg' },
-      { id: 27, name: 'Piccolo', description: 'Restreto with textured creamy milk.', price: 21, image: '/menu-images/coffee-4.jpg' },
+      { id: 24, name: 'Espresso', description: '', price: 19, image: '/menu-images/card-24-coffee.jpg' },
+      { id: 25, name: 'Americano', description: 'Whole shot espresso with hot steamy water.', price: 21, image: '/menu-images/card-25-coffee.jpg' },
+      { id: 26, name: 'Macchiato', description: 'Whole shot espresso with micro foamed milk.', price: 21, image: '/menu-images/card-26-coffee.jpg' },
+      { id: 27, name: 'Piccolo', description: 'Restreto with textured creamy milk.', price: 21, image: '/menu-images/card-27-coffee.jpg' },
       { id: 28, name: 'Cortado', description: 'Volume of double restreto with textured creamy milk.', price: 21, image: '/menu-images/coffee-5.jpg' },
       { id: 29, name: 'Café Latte', description: 'Whole shot espresso with fresh hot milk.', price: 25, image: '/menu-images/coffee-6.jpg' },
       { id: 30, name: 'Flat White', description: 'Whole shot espresso with fresh creamy milk.', price: 24, image: '/menu-images/coffee-7.jpg' },
