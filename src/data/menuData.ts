@@ -59,7 +59,6 @@ export const menuStructure = {
       { id: 44, name: 'Affogato', description: 'Whole shot espresso with a scoop of nawa\'s soft ice cream.', price: 34, image: '/menu-images/card-44-coffee.jpg' },
       { id: 45, name: 'Iced Americano', description: 'Whole shot of espresso with ice.', price: 21, image: '/menu-images/card-45-coffee.jpg' },
       { id: 46, name: 'Iced Latte', description: 'Iced latte with your favorite coffee origin.', price: 25, image: '/menu-images/card-46-coffee.jpg' },
-      { id: 46, name: 'Iced White Mocha Latte', description: 'Iced latte with white mocha flavor.', price: 28, image: '/menu-images/cold-coffee-5.jpg' },
       { id: 47, name: 'Iced Spanish Latte', description: 'Iced latte with a special milk mixture.', price: 28, image: '/menu-images/card-47-coffee.jpg' },
       { id: 48, name: 'Iced Caramel Latte', description: 'Iced latte with caramel flavor.', price: 28, image: '/menu-images/card-48-coffee.jpg' },
       { id: 49, name: 'Iced White Mocha Latte', description: 'Iced latte with white mocha flavor.', price: 28, image: '/menu-images/card-49-coffee.jpg' },
