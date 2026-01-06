@@ -29,7 +29,7 @@ export const menuStructure = {
       { id: 20, name: 'Plain Croissant', description: 'Daily fresh oven-baked butter croissant.', price: 20, image: '/menu-images/card-20-croissant.jpg' },
       { id: 21, name: 'Mix Cheese Croissant', description: 'Daily fresh oven-baked butter croissant filled with 4 variety of cheeses.', price: 25, image: '/menu-images/croissant-2.jpg' },
       { id: 22, name: 'Feta Cheese Croissant', description: '', price: 25, image: '/menu-images/croissant-3.jpg' },
-      { id: 23, name: 'Egg Croissant', description: 'Our Egg Croissant features a fluffy croissant filled with creamy scrambled eggs and melted cheese. This breakfast classic is the perfect way to start your day with a satisfying and delicious meal.', price: 32, image: '/menu-images/croissant-4.jpg' },
+      { id: 23, name: 'Egg Croissant', description: 'Our Egg Croissant features a fluffy croissant filled with creamy scrambled eggs and melted cheese. This breakfast classic is the perfect way to start your day with a satisfying and delicious meal.', price: 32, image: '/menu-images/card-23-egg-croissant.jpg' },
     ],
   },
   'coffee': {
