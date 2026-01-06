@@ -51,7 +51,8 @@ export const menuStructure = {
       { id: 38, name: 'NAWA Signatured Latte - Toffee Nut', description: 'Signature coffee flavoured with toffee nut.', price: 34, image: '/menu-images/card-38-coffee.jpg' },
       { id: 39, name: 'NAWA Signatured Latte - Honey', description: 'Signature coffee flavoured with honey.', price: 34, image: '/menu-images/card-39-coffee.jpg' },
       { id: 40, name: 'NAWA Pure Hot Chocolate', description: 'Pure Hot Chocolate with special Cream and Marshmallows on top.', price: 27, image: '/menu-images/card-40-coffee.jpg' },
-      { id: 41, name: 'Pistachio Latte', description: '', price: 37, image: '/menu-images/card-41-coffee.jpg' },
+      { id: 41, name: 'NAWA Tiramisu Latte', description: '', price: 34, image: '/menu-images/card-41-coffee.jpg' },
+      { id: 42, name: 'Iced Americano', description: 'Whole shot of espresso with ice.', price: 21, image: '/menu-images/card-42-coffee.jpg' },
     ],
     'Cold Coffee': [
       { id: 42, name: 'Iced Americano', description: 'Whole shot of espresso with ice.', price: 21, image: '/menu-images/card-42-coffee.jpg' },
