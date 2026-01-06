@@ -77,14 +77,14 @@ export const menuStructure = {
     'Manual Brew': [
       { id: 57, name: 'V60', description: 'Manually brewed coffee beans of your choice filtered with hot water or served with ice.', price: 0, image: '/menu-images/manual-brew-1.jpg' },
       { id: 58, name: 'Chemex', description: '', price: 0, image: '/menu-images/manual-brew-2.jpg' },
-      { id: 59, name: 'Aero Press', description: 'Immersion process of brewing coffee of your choice.', price: 32, image: '/menu-images/manual-brew-3.jpg' },
-      { id: 60, name: 'Cold Brew', description: 'Infused coffee grounds in the amount of time.', price: 32, image: '/menu-images/manual-brew-4.jpg' },
+      { id: 59, name: 'Aero Press', description: 'Immersion process of brewing coffee of your choice.', price: 32, image: '/menu-images/card-59-coffee.jpg' },
+      { id: 60, name: 'Cold Brew', description: 'Infused coffee grounds in the amount of time.', price: 32, image: '/menu-images/card-60-coffee.jpg' },
     ],
   },
   'offer': {
     'Special Combos': [
-      { id: 61, name: 'Combo 1', description: '', price: 0, image: '/menu-images/offer-1.jpg' },
-      { id: 62, name: 'Combo 2', description: '', price: 0, image: '/menu-images/offer-2.jpg' },
+      { id: 61, name: 'Combo 1', description: '', price: 0, image: '/menu-images/card-61-coffee.jpg' },
+      { id: 62, name: 'Combo 2', description: '', price: 0, image: '/menu-images/card-62-coffee.jpg' },
     ],
   },
   'lunch-dinner': {
