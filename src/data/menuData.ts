@@ -88,7 +88,7 @@ export const menuStructure = {
           { name: 'Iced', price: 0 },
         ]},
       ]},
-      { id: 160, name: 'Chemex', description: 'Infused coffee grounds in the amount of time.', price: 0, image: '/menu-images/card-60-coffee.jpg', options: [
+      { id: 160, name: 'Chemex', description: '', price: 0, image: '/menu-images/card-60-coffee.jpg', options: [
         { groupName: 'Choice Of: Manual Brew', selectHint: 'Select 1 of 5', maxSelect: 1, required: true, choices: [
           { name: 'COLOMBIA PASSION FRUITS 🥭🍊', price: 35 },
           { name: 'COLOMBIA WATER MELON🍉🫧', price: 35 },
@@ -98,7 +98,7 @@ export const menuStructure = {
         ]},
       ]},
       { id: 161, name: 'Aero Press', description: 'Immersion process of brewing coffee of your choice.', price: 32, image: '/menu-images/card-61-coffee.jpg' },
-      { id: 162, name: 'Cold Brew', description: '', price: 32, image: '/menu-images/card-62-coffee.jpg' },
+      { id: 162, name: 'Cold Brew', description: 'Infused coffee grounds in the amount of time.', price: 32, image: '/menu-images/card-62-coffee.jpg' },
     ],
   },
   'offer': {
