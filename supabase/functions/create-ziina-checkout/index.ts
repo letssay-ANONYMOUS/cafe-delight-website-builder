@@ -13,9 +13,18 @@ serve(async (req) => {
   try {
     const { amount, customerName, phoneNumber, orderItems, additionalNotes } = await req.json();
 
-    const ziinaApiKey = Deno.env.get("ZIINA_API_KEY");
-    if (!ziinaApiKey) {
-      throw new Error("ZIINA_API_KEY not configured");
+    // Ziina uses a bearer token. Some accounts label it as API token/key.
+    const ziinaToken = Deno.env.get("ZIINA_API_TOKEN") || Deno.env.get("ZIINA_API_KEY");
+    if (!ziinaToken) {
+      return new Response(
+        JSON.stringify({
+          error: { provider: "ziina", message: "Ziina token not configured" },
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        }
+      );
     }
 
     const origin = req.headers.get("origin") || "http://localhost:8080";
@@ -25,10 +34,10 @@ serve(async (req) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${ziinaApiKey}`,
+        "Authorization": `Bearer ${ziinaToken}`,
       },
       body: JSON.stringify({
-        amount: Math.round(amount * 100), // Convert to fils
+        amount: Math.round(Number(amount) * 100), // Convert to fils
         currency_code: "AED",
         message: `Order for ${customerName}`,
         success_url: `${origin}/payment-success`,
@@ -38,9 +47,30 @@ serve(async (req) => {
     });
 
     if (!ziinaResponse.ok) {
-      const errorData = await ziinaResponse.text();
-      console.error("Ziina API error:", errorData);
-      throw new Error(`Ziina API error: ${ziinaResponse.status}`);
+      const raw = await ziinaResponse.text();
+      console.error("Ziina API error:", raw);
+
+      let parsed: any = null;
+      try {
+        parsed = JSON.parse(raw);
+      } catch (_) {
+        // ignore
+      }
+
+      return new Response(
+        JSON.stringify({
+          error: {
+            provider: "ziina",
+            status: ziinaResponse.status,
+            code: parsed?.code,
+            message: parsed?.message ?? raw,
+          },
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        }
+      );
     }
 
     const ziinaData = await ziinaResponse.json();
@@ -96,11 +126,15 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error("Error:", error);
+    const message = error instanceof Error ? error.message : String(error);
+
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({
+        error: { provider: "server", message },
+      }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 500,
+        status: 200,
       }
     );
   }

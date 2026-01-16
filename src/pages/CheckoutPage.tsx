@@ -68,6 +68,10 @@ const CheckoutPage = () => {
         throw error;
       }
 
+      if (data?.error) {
+        throw new Error(data.error.message || "Unable to process payment. Please try again.");
+      }
+
       console.log('Ziina payment intent created:', data);
 
       if (!data?.url) {
