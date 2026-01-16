@@ -1,8 +1,40 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
+type ZiinaAccount = {
+  id?: string;
+  status?: string;
+  account_type?: string;
+  name?: string;
+  business_name?: string;
+  [key: string]: unknown;
+};
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+const getZiinaAccount = async (token: string): Promise<ZiinaAccount | null> => {
+  try {
+    const res = await fetch("https://api-v2.ziina.com/api/account", {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      const raw = await res.text();
+      console.warn("Ziina account lookup failed:", res.status, raw);
+      return null;
+    }
+
+    return (await res.json()) as ZiinaAccount;
+  } catch (e) {
+    console.warn("Ziina account lookup error:", e);
+    return null;
+  }
 };
 
 serve(async (req) => {
@@ -25,6 +57,38 @@ serve(async (req) => {
           status: 200,
         }
       );
+    }
+
+    const account = await getZiinaAccount(ziinaToken);
+    if (account) {
+      console.log(
+        "Ziina account:",
+        JSON.stringify({
+          id: account.id,
+          status: account.status,
+          account_type: account.account_type,
+          name: account.name,
+          business_name: account.business_name,
+        })
+      );
+
+      // Fail fast with a precise reason instead of attempting a payment intent.
+      if (account.status && account.status !== "active") {
+        return new Response(
+          JSON.stringify({
+            error: {
+              provider: "ziina",
+              code: "ACCOUNT_NOT_ACTIVE",
+              message: `Ziina account status is "${account.status}" — payments will fail until Ziina marks the wallet active.`,
+              account,
+            },
+          }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200,
+          }
+        );
+      }
     }
 
     const origin = req.headers.get("origin") || "http://localhost:8080";
