@@ -33,17 +33,25 @@ serve(async (req) => {
 
     // Get origin for redirect URLs
     const origin = req.headers.get("origin") || "https://cafe-delight-website-builder.lovable.app";
-    
+
+    // In preview environments, enable Ziina test mode so checkout can be verified end-to-end
+    // without being blocked by wallet activation state.
+    const isPreviewOrigin =
+      origin.includes("id-preview--") ||
+      origin.includes("lovableproject.com") ||
+      origin.includes("localhost");
+
     // Build payment request - amount in fils (base units)
     const amountInFils = Math.round(Number(amount) * 100);
-    
-    const paymentBody = {
+
+    const paymentBody: Record<string, unknown> = {
       amount: amountInFils,
       currency_code: "AED",
       message: `Nawa Cafe - Order for ${customerName}`,
       success_url: `${origin}/payment-success`,
       cancel_url: `${origin}/checkout`,
       failure_url: `${origin}/checkout?error=payment_failed`,
+      ...(isPreviewOrigin ? { test: true } : {}),
     };
 
     console.log("Creating Ziina payment intent:", JSON.stringify(paymentBody));
