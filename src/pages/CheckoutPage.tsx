@@ -11,6 +11,7 @@ import { Lock } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { getVisitorId } from '@/hooks/useVisitorId';
 
 const CheckoutPage = () => {
   const { toast } = useToast();
@@ -53,6 +54,7 @@ const CheckoutPage = () => {
           amount: total,
           customerName: formData.name,
           phoneNumber: formData.phone,
+          visitorId: getVisitorId(),
           orderItems: cartItems.map(item => ({
             name: item.name,
             quantity: item.quantity,

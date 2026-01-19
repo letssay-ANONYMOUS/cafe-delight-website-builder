@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,9 +13,14 @@ serve(async (req) => {
   }
 
   try {
-    const { amount, customerName, phoneNumber, orderItems, additionalNotes } = await req.json();
+    const { amount, customerName, phoneNumber, orderItems, additionalNotes, visitorId } = await req.json();
 
-    console.log("Checkout request:", { amount, customerName, phoneNumber, itemCount: orderItems?.length });
+    console.log("Checkout request:", { amount, customerName, phoneNumber, itemCount: orderItems?.length, visitorId });
+
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Get Ziina API token
     const ziinaToken = Deno.env.get("ZIINA_API_TOKEN") || Deno.env.get("ZIINA_API_KEY");
@@ -125,6 +131,66 @@ serve(async (req) => {
 
     console.log("Payment intent created successfully:", ziinaData.id);
 
+    // ===== SAVE ORDER TO DATABASE =====
+    let orderNumber = '';
+    try {
+      // Calculate subtotal
+      const subtotal = orderItems?.reduce((sum: number, item: any) => 
+        sum + (item.price * item.quantity), 0) || amount;
+
+      // Insert order into database
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          visitor_id: visitorId || 'unknown',
+          customer_name: customerName,
+          customer_phone: phoneNumber,
+          extra_notes: additionalNotes || null,
+          subtotal: subtotal,
+          total_amount: amount,
+          payment_status: 'pending',
+          payment_provider: 'ziina',
+          payment_reference: ziinaData.id,
+          order_type: 'takeaway',
+        })
+        .select('id, order_number')
+        .single();
+
+      if (orderError) {
+        console.error("Error inserting order:", orderError);
+      } else {
+        console.log("Order created:", orderData);
+        orderNumber = orderData.order_number;
+
+        // Insert order items
+        if (orderItems && orderItems.length > 0) {
+          const orderItemsToInsert = orderItems.map((item: any) => ({
+            order_id: orderData.id,
+            item_name: item.name,
+            quantity: item.quantity,
+            unit_price: item.price,
+            total_price: item.price * item.quantity,
+            item_category: item.category || null,
+            extras: item.extras || null,
+            notes: item.notes || null,
+          }));
+
+          const { error: itemsError } = await supabase
+            .from('order_items')
+            .insert(orderItemsToInsert);
+
+          if (itemsError) {
+            console.error("Error inserting order items:", itemsError);
+          } else {
+            console.log("Order items created:", orderItemsToInsert.length);
+          }
+        }
+      }
+    } catch (dbError) {
+      console.error("Database error:", dbError);
+      // Continue with payment even if DB save fails
+    }
+
     // Send order to n8n webhook (non-blocking)
     const webhookUrl = new URL('https://hoi-there.app.n8n.cloud/webhook/ca4ea201-6cb4-4476-b7b5-d5c12894f9b1');
     webhookUrl.searchParams.append('customerName', customerName || '');
@@ -135,6 +201,7 @@ serve(async (req) => {
     webhookUrl.searchParams.append('items', JSON.stringify(orderItems || []));
     webhookUrl.searchParams.append('notes', additionalNotes || '');
     webhookUrl.searchParams.append('paymentIntentId', ziinaData.id);
+    webhookUrl.searchParams.append('orderNumber', orderNumber);
 
     // Fire and forget webhook
     fetch(webhookUrl.toString(), { method: 'GET' }).catch(e => console.warn('Webhook failed:', e));
@@ -143,6 +210,7 @@ serve(async (req) => {
       JSON.stringify({
         url: ziinaData.redirect_url,
         paymentIntentId: ziinaData.id,
+        orderNumber: orderNumber,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
