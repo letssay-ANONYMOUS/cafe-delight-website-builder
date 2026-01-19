@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Trash2, Edit, Plus, LogOut } from 'lucide-react';
+import { Trash2, Edit, Plus, LogOut, ChefHat } from 'lucide-react';
 
 interface MenuItem {
   id: string;
@@ -230,6 +230,10 @@ const AdminDashboard = () => {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-bold">Admin Dashboard</h1>
           <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate('/admin/kitchen')}>
+              <ChefHat className="w-4 h-4 mr-2" />
+              Kitchen Orders
+            </Button>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
                 <Button onClick={handleCreate}>

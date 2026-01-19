@@ -19,6 +19,7 @@ import CheckoutPage from "./pages/CheckoutPage";
 import PaymentSuccessPage from "./pages/PaymentSuccessPage";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
+import KitchenDashboard from "./pages/KitchenDashboard";
 import NotFound from "./pages/NotFound";
 import MenuItemDetail from "./pages/MenuItemDetail";
 import ProductDetail from "./pages/ProductDetail";
@@ -48,6 +49,7 @@ const App = () => (
           <Route path="/payment-success" element={<PaymentSuccessPage />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/kitchen" element={<KitchenDashboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
