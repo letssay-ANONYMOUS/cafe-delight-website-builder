@@ -1,4 +1,7 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { getVisitorId } from '@/hooks/useVisitorId';
+
+const CART_STORAGE_KEY = 'nawa_cart';
 
 export interface CartItem {
   id: number;
@@ -18,12 +21,59 @@ interface CartContextType {
   clearCart: () => void;
   getCartTotal: () => number;
   getCartCount: () => number;
+  visitorId: string;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+/**
+ * Load cart from localStorage
+ */
+const loadCartFromStorage = (): CartItem[] => {
+  try {
+    const stored = localStorage.getItem(CART_STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+    }
+  } catch (error) {
+    console.error('Failed to load cart from storage:', error);
+  }
+  return [];
+};
+
+/**
+ * Save cart to localStorage
+ */
+const saveCartToStorage = (items: CartItem[]) => {
+  try {
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+  } catch (error) {
+    console.error('Failed to save cart to storage:', error);
+  }
+};
+
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [visitorId, setVisitorId] = useState<string>('');
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Initialize cart from localStorage and get visitor ID
+  useEffect(() => {
+    const storedCart = loadCartFromStorage();
+    setCartItems(storedCart);
+    setVisitorId(getVisitorId());
+    setIsInitialized(true);
+  }, []);
+
+  // Save cart to localStorage whenever it changes (after initialization)
+  useEffect(() => {
+    if (isInitialized) {
+      saveCartToStorage(cartItems);
+    }
+  }, [cartItems, isInitialized]);
 
   const addToCart = (item: Omit<CartItem, 'quantity'>) => {
     setCartItems(currentItems => {
@@ -78,6 +128,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         clearCart,
         getCartTotal,
         getCartCount,
+        visitorId,
       }}
     >
       {children}
