@@ -20,6 +20,7 @@ import PaymentSuccessPage from "./pages/PaymentSuccessPage";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import KitchenDashboard from "./pages/KitchenDashboard";
+import StaffLogin from "./pages/StaffLogin";
 import NotFound from "./pages/NotFound";
 import MenuItemDetail from "./pages/MenuItemDetail";
 import ProductDetail from "./pages/ProductDetail";
@@ -50,6 +51,7 @@ const App = () => (
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/kitchen" element={<KitchenDashboard />} />
+          <Route path="/staff/login" element={<StaffLogin />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
