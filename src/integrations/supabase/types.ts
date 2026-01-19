@@ -53,15 +53,137 @@ export type Database = {
         }
         Relationships: []
       }
+      order_items: {
+        Row: {
+          created_at: string
+          extras: string | null
+          id: string
+          item_category: string | null
+          item_name: string
+          menu_item_id: string | null
+          notes: string | null
+          order_id: string
+          quantity: number
+          total_price: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          extras?: string | null
+          id?: string
+          item_category?: string | null
+          item_name: string
+          menu_item_id?: string | null
+          notes?: string | null
+          order_id: string
+          quantity?: number
+          total_price: number
+          unit_price: number
+        }
+        Update: {
+          created_at?: string
+          extras?: string | null
+          id?: string
+          item_category?: string | null
+          item_name?: string
+          menu_item_id?: string | null
+          notes?: string | null
+          order_id?: string
+          quantity?: number
+          total_price?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_menu_item_id_fkey"
+            columns: ["menu_item_id"]
+            isOneToOne: false
+            referencedRelation: "menu_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          created_at: string
+          customer_email: string | null
+          customer_name: string
+          customer_phone: string
+          extra_notes: string | null
+          id: string
+          notes: string | null
+          order_number: string
+          order_type: Database["public"]["Enums"]["order_type"]
+          paid_at: string | null
+          payment_method: Database["public"]["Enums"]["payment_method"] | null
+          payment_provider: string | null
+          payment_reference: string | null
+          payment_status: Database["public"]["Enums"]["payment_status"]
+          subtotal: number
+          total_amount: number
+          updated_at: string
+          visitor_id: string
+        }
+        Insert: {
+          created_at?: string
+          customer_email?: string | null
+          customer_name: string
+          customer_phone: string
+          extra_notes?: string | null
+          id?: string
+          notes?: string | null
+          order_number: string
+          order_type?: Database["public"]["Enums"]["order_type"]
+          paid_at?: string | null
+          payment_method?: Database["public"]["Enums"]["payment_method"] | null
+          payment_provider?: string | null
+          payment_reference?: string | null
+          payment_status?: Database["public"]["Enums"]["payment_status"]
+          subtotal?: number
+          total_amount?: number
+          updated_at?: string
+          visitor_id: string
+        }
+        Update: {
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string
+          customer_phone?: string
+          extra_notes?: string | null
+          id?: string
+          notes?: string | null
+          order_number?: string
+          order_type?: Database["public"]["Enums"]["order_type"]
+          paid_at?: string | null
+          payment_method?: Database["public"]["Enums"]["payment_method"] | null
+          payment_provider?: string | null
+          payment_reference?: string | null
+          payment_status?: Database["public"]["Enums"]["payment_status"]
+          subtotal?: number
+          total_amount?: number
+          updated_at?: string
+          visitor_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_order_number: { Args: never; Returns: string }
     }
     Enums: {
-      [_ in never]: never
+      order_type: "dine_in" | "takeaway"
+      payment_method: "card" | "cash" | "ziina" | "stripe"
+      payment_status: "pending" | "paid" | "failed" | "refunded" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -188,6 +310,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      order_type: ["dine_in", "takeaway"],
+      payment_method: ["card", "cash", "ziina", "stripe"],
+      payment_status: ["pending", "paid", "failed", "refunded", "cancelled"],
+    },
   },
 } as const
