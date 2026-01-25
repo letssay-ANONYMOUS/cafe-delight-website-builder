@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Edit, X } from 'lucide-react';
 import { useAdmin } from '@/contexts/AdminContext';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 interface MenuCardProps {
   item: {
@@ -20,8 +21,15 @@ interface MenuCardProps {
 const MenuCard = ({ item, cardNumber, onEdit, onDelete }: MenuCardProps) => {
   const navigate = useNavigate();
   const { isAdmin } = useAdmin();
+  const { trackMenuItemView } = useAnalytics();
 
   const handleClick = () => {
+    // Track menu item view
+    trackMenuItemView(
+      { itemId: String(item.id), itemName: item.name },
+      'view'
+    );
+    
     // Save scroll position before navigating
     sessionStorage.setItem('menuScrollY', window.scrollY.toString());
     navigate(`/menu/${item.id}`);

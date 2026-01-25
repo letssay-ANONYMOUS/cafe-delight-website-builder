@@ -1,6 +1,7 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { getVisitorId } from '@/hooks/useVisitorId';
-
+import { supabase } from '@/integrations/supabase/client';
+import { useCookieConsent } from '@/components/CookieConsent';
 const CART_STORAGE_KEY = 'nawa_cart';
 
 export interface CartItem {
@@ -59,6 +60,40 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [visitorId, setVisitorId] = useState<string>('');
   const [isInitialized, setIsInitialized] = useState(false);
+  const consent = useCookieConsent();
+
+  // Track cart event if analytics consent given
+  const trackCartEvent = useCallback(async (
+    eventName: string,
+    item: { id: number; name: string; price?: number; category?: string }
+  ) => {
+    if (!consent?.analytics) return;
+    
+    try {
+      await supabase.from('site_events').insert({
+        visitor_id: getVisitorId(),
+        event_type: 'cart',
+        event_name: eventName,
+        event_data: {
+          item_id: item.id,
+          item_name: item.name,
+          price: item.price || null,
+          category: item.category || null
+        },
+        page_path: window.location.pathname
+      });
+      
+      // Also track in menu_item_views for item-specific analytics
+      await supabase.from('menu_item_views').insert({
+        visitor_id: getVisitorId(),
+        item_name: item.name,
+        category: item.category || null,
+        action: eventName === 'add_to_cart' ? 'add_to_cart' : 'remove_from_cart'
+      });
+    } catch (err) {
+      console.error('Failed to track cart event:', err);
+    }
+  }, [consent]);
 
   // Initialize cart from localStorage and get visitor ID
   useEffect(() => {
@@ -75,7 +110,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [cartItems, isInitialized]);
 
-  const addToCart = (item: Omit<CartItem, 'quantity'>) => {
+  const addToCart = useCallback((item: Omit<CartItem, 'quantity'>) => {
     setCartItems(currentItems => {
       const existingItem = currentItems.find(i => i.id === item.id);
       
@@ -87,13 +122,27 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       
       return [...currentItems, { ...item, quantity: 1 }];
     });
-  };
+    
+    // Track add to cart event
+    trackCartEvent('add_to_cart', {
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      category: item.category
+    });
+  }, [trackCartEvent]);
 
-  const removeFromCart = (id: number) => {
-    setCartItems(currentItems => currentItems.filter(item => item.id !== id));
-  };
+  const removeFromCart = useCallback((id: number) => {
+    setCartItems(currentItems => {
+      const item = currentItems.find(i => i.id === id);
+      if (item) {
+        trackCartEvent('remove_from_cart', { id: item.id, name: item.name });
+      }
+      return currentItems.filter(i => i.id !== id);
+    });
+  }, [trackCartEvent]);
 
-  const updateQuantity = (id: number, change: number) => {
+  const updateQuantity = useCallback((id: number, change: number) => {
     setCartItems(currentItems =>
       currentItems.map(item =>
         item.id === id
@@ -101,22 +150,22 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           : item
       )
     );
-  };
+  }, []);
 
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
     setCartItems([]);
-  };
+  }, []);
 
-  const getCartTotal = () => {
+  const getCartTotal = useCallback(() => {
     return cartItems.reduce((sum, item) => {
       const itemPrice = parseFloat(item.price.toString().replace('$', ''));
       return sum + itemPrice * item.quantity;
     }, 0);
-  };
+  }, [cartItems]);
 
-  const getCartCount = () => {
+  const getCartCount = useCallback(() => {
     return cartItems.reduce((sum, item) => sum + item.quantity, 0);
-  };
+  }, [cartItems]);
 
   return (
     <CartContext.Provider
