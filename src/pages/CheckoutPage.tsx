@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -12,11 +12,13 @@ import { useCart } from '@/contexts/CartContext';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { getVisitorId } from '@/hooks/useVisitorId';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 const CheckoutPage = () => {
   const { toast } = useToast();
-  const { cartItems, getCartTotal, clearCart } = useCart();
+  const { cartItems, getCartTotal, getCartCount, clearCart } = useCart();
   const navigate = useNavigate();
+  const { trackCheckoutStart, trackCheckoutComplete } = useAnalytics();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -25,6 +27,14 @@ const CheckoutPage = () => {
   });
 
   const total = getCartTotal();
+  const itemCount = getCartCount();
+
+  // Track checkout start when page loads with items
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      trackCheckoutStart(total, itemCount);
+    }
+  }, []);
 
   
 
@@ -82,6 +92,13 @@ const CheckoutPage = () => {
       if (!data?.url) {
         throw new Error('No redirect URL received from Ziina');
       }
+
+      // Track checkout completion
+      trackCheckoutComplete({
+        orderId: data.paymentId || 'unknown',
+        total: total,
+        itemCount: itemCount
+      });
 
       // Clear cart before redirect
       clearCart();

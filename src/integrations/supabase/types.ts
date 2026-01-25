@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      menu_item_views: {
+        Row: {
+          action: string
+          category: string | null
+          id: string
+          item_name: string
+          menu_item_id: string | null
+          viewed_at: string
+          visitor_id: string
+        }
+        Insert: {
+          action: string
+          category?: string | null
+          id?: string
+          item_name: string
+          menu_item_id?: string | null
+          viewed_at?: string
+          visitor_id: string
+        }
+        Update: {
+          action?: string
+          category?: string | null
+          id?: string
+          item_name?: string
+          menu_item_id?: string | null
+          viewed_at?: string
+          visitor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_item_views_menu_item_id_fkey"
+            columns: ["menu_item_id"]
+            isOneToOne: false
+            referencedRelation: "menu_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       menu_items: {
         Row: {
           category: string
@@ -169,6 +207,116 @@ export type Database = {
           subtotal?: number
           total_amount?: number
           updated_at?: string
+          visitor_id?: string
+        }
+        Relationships: []
+      }
+      page_views: {
+        Row: {
+          id: string
+          page_path: string
+          page_title: string | null
+          referrer: string | null
+          session_id: string | null
+          time_on_page: number | null
+          viewed_at: string
+          visitor_id: string
+        }
+        Insert: {
+          id?: string
+          page_path: string
+          page_title?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          time_on_page?: number | null
+          viewed_at?: string
+          visitor_id: string
+        }
+        Update: {
+          id?: string
+          page_path?: string
+          page_title?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          time_on_page?: number | null
+          viewed_at?: string
+          visitor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "page_views_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "visitor_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_events: {
+        Row: {
+          created_at: string
+          event_data: Json | null
+          event_name: string
+          event_type: string
+          id: string
+          page_path: string | null
+          visitor_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_data?: Json | null
+          event_name: string
+          event_type: string
+          id?: string
+          page_path?: string | null
+          visitor_id: string
+        }
+        Update: {
+          created_at?: string
+          event_data?: Json | null
+          event_name?: string
+          event_type?: string
+          id?: string
+          page_path?: string | null
+          visitor_id?: string
+        }
+        Relationships: []
+      }
+      visitor_sessions: {
+        Row: {
+          browser: string | null
+          created_at: string
+          device_type: string | null
+          id: string
+          landing_page: string | null
+          pages_viewed: number | null
+          referrer: string | null
+          session_end: string | null
+          session_start: string
+          visitor_id: string
+        }
+        Insert: {
+          browser?: string | null
+          created_at?: string
+          device_type?: string | null
+          id?: string
+          landing_page?: string | null
+          pages_viewed?: number | null
+          referrer?: string | null
+          session_end?: string | null
+          session_start?: string
+          visitor_id: string
+        }
+        Update: {
+          browser?: string | null
+          created_at?: string
+          device_type?: string | null
+          id?: string
+          landing_page?: string | null
+          pages_viewed?: number | null
+          referrer?: string | null
+          session_end?: string | null
+          session_start?: string
           visitor_id?: string
         }
         Relationships: []
