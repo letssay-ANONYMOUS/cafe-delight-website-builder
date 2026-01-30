@@ -55,7 +55,7 @@ const MenuCard = ({ item, cardNumber, onEdit, onDelete }: MenuCardProps) => {
         <img
           src={item.image}
           alt={item.name}
-          loading="eager"
+          loading="lazy"
           decoding="async"
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         />

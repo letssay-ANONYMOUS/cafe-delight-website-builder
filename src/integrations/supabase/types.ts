@@ -54,37 +54,49 @@ export type Database = {
       }
       menu_items: {
         Row: {
+          card_number: number | null
           category: string
           created_at: string
           description: string | null
+          display_order: number | null
           id: string
           image_url: string | null
+          options: Json | null
           price: number
           published: boolean
+          subcategory: string | null
           tags: string[] | null
           title: string
           updated_at: string
         }
         Insert: {
+          card_number?: number | null
           category: string
           created_at?: string
           description?: string | null
+          display_order?: number | null
           id?: string
           image_url?: string | null
+          options?: Json | null
           price: number
           published?: boolean
+          subcategory?: string | null
           tags?: string[] | null
           title: string
           updated_at?: string
         }
         Update: {
+          card_number?: number | null
           category?: string
           created_at?: string
           description?: string | null
+          display_order?: number | null
           id?: string
           image_url?: string | null
+          options?: Json | null
           price?: number
           published?: boolean
+          subcategory?: string | null
           tags?: string[] | null
           title?: string
           updated_at?: string
