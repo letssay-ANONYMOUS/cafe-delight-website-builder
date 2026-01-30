@@ -208,7 +208,8 @@ const CheckoutPage = () => {
                         </p>
                         <ul className="text-sm text-coffee-600 list-disc list-inside space-y-1">
                           <li>Credit/Debit Card</li>
-                          <li>Apple Pay</li>
+                          <li>Apple Pay <span className="text-coffee-500">(on supported Apple devices)</span></li>
+                          <li>Google Pay <span className="text-coffee-500">(on supported Android devices)</span></li>
                         </ul>
                       </div>
 
