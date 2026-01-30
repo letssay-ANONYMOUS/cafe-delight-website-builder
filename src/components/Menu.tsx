@@ -1,15 +1,14 @@
 import { Search, Plus, FolderPlus } from 'lucide-react';
-import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useState, lazy, Suspense } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { menuStructure } from '@/data/menuData';
 import { useAdmin } from '@/contexts/AdminContext';
 import { AdminCardModal } from './AdminCardModal';
 import { AdminSectionModal } from './AdminSectionModal';
 import { AdminDeleteConfirm } from './AdminDeleteConfirm';
 import { useToast } from '@/hooks/use-toast';
+import { useMenuItems, menuCategories, groupMenuItems, toMenuCardItem } from '@/hooks/useMenuItems';
 
 // Lazy load the card component for better performance
 const MenuCard = lazy(() => import('./MenuCard'));
@@ -25,32 +24,9 @@ const Menu = () => {
   const [editingCard, setEditingCard] = useState<any>(null);
   const [deletingCard, setDeletingCard] = useState<any>(null);
 
-  const categories = [
-    { id: 'nawa-breakfast', name: 'NAWA Breakfast', image: 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?auto=format&fit=crop&w=300&q=80' },
-    { id: 'coffee', name: 'COFFEE', image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=300&q=80' },
-    { id: 'manual-brew', name: 'MANUAL BREW', image: '/menu-images/manual-brew-1.jpg' },
-    { id: 'offer', name: 'YOUR WEEKLY DISCOUNT IS HERE', image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=300&q=80' },
-    { id: 'lunch-dinner', name: 'Lunch & Dinner', image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=80' },
-    { id: 'appetisers', name: 'Appetisers', image: '/menu-images/appetiser-1.jpg' },
-    { id: 'pasta', name: 'Pasta', image: '/menu-images/pasta-1.jpg' },
-    { id: 'risotto', name: 'RISOTTO', image: '/menu-images/risotto-1.jpg' },
-    { id: 'spanish-dishes', name: 'Spanish Dishes', image: '/menu-images/spanish-1.jpg' },
-    { id: 'burgers', name: 'Burgers', image: '/menu-images/burger-1.jpg' },
-    { id: 'sharing-meal', name: 'SERVE SHARE & EAT - SHARING MEAL MEAN SHARING LOVE', image: '/menu-images/sharing-meal-1.jpg' },
-    { id: 'fries', name: 'Fries', image: '/menu-images/fries-1.jpg' },
-    { id: 'club-sandwich', name: 'EATING HEALTHY TO LOSE WEIGHT CLUB SANDWICH', image: '/menu-images/club-sandwich-1.jpg' },
-    { id: 'kids-meals', name: 'Kids Meals', image: '/menu-images/kids-meal-1.jpg' },
-    { id: 'pastries', name: 'Pastries & Desserts', image: '/menu-images/dessert-1.jpg' },
-    { id: 'cold-beverages', name: 'Cold Beverages', image: '/menu-images/cold-coffee-1.jpg' },
-    { id: 'mojito', name: 'Mojito', image: '/menu-images/mojito-1.jpg' },
-    { id: 'water', name: 'Water', image: '/menu-images/water-1.jpg' },
-    { id: 'infusion', name: 'Infusion', image: '/menu-images/infusion-1.jpg' },
-    { id: 'fresh-juice', name: 'Fresh Juice', image: '/menu-images/fresh-juice-1.jpg' },
-    { id: 'matcha', name: '🍃💚💚 MATCHA LOVERS OFFERS 🍃💚', image: 'https://images.unsplash.com/photo-1515823064-d6e0c04616a7?auto=format&fit=crop&w=300&q=80' },
-    { id: 'arabic-coffee', name: 'ARABIC COFFEE', image: 'https://images.unsplash.com/photo-1610889556528-9a770e32642f?auto=format&fit=crop&w=300&q=80' },
-    { id: 'nawa-special-tea', name: 'NAWA SPECIAL TEA', image: 'https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?auto=format&fit=crop&w=300&q=80' },
-    { id: 'nawa-summer', name: 'NAWA SUMMER', image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=300&q=80' },
-  ];
+  // Fetch menu items from database
+  const { data: menuItems, isLoading, error } = useMenuItems();
+  const groupedMenu = menuItems ? groupMenuItems(menuItems) : {};
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -62,10 +38,10 @@ const Menu = () => {
     }
   };
 
-  const menuCategories = categories.map(cat => ({
+  const menuCategoriesForAdmin = menuCategories.map(cat => ({
     id: cat.id,
     name: cat.name,
-    sections: Object.keys(menuStructure[cat.id as keyof typeof menuStructure] || {})
+    sections: Object.keys(groupedMenu[cat.id] || {})
   }));
 
   const handleAddNew = () => {
@@ -115,6 +91,38 @@ const Menu = () => {
     });
   };
 
+  // Filter items based on search query
+  const filterItems = (items: any[]) => {
+    if (!searchQuery.trim()) return items;
+    const query = searchQuery.toLowerCase();
+    return items.filter(item => 
+      item.title?.toLowerCase().includes(query) ||
+      item.description?.toLowerCase().includes(query) ||
+      String(item.price).includes(query)
+    );
+  };
+
+  if (isLoading) {
+    return (
+      <section className="min-h-screen bg-gradient-to-b from-[#4a5f4a]/30 via-[#5a6f5a]/20 to-[#4a5f4a]/30 backdrop-blur-sm flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-[#c9a962] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-white text-lg">Loading menu...</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="min-h-screen bg-gradient-to-b from-[#4a5f4a]/30 via-[#5a6f5a]/20 to-[#4a5f4a]/30 backdrop-blur-sm flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-400 text-lg">Failed to load menu. Please try again.</p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="min-h-screen bg-gradient-to-b from-[#4a5f4a]/30 via-[#5a6f5a]/20 to-[#4a5f4a]/30 backdrop-blur-sm">
       {/* Header with Search */}
@@ -159,7 +167,7 @@ const Menu = () => {
       <div className="overflow-x-auto py-6 px-4 sm:px-6 lg:px-8 scrollbar-hide">
         <div className="container mx-auto">
           <div className="flex gap-4 min-w-max justify-start">
-            {categories.map((category) => (
+            {menuCategories.map((category) => (
               <button
                 key={category.id}
                 onClick={() => scrollToSection(category.id)}
@@ -186,43 +194,44 @@ const Menu = () => {
 
       {/* Menu Cards Grid */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-        {(() => {
-          let globalCardNumber = 1;
+        {menuCategories.map((category) => {
+          const categoryData = groupedMenu[category.id];
+          if (!categoryData || Object.keys(categoryData).length === 0) return null;
           
-          return categories.map((category) => {
-            const categoryStructure = menuStructure[category.id as keyof typeof menuStructure];
-            if (!categoryStructure) return null;
-            
-            return (
-              <div key={category.id} id={category.id} className="mb-16 scroll-mt-32">
-                {/* Section Header */}
-                <div className="mb-8">
-                  <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
-                    {category.name}
-                  </h2>
-                </div>
+          return (
+            <div key={category.id} id={category.id} className="mb-16 scroll-mt-32">
+              {/* Section Header */}
+              <div className="mb-8">
+                <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
+                  {category.name}
+                </h2>
+              </div>
 
-                {/* Subsections */}
-                {Object.entries(categoryStructure).map(([subsectionName, items]) => (
+              {/* Subsections */}
+              {Object.entries(categoryData).map(([subsectionName, items]) => {
+                const filteredItems = filterItems(items);
+                if (filteredItems.length === 0) return null;
+                
+                return (
                   <div key={subsectionName} className="mb-12">
                     <h3 className="text-xl md:text-2xl font-semibold text-[#c9a962] mb-6">
                       {subsectionName}
                     </h3>
                     
-                    {/* Items Grid with Lazy Loading - Mobile shows 2 cols, tablet/desktop show 3-4 */}
+                    {/* Items Grid with Lazy Loading */}
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
                       <Suspense fallback={
                         <div className="col-span-full flex justify-center py-8">
                           <div className="w-8 h-8 border-4 border-[#c9a962] border-t-transparent rounded-full animate-spin" />
                         </div>
                       }>
-                        {items.map((item) => {
-                          const currentNumber = globalCardNumber++;
+                        {filteredItems.map((item) => {
+                          const cardItem = toMenuCardItem(item);
                           return (
                             <MenuCard
                               key={item.id}
-                              item={item}
-                              cardNumber={currentNumber}
+                              item={cardItem}
+                              cardNumber={item.card_number}
                               onEdit={() => handleEdit(item)}
                               onDelete={() => handleDelete(item)}
                             />
@@ -231,11 +240,11 @@ const Menu = () => {
                       </Suspense>
                     </div>
                   </div>
-                ))}
-              </div>
-            );
-          });
-        })()}
+                );
+              })}
+            </div>
+          );
+        })}
       </div>
 
       {/* Modal for Card Details */}
@@ -259,21 +268,21 @@ const Menu = () => {
         initialData={editingCard}
         title={editingCard ? 'Edit Card' : 'Add New Card'}
         page="menu"
-        categories={menuCategories}
+        categories={menuCategoriesForAdmin}
       />
 
       <AdminSectionModal
         open={showSectionModal}
         onOpenChange={setShowSectionModal}
         onSave={handleSaveSection}
-        existingCategories={categories.map(c => ({ id: c.id, name: c.name }))}
+        existingCategories={menuCategories.map(c => ({ id: c.id, name: c.name }))}
       />
 
       <AdminDeleteConfirm
         open={showDeleteConfirm}
         onOpenChange={setShowDeleteConfirm}
         onConfirm={confirmDelete}
-        itemName={deletingCard?.name || ''}
+        itemName={deletingCard?.name || deletingCard?.title || ''}
       />
     </section>
   );
