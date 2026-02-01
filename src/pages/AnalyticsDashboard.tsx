@@ -14,6 +14,7 @@ import { TopPagesChart } from '@/components/analytics/TopPagesChart';
 import { ConversionFunnel } from '@/components/analytics/ConversionFunnel';
 import { MenuItemStats } from '@/components/analytics/MenuItemStats';
 import { SessionsTable } from '@/components/analytics/SessionsTable';
+import { VisitorDetailsTable } from '@/components/analytics/VisitorDetailsTable';
 
 interface AnalyticsData {
   activeVisitors: number;
@@ -336,11 +337,11 @@ const AnalyticsDashboard = () => {
           <ConversionFunnel dateRange={dateRange} />
         </div>
 
+        {/* Visitor Details - Main Table */}
+        <VisitorDetailsTable dateRange={dateRange} />
+
         {/* Menu Stats */}
         <MenuItemStats dateRange={dateRange} />
-
-        {/* All Sessions Table */}
-        <SessionsTable sessions={sessions} />
       </main>
     </div>
   );
