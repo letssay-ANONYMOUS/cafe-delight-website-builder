@@ -14,7 +14,8 @@ import {
   VolumeX, 
   Package,
   ExternalLink,
-  Music
+  Music,
+  Calendar
 } from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useKitchenAlert } from "@/hooks/useKitchenAlert";
@@ -30,6 +31,30 @@ interface OrderWithItems extends Order {
   items: OrderItem[];
 }
 
+// Date range options for order history
+type DateRangeOption = '1month' | '2months' | '3months' | '4months';
+
+const dateRangeLabels: Record<DateRangeOption, string> = {
+  '1month': '1 Month',
+  '2months': '2 Months',
+  '3months': '3 Months',
+  '4months': '4 Months',
+};
+
+const getDateFromRange = (range: DateRangeOption): Date => {
+  const now = new Date();
+  switch (range) {
+    case '1month':
+      return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    case '2months':
+      return new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+    case '3months':
+      return new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+    case '4months':
+      return new Date(now.getTime() - 120 * 24 * 60 * 60 * 1000);
+  }
+};
+
 const KitchenDashboard = () => {
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -37,6 +62,9 @@ const KitchenDashboard = () => {
   const [unacknowledgedOrders, setUnacknowledgedOrders] = useState<Set<string>>(new Set());
   const [activeView, setActiveView] = useState<KitchenView>("paid");
   const [showSoundPicker, setShowSoundPicker] = useState(false);
+  const [dateRange, setDateRange] = useState<DateRangeOption>(() => 
+    (localStorage.getItem('kitchen_date_range') as DateRangeOption) || '1month'
+  );
   const [selectedSound, setSelectedSound] = useState(() => 
     localStorage.getItem('kitchen_alert_sound') || 'chime'
   );
@@ -88,7 +116,13 @@ const KitchenDashboard = () => {
       description: soundId === 'custom' 
         ? "Custom audio URL saved as your alert sound."
         : "Your alert sound preference has been saved.",
-    });
+  });
+  };
+
+  // Handle date range change
+  const handleDateRangeChange = (range: DateRangeOption) => {
+    setDateRange(range);
+    localStorage.setItem('kitchen_date_range', range);
   };
 
   useEffect(() => {
@@ -102,7 +136,7 @@ const KitchenDashboard = () => {
       }
       stopAlert();
     };
-  }, []);
+  }, [dateRange]);
 
   // Manage alert sound based on unacknowledged orders
   useEffect(() => {
@@ -138,13 +172,13 @@ const KitchenDashboard = () => {
   const loadOrders = async () => {
     setIsLoading(true);
     try {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      // Use date range for historical data (default 1 month)
+      const startDate = getDateFromRange(dateRange);
 
       const { data: ordersData, error: ordersError } = await supabase
         .from('orders')
         .select('*')
-        .gte('created_at', today.toISOString())
+        .gte('created_at', startDate.toISOString())
         .order('created_at', { ascending: false });
 
       if (ordersError) throw ordersError;
@@ -295,12 +329,40 @@ const KitchenDashboard = () => {
                       {activeView === 'paid' ? '✅ Paid Orders' : '⏳ Pending Orders'}
                     </h1>
                     <p className="text-xs text-muted-foreground">
-                      {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                      Last {dateRangeLabels[dateRange].toLowerCase()} • {currentOrders.length} orders
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3">
+                  {/* Date Range Selector */}
+                  <div className="hidden md:flex gap-1 bg-muted rounded-lg p-1">
+                    {(['1month', '2months', '3months', '4months'] as DateRangeOption[]).map((range) => (
+                      <Button
+                        key={range}
+                        variant={dateRange === range ? 'default' : 'ghost'}
+                        size="sm"
+                        onClick={() => handleDateRangeChange(range)}
+                        className="text-xs px-2"
+                      >
+                        {dateRangeLabels[range]}
+                      </Button>
+                    ))}
+                  </div>
+
+                  {/* Mobile Date Range Dropdown */}
+                  <div className="md:hidden">
+                    <select
+                      value={dateRange}
+                      onChange={(e) => handleDateRangeChange(e.target.value as DateRangeOption)}
+                      className="text-xs bg-muted border-none rounded-lg px-2 py-1.5 text-foreground"
+                    >
+                      {(['1month', '2months', '3months', '4months'] as DateRangeOption[]).map((range) => (
+                        <option key={range} value={range}>{dateRangeLabels[range]}</option>
+                      ))}
+                    </select>
+                  </div>
+
                   {/* Stats Badge */}
                   {unacknowledgedOrders.size > 0 && (
                     <div className="px-3 py-1.5 bg-destructive/10 rounded-full animate-pulse">
