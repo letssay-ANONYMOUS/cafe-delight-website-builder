@@ -1,5 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { Users, Eye, Clock, TrendingDown, TrendingUp, MousePointer } from 'lucide-react';
+import { Users, Eye, Clock, ArrowDownRight, ShoppingBag, MousePointer } from 'lucide-react';
 
 interface AnalyticsData {
   activeVisitors: number;
@@ -24,71 +24,78 @@ const formatDuration = (seconds: number): string => {
 export const OverviewCards = ({ analytics }: OverviewCardsProps) => {
   const cards = [
     {
-      title: 'Active Visitors',
+      title: 'Browsing Now',
+      subtitle: 'People on your site',
       value: analytics.activeVisitors,
       icon: Users,
-      color: 'text-green-500',
-      bgColor: 'bg-green-500/10',
+      color: 'text-green-600',
+      bgColor: 'bg-green-100',
       live: true
     },
     {
-      title: 'Sessions',
+      title: 'Total Visitors',
+      subtitle: 'Unique sessions',
       value: analytics.todaySessions,
       icon: MousePointer,
-      color: 'text-blue-500',
-      bgColor: 'bg-blue-500/10'
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-100'
     },
     {
       title: 'Page Views',
+      subtitle: 'Pages browsed',
       value: analytics.todayPageViews,
       icon: Eye,
-      color: 'text-purple-500',
-      bgColor: 'bg-purple-500/10'
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-100'
     },
     {
-      title: 'Avg. Duration',
+      title: 'Time on Site',
+      subtitle: 'Average per visitor',
       value: formatDuration(analytics.avgSessionDuration),
       icon: Clock,
-      color: 'text-orange-500',
-      bgColor: 'bg-orange-500/10',
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-100',
       isTime: true
     },
     {
-      title: 'Bounce Rate',
+      title: 'Quick Exits',
+      subtitle: 'Left after 1 page',
       value: `${analytics.bounceRate}%`,
-      icon: TrendingDown,
-      color: 'text-red-500',
-      bgColor: 'bg-red-500/10'
+      icon: ArrowDownRight,
+      color: 'text-red-600',
+      bgColor: 'bg-red-100'
     },
     {
-      title: 'Conversion',
+      title: 'Ordered',
+      subtitle: 'Visitors who bought',
       value: `${analytics.conversionRate}%`,
-      icon: TrendingUp,
-      color: 'text-emerald-500',
-      bgColor: 'bg-emerald-500/10'
+      icon: ShoppingBag,
+      color: 'text-emerald-600',
+      bgColor: 'bg-emerald-100'
     }
   ];
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
       {cards.map((card) => (
-        <Card key={card.title} className="relative overflow-hidden">
+        <Card key={card.title} className="relative overflow-hidden hover:shadow-md transition-shadow">
           <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <div className={`p-2 rounded-lg ${card.bgColor}`}>
-                <card.icon className={`h-4 w-4 ${card.color}`} />
+            <div className="flex items-center justify-between mb-3">
+              <div className={`p-2.5 rounded-xl ${card.bgColor}`}>
+                <card.icon className={`h-5 w-5 ${card.color}`} />
               </div>
               {card.live && (
-                <span className="flex items-center gap-1 text-xs text-green-500">
+                <span className="flex items-center gap-1 text-xs font-medium text-green-600">
                   <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                   Live
                 </span>
               )}
             </div>
-            <p className="text-2xl font-bold text-foreground">
-              {card.isTime ? card.value : card.value}
+            <p className="text-2xl font-bold text-foreground mb-0.5">
+              {card.value}
             </p>
-            <p className="text-xs text-muted-foreground">{card.title}</p>
+            <p className="text-sm font-medium text-foreground">{card.title}</p>
+            <p className="text-xs text-muted-foreground">{card.subtitle}</p>
           </CardContent>
         </Card>
       ))}

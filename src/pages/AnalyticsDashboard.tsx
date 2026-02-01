@@ -4,7 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { RefreshCw, Users, Eye, Clock, TrendingUp, MousePointer, LogOut } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { RefreshCw, Users, Eye, ShoppingCart, TrendingUp, Coffee, LogOut, Calendar } from 'lucide-react';
 import { OverviewCards } from '@/components/analytics/OverviewCards';
 import { LiveVisitorsTable } from '@/components/analytics/LiveVisitorsTable';
 import { VisitorsChart } from '@/components/analytics/VisitorsChart';
@@ -13,7 +14,6 @@ import { TopPagesChart } from '@/components/analytics/TopPagesChart';
 import { ConversionFunnel } from '@/components/analytics/ConversionFunnel';
 import { MenuItemStats } from '@/components/analytics/MenuItemStats';
 import { SessionsTable } from '@/components/analytics/SessionsTable';
-import { adminService } from '@/services/adminService';
 
 interface AnalyticsData {
   activeVisitors: number;
@@ -45,6 +45,8 @@ interface AnonymousVisitor {
   last_seen_at: string;
 }
 
+const ADMIN_SESSION_KEY = 'admin_session';
+
 const AnalyticsDashboard = () => {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -62,14 +64,29 @@ const AnalyticsDashboard = () => {
   const [visitors, setVisitors] = useState<AnonymousVisitor[]>([]);
   const [dateRange, setDateRange] = useState<'today' | '7days' | '30days'>('today');
 
-  // Check authentication
+  // Check authentication - use admin_session key like StaffLogin
   useEffect(() => {
-    const checkAuth = async () => {
-      const isValid = adminService.checkSession();
-      if (!isValid) {
+    const checkAuth = () => {
+      const token = localStorage.getItem(ADMIN_SESSION_KEY);
+      if (!token) {
         navigate('/staff/login');
         return;
       }
+      
+      // Check if token is expired (8 hours)
+      const parts = token.split(':');
+      if (parts.length >= 1) {
+        const timestamp = parseInt(parts[0], 10);
+        const now = Date.now();
+        const eightHours = 8 * 60 * 60 * 1000;
+        
+        if (now - timestamp > eightHours) {
+          localStorage.removeItem(ADMIN_SESSION_KEY);
+          navigate('/staff/login');
+          return;
+        }
+      }
+      
       setIsAuthenticated(true);
       setIsLoading(false);
     };
@@ -173,17 +190,12 @@ const AnalyticsDashboard = () => {
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    console.log('Setting up realtime subscriptions for analytics');
-
     const sessionsChannel = supabase
       .channel('analytics-sessions')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'visitor_sessions' },
-        (payload) => {
-          console.log('Session change:', payload);
-          fetchAnalytics();
-        }
+        () => fetchAnalytics()
       )
       .subscribe();
 
@@ -192,10 +204,7 @@ const AnalyticsDashboard = () => {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'anonymous_visitors' },
-        (payload) => {
-          console.log('Visitor change:', payload);
-          fetchAnalytics();
-        }
+        () => fetchAnalytics()
       )
       .subscribe();
 
@@ -204,10 +213,7 @@ const AnalyticsDashboard = () => {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'page_views' },
-        (payload) => {
-          console.log('Page view change:', payload);
-          fetchAnalytics();
-        }
+        () => fetchAnalytics()
       )
       .subscribe();
 
@@ -224,8 +230,8 @@ const AnalyticsDashboard = () => {
     setIsRefreshing(false);
   };
 
-  const handleLogout = async () => {
-    await adminService.logout();
+  const handleLogout = () => {
+    localStorage.removeItem(ADMIN_SESSION_KEY);
     navigate('/staff/login');
   };
 
@@ -254,11 +260,16 @@ const AnalyticsDashboard = () => {
       {/* Header */}
       <header className="border-b bg-card sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">NAWA Analytics</h1>
-            <p className="text-sm text-muted-foreground">Real-time visitor insights</p>
-          </div>
           <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <Coffee className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-foreground">Café Analytics</h1>
+              <p className="text-sm text-muted-foreground">See how customers use your website</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
             {/* Date Range Selector */}
             <div className="flex gap-1 bg-muted rounded-lg p-1">
               {(['today', '7days', '30days'] as const).map((range) => (
@@ -269,7 +280,7 @@ const AnalyticsDashboard = () => {
                   onClick={() => setDateRange(range)}
                   className="text-xs"
                 >
-                  {range === 'today' ? 'Today' : range === '7days' ? '7 Days' : '30 Days'}
+                  {range === 'today' ? 'Today' : range === '7days' ? 'Week' : 'Month'}
                 </Button>
               ))}
             </div>
@@ -279,18 +290,36 @@ const AnalyticsDashboard = () => {
               onClick={handleRefresh}
               disabled={isRefreshing}
             >
-              <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-              Refresh
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             </Button>
             <Button variant="ghost" size="sm" onClick={handleLogout}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
+              <LogOut className="h-4 w-4" />
             </Button>
           </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+        {/* Quick Summary for Café Staff */}
+        <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
+          <CardContent className="py-4">
+            <div className="flex items-center gap-4 flex-wrap">
+              <Badge variant="outline" className="text-base py-1 px-3 bg-background">
+                <Users className="h-4 w-4 mr-2 text-green-500" />
+                {analytics.activeVisitors} browsing now
+              </Badge>
+              <Badge variant="outline" className="text-base py-1 px-3 bg-background">
+                <Eye className="h-4 w-4 mr-2 text-blue-500" />
+                {analytics.todaySessions} visitors {dateRange === 'today' ? 'today' : dateRange === '7days' ? 'this week' : 'this month'}
+              </Badge>
+              <Badge variant="outline" className="text-base py-1 px-3 bg-background">
+                <ShoppingCart className="h-4 w-4 mr-2 text-purple-500" />
+                {analytics.conversionRate}% ordered
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Overview Cards */}
         <OverviewCards analytics={analytics} />
 
