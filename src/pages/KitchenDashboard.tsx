@@ -1,4 +1,4 @@
-// Kitchen Dashboard v4 - With sound picker and enhanced order details
+// Kitchen Dashboard v5 - With continuous alert system + custom audio support
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,9 +40,28 @@ const KitchenDashboard = () => {
   const [selectedSound, setSelectedSound] = useState(() => 
     localStorage.getItem('kitchen_alert_sound') || 'chime'
   );
+  const [customAudioUrl, setCustomAudioUrl] = useState(() =>
+    localStorage.getItem('kitchen_alert_custom_url') || ''
+  );
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { isPlaying, startAlert, stopAlert, initAudioContext } = useKitchenAlert(selectedSound);
+
+  // Handle timeout callback
+  const handleAlertTimeout = useCallback(() => {
+    toast({
+      title: "Alert Timed Out",
+      description: "Sound stopped after 2.5 minutes. New orders still need acknowledgment.",
+      variant: "destructive",
+    });
+  }, [toast]);
+
+  // Use the enhanced alert hook with options object
+  const { isPlaying, startAlert, stopAlert, initAudioContext } = useKitchenAlert({
+    soundId: selectedSound,
+    customAudioUrl: selectedSound === 'custom' ? customAudioUrl : undefined,
+    maxDuration: 150000, // 2.5 minutes
+    onTimeout: handleAlertTimeout,
+  });
 
   // Initialize audio on first user interaction
   useEffect(() => {
@@ -55,12 +74,20 @@ const KitchenDashboard = () => {
   }, [initAudioContext]);
 
   // Save sound preference
-  const handleSoundSelect = (soundId: string) => {
+  const handleSoundSelect = (soundId: string, customUrl?: string) => {
     setSelectedSound(soundId);
     localStorage.setItem('kitchen_alert_sound', soundId);
+    
+    if (customUrl) {
+      setCustomAudioUrl(customUrl);
+      localStorage.setItem('kitchen_alert_custom_url', customUrl);
+    }
+    
     toast({
       title: "Sound Updated",
-      description: "Your alert sound preference has been saved.",
+      description: soundId === 'custom' 
+        ? "Custom audio URL saved as your alert sound."
+        : "Your alert sound preference has been saved.",
     });
   };
 
@@ -373,6 +400,7 @@ const KitchenDashboard = () => {
           />
           <SoundPicker
             currentSound={selectedSound}
+            currentCustomUrl={customAudioUrl}
             onSelect={handleSoundSelect}
             onClose={() => setShowSoundPicker(false)}
           />
