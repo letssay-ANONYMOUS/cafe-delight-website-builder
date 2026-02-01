@@ -1,4 +1,4 @@
-// Kitchen Dashboard v2 - Two-column Pending/Paid layout with audio alerts
+// Kitchen Dashboard v3 - Sidebar navigation with Paid/Pending views
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,12 +12,13 @@ import {
   RefreshCw, 
   Volume2, 
   VolumeX, 
-  ChefHat,
   Package,
   ExternalLink
 } from "lucide-react";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useKitchenAlert } from "@/hooks/useKitchenAlert";
 import { OrderTable } from "@/components/kitchen/OrderTable";
+import { KitchenSidebar, type KitchenView } from "@/components/kitchen/KitchenSidebar";
 import type { Tables } from '@/integrations/supabase/types';
 
 type Order = Tables<'orders'>;
@@ -32,6 +33,7 @@ const KitchenDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [unacknowledgedOrders, setUnacknowledgedOrders] = useState<Set<string>>(new Set());
+  const [activeView, setActiveView] = useState<KitchenView>("paid");
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isPlaying, startAlert, stopAlert, initAudioContext } = useKitchenAlert();
@@ -182,14 +184,11 @@ const KitchenDashboard = () => {
           
           // Check if order just changed to 'paid'
           if (updatedOrder.payment_status === 'paid' && oldOrder.payment_status !== 'paid') {
-            // Fetch items if needed
-            const { data: itemsData } = await supabase
-              .from('order_items')
-              .select('*')
-              .eq('order_id', updatedOrder.id);
-            
             // Add to unacknowledged set to trigger alert
             setUnacknowledgedOrders(prev => new Set([...prev, updatedOrder.id]));
+            
+            // Auto-switch to paid view when new paid order comes in
+            setActiveView("paid");
             
             toast({
               title: "💰 Order Paid!",
@@ -226,121 +225,118 @@ const KitchenDashboard = () => {
 
   const paidOrders = orders.filter(o => o.payment_status === 'paid');
   const pendingOrders = orders.filter(o => o.payment_status === 'pending');
+  const currentOrders = activeView === 'paid' ? paidOrders : pendingOrders;
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="bg-card shadow-sm border-b sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                <ChefHat className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-foreground">Kitchen Dashboard</h1>
-                <p className="text-sm text-muted-foreground">
-                  {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-                </p>
-              </div>
-            </div>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        {/* Sidebar */}
+        <KitchenSidebar
+          activeView={activeView}
+          onViewChange={setActiveView}
+          paidCount={paidOrders.length}
+          pendingCount={pendingOrders.length}
+          unacknowledgedCount={unacknowledgedOrders.size}
+        />
 
-            <div className="flex items-center gap-4">
-              {/* Stats */}
-              <div className="hidden md:flex items-center gap-4">
-                <div className="text-center px-4 py-2 bg-yellow-50 dark:bg-yellow-950/30 rounded-lg">
-                  <p className="text-2xl font-bold text-yellow-600">{pendingOrders.length}</p>
-                  <p className="text-xs text-yellow-700">Pending</p>
-                </div>
-                <div className="text-center px-4 py-2 bg-green-50 dark:bg-green-950/30 rounded-lg">
-                  <p className="text-2xl font-bold text-green-600">{paidOrders.length}</p>
-                  <p className="text-xs text-green-700">Paid</p>
-                </div>
-                {unacknowledgedOrders.size > 0 && (
-                  <div className="text-center px-4 py-2 bg-red-50 dark:bg-red-950/30 rounded-lg animate-pulse">
-                    <p className="text-2xl font-bold text-red-600">{unacknowledgedOrders.size}</p>
-                    <p className="text-xs text-red-700">New!</p>
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col">
+          {/* Header */}
+          <header className="bg-card shadow-sm border-b sticky top-0 z-50">
+            <div className="px-4 py-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <SidebarTrigger />
+                  <div>
+                    <h1 className="text-lg font-bold text-foreground">
+                      {activeView === 'paid' ? '✅ Paid Orders' : '⏳ Pending Orders'}
+                    </h1>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                    </p>
                   </div>
-                )}
+                </div>
+
+                <div className="flex items-center gap-3">
+                  {/* Stats Badge */}
+                  {unacknowledgedOrders.size > 0 && (
+                    <div className="px-3 py-1.5 bg-destructive/10 rounded-full animate-pulse">
+                      <span className="text-sm font-bold text-destructive">{unacknowledgedOrders.size} New!</span>
+                    </div>
+                  )}
+
+                  {/* Sound Toggle */}
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="sound" className="sr-only">Sound</Label>
+                    {soundEnabled ? (
+                      <Volume2 className={`w-4 h-4 ${isPlaying ? 'text-destructive animate-pulse' : 'text-foreground'}`} />
+                    ) : (
+                      <VolumeX className="w-4 h-4 text-muted-foreground" />
+                    )}
+                    <Switch
+                      id="sound"
+                      checked={soundEnabled}
+                      onCheckedChange={setSoundEnabled}
+                    />
+                  </div>
+
+                  {/* Refresh */}
+                  <Button variant="outline" size="icon" onClick={loadOrders} disabled={isLoading}>
+                    <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                  </Button>
+
+                  {/* Fullscreen */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      if (document.fullscreenElement) {
+                        document.exitFullscreen();
+                      } else {
+                        document.documentElement.requestFullscreen();
+                      }
+                    }}
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </Button>
+
+                  {/* Logout */}
+                  <Button variant="ghost" size="icon" onClick={handleLogout}>
+                    <LogOut className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
-
-              {/* Sound Toggle */}
-              <div className="flex items-center gap-2">
-                <Label htmlFor="sound" className="sr-only">Sound</Label>
-                {soundEnabled ? (
-                  <Volume2 className={`w-4 h-4 ${isPlaying ? 'text-red-500 animate-pulse' : 'text-foreground'}`} />
-                ) : (
-                  <VolumeX className="w-4 h-4 text-muted-foreground" />
-                )}
-                <Switch
-                  id="sound"
-                  checked={soundEnabled}
-                  onCheckedChange={setSoundEnabled}
-                />
-              </div>
-
-              {/* Refresh */}
-              <Button variant="outline" size="icon" onClick={loadOrders} disabled={isLoading}>
-                <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-              </Button>
-
-              {/* Fullscreen Link */}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => {
-                  if (document.fullscreenElement) {
-                    document.exitFullscreen();
-                  } else {
-                    document.documentElement.requestFullscreen();
-                  }
-                }}
-              >
-                <ExternalLink className="w-4 h-4" />
-              </Button>
-
-              {/* Logout */}
-              <Button variant="ghost" size="icon" onClick={handleLogout}>
-                <LogOut className="w-4 h-4" />
-              </Button>
             </div>
-          </div>
-        </div>
-      </header>
+          </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-6">
-        {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <RefreshCw className="w-8 h-8 animate-spin text-primary" />
-          </div>
-        ) : orders.length === 0 ? (
-          <Card className="text-center py-16">
-            <CardContent>
-              <Package className="w-16 h-16 mx-auto text-muted-foreground/30 mb-4" />
-              <h2 className="text-xl font-semibold text-muted-foreground mb-2">No Orders Yet</h2>
-              <p className="text-muted-foreground/70">New orders will appear here in real-time</p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Pending Orders - Left */}
-            <OrderTable
-              orders={pendingOrders}
-              type="pending"
-            />
-            
-            {/* Paid Orders - Right */}
-            <OrderTable
-              orders={paidOrders}
-              type="paid"
-              unacknowledged={unacknowledgedOrders}
-              onAcknowledge={handleAcknowledge}
-            />
-          </div>
-        )}
-      </main>
-    </div>
+          {/* Content */}
+          <main className="flex-1 p-4">
+            {isLoading ? (
+              <div className="flex items-center justify-center h-64">
+                <RefreshCw className="w-8 h-8 animate-spin text-primary" />
+              </div>
+            ) : currentOrders.length === 0 ? (
+              <Card className="text-center py-16">
+                <CardContent>
+                  <Package className="w-16 h-16 mx-auto text-muted-foreground/30 mb-4" />
+                  <h2 className="text-xl font-semibold text-muted-foreground mb-2">
+                    No {activeView === 'paid' ? 'Paid' : 'Pending'} Orders
+                  </h2>
+                  <p className="text-muted-foreground/70">Orders will appear here in real-time</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <OrderTable
+                orders={currentOrders}
+                type={activeView}
+                unacknowledged={unacknowledgedOrders}
+                onAcknowledge={handleAcknowledge}
+              />
+            )}
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
   );
 };
 
