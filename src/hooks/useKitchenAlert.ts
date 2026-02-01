@@ -1,55 +1,182 @@
 import { useRef, useCallback, useEffect, useState } from 'react';
 
+// Sound definitions
+const soundLibrary: Record<string, (ctx: AudioContext) => void> = {
+  chime: (ctx) => {
+    const notes = [523.25, 659.25, 783.99];
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      osc.type = 'sine';
+      const start = ctx.currentTime + i * 0.15;
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(0.5, start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.01, start + 0.15);
+      osc.start(start);
+      osc.stop(start + 0.15);
+    });
+  },
+  bell: (ctx) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = 880;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(0.6, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1);
+    osc.start();
+    osc.stop(ctx.currentTime + 1);
+  },
+  doorbell: (ctx) => {
+    [523.25, 392].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      osc.type = 'sine';
+      const start = ctx.currentTime + i * 0.3;
+      gain.gain.setValueAtTime(0.5, start);
+      gain.gain.exponentialRampToValueAtTime(0.01, start + 0.3);
+      osc.start(start);
+      osc.stop(start + 0.3);
+    });
+  },
+  alarm: (ctx) => {
+    [0, 0.15, 0.3].forEach((delay) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 1000;
+      osc.type = 'square';
+      const start = ctx.currentTime + delay;
+      gain.gain.setValueAtTime(0.3, start);
+      gain.gain.setValueAtTime(0, start + 0.1);
+      osc.start(start);
+      osc.stop(start + 0.1);
+    });
+  },
+  notification: (ctx) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = 1318.51;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(0.4, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.5);
+  },
+  success: (ctx) => {
+    [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      osc.type = 'triangle';
+      const start = ctx.currentTime + i * 0.1;
+      gain.gain.setValueAtTime(0.4, start);
+      gain.gain.exponentialRampToValueAtTime(0.01, start + 0.2);
+      osc.start(start);
+      osc.stop(start + 0.2);
+    });
+  },
+  cash: (ctx) => {
+    [1500, 2000, 2500].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      osc.type = 'sine';
+      const start = ctx.currentTime + i * 0.05;
+      gain.gain.setValueAtTime(0.3, start);
+      gain.gain.exponentialRampToValueAtTime(0.01, start + 0.15);
+      osc.start(start);
+      osc.stop(start + 0.15);
+    });
+  },
+  xylophone: (ctx) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = 1174.66;
+    osc.type = 'triangle';
+    gain.gain.setValueAtTime(0.5, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.3);
+  },
+  gong: (ctx) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = 130.81;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(0.6, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.5);
+    osc.start();
+    osc.stop(ctx.currentTime + 1.5);
+  },
+  triple: (ctx) => {
+    [0, 0.2, 0.4].forEach((delay) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 800;
+      osc.type = 'sine';
+      const start = ctx.currentTime + delay;
+      gain.gain.setValueAtTime(0.4, start);
+      gain.gain.exponentialRampToValueAtTime(0.01, start + 0.12);
+      osc.start(start);
+      osc.stop(start + 0.12);
+    });
+  }
+};
+
 /**
- * Custom hook for playing a continuous, pleasant chime alert
- * Used in the Kitchen Dashboard for new paid orders
+ * Custom hook for playing a continuous alert sound
+ * Now supports multiple sound types
  */
-export const useKitchenAlert = () => {
+export const useKitchenAlert = (soundId: string = 'chime') => {
   const audioContextRef = useRef<AudioContext | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const currentSoundRef = useRef(soundId);
+
+  // Update sound when it changes
+  useEffect(() => {
+    currentSoundRef.current = soundId;
+  }, [soundId]);
 
   // Initialize AudioContext on first user interaction
   const initAudioContext = useCallback(() => {
     if (!audioContextRef.current) {
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
     }
-    // Resume if suspended (browser autoplay policy)
     if (audioContextRef.current.state === 'suspended') {
       audioContextRef.current.resume();
     }
     return audioContextRef.current;
   }, []);
 
-  // Play a single chime arpeggio (C5 -> E5 -> G5)
-  const playChime = useCallback(() => {
+  // Play the selected sound
+  const playSound = useCallback(() => {
     const ctx = initAudioContext();
     if (!ctx) return;
 
-    const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
-    const noteLength = 0.15;
-    const volume = 0.5;
-
-    notes.forEach((freq, index) => {
-      const startTime = ctx.currentTime + index * noteLength;
-      
-      const oscillator = ctx.createOscillator();
-      const gainNode = ctx.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(ctx.destination);
-      
-      oscillator.frequency.value = freq;
-      oscillator.type = 'sine';
-      
-      // Envelope for pleasant sound
-      gainNode.gain.setValueAtTime(0, startTime);
-      gainNode.gain.linearRampToValueAtTime(volume, startTime + 0.02);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + noteLength);
-      
-      oscillator.start(startTime);
-      oscillator.stop(startTime + noteLength);
-    });
+    const soundFn = soundLibrary[currentSoundRef.current] || soundLibrary.chime;
+    soundFn(ctx);
   }, [initAudioContext]);
 
   // Start the continuous alert loop
@@ -59,13 +186,13 @@ export const useKitchenAlert = () => {
     setIsPlaying(true);
     
     // Play immediately
-    playChime();
+    playSound();
     
     // Then repeat every 1.2 seconds
     intervalRef.current = setInterval(() => {
-      playChime();
+      playSound();
     }, 1200);
-  }, [isPlaying, playChime]);
+  }, [isPlaying, playSound]);
 
   // Stop the alert
   const stopAlert = useCallback(() => {
@@ -92,7 +219,7 @@ export const useKitchenAlert = () => {
     isPlaying,
     startAlert,
     stopAlert,
-    initAudioContext, // Call on first user interaction to enable audio
+    initAudioContext,
   };
 };
 
