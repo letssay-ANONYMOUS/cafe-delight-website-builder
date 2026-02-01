@@ -1,4 +1,4 @@
-// Kitchen Dashboard v3 - Sidebar navigation with Paid/Pending views
+// Kitchen Dashboard v4 - With sound picker and enhanced order details
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,12 +13,14 @@ import {
   Volume2, 
   VolumeX, 
   Package,
-  ExternalLink
+  ExternalLink,
+  Music
 } from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useKitchenAlert } from "@/hooks/useKitchenAlert";
 import { OrderTable } from "@/components/kitchen/OrderTable";
 import { KitchenSidebar, type KitchenView } from "@/components/kitchen/KitchenSidebar";
+import { SoundPicker } from "@/components/kitchen/SoundPicker";
 import type { Tables } from '@/integrations/supabase/types';
 
 type Order = Tables<'orders'>;
@@ -34,9 +36,13 @@ const KitchenDashboard = () => {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [unacknowledgedOrders, setUnacknowledgedOrders] = useState<Set<string>>(new Set());
   const [activeView, setActiveView] = useState<KitchenView>("paid");
+  const [showSoundPicker, setShowSoundPicker] = useState(false);
+  const [selectedSound, setSelectedSound] = useState(() => 
+    localStorage.getItem('kitchen_alert_sound') || 'chime'
+  );
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { isPlaying, startAlert, stopAlert, initAudioContext } = useKitchenAlert();
+  const { isPlaying, startAlert, stopAlert, initAudioContext } = useKitchenAlert(selectedSound);
 
   // Initialize audio on first user interaction
   useEffect(() => {
@@ -47,6 +53,16 @@ const KitchenDashboard = () => {
     window.addEventListener('click', handleFirstInteraction);
     return () => window.removeEventListener('click', handleFirstInteraction);
   }, [initAudioContext]);
+
+  // Save sound preference
+  const handleSoundSelect = (soundId: string) => {
+    setSelectedSound(soundId);
+    localStorage.setItem('kitchen_alert_sound', soundId);
+    toast({
+      title: "Sound Updated",
+      description: "Your alert sound preference has been saved.",
+    });
+  };
 
   useEffect(() => {
     checkAuth();
@@ -265,6 +281,17 @@ const KitchenDashboard = () => {
                     </div>
                   )}
 
+                  {/* Sound Picker Button */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowSoundPicker(true)}
+                    className="hidden sm:flex items-center gap-2"
+                  >
+                    <Music className="w-4 h-4" />
+                    <span className="text-xs">Sound</span>
+                  </Button>
+
                   {/* Sound Toggle */}
                   <div className="flex items-center gap-2">
                     <Label htmlFor="sound" className="sr-only">Sound</Label>
@@ -336,6 +363,21 @@ const KitchenDashboard = () => {
           </main>
         </div>
       </div>
+
+      {/* Sound Picker Modal */}
+      {showSoundPicker && (
+        <>
+          <div 
+            className="fixed inset-0 bg-black/50 z-40"
+            onClick={() => setShowSoundPicker(false)}
+          />
+          <SoundPicker
+            currentSound={selectedSound}
+            onSelect={handleSoundSelect}
+            onClose={() => setShowSoundPicker(false)}
+          />
+        </>
+      )}
     </SidebarProvider>
   );
 };

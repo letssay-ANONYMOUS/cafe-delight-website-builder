@@ -20,6 +20,10 @@ import {
   ShoppingBag,
   FileText,
   Check,
+  Calendar,
+  Hash,
+  CreditCard,
+  Receipt,
 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -46,11 +50,24 @@ const formatTime = (dateString: string) => {
   });
 };
 
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString('en-AE', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'Asia/Dubai',
+  });
+};
+
 const getItemsPreview = (items: OrderItem[]) => {
   if (items.length === 0) return '-';
   const names = items.slice(0, 2).map(item => item.item_name);
   const remaining = items.length - 2;
   return remaining > 0 ? `${names.join(', ')} +${remaining} more` : names.join(', ');
+};
+
+const getTotalItemCount = (items: OrderItem[]) => {
+  return items.reduce((sum, item) => sum + item.quantity, 0);
 };
 
 export const OrderTable = ({
@@ -66,6 +83,7 @@ export const OrderTable = ({
   };
 
   const isPending = type === 'pending';
+  const isPaid = type === 'paid';
   const headerColor = isPending ? 'bg-yellow-50 dark:bg-yellow-950/30' : 'bg-green-50 dark:bg-green-950/30';
   const icon = isPending ? '⏳' : '✅';
   const title = isPending ? 'Pending Orders' : 'Paid Orders';
@@ -89,10 +107,16 @@ export const OrderTable = ({
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/50">
-                  <TableHead className="w-[80px]">
+                  <TableHead className="w-[100px]">
                     <div className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      Time
+                      <Calendar className="w-3 h-3" />
+                      Date/Time
+                    </div>
+                  </TableHead>
+                  <TableHead>
+                    <div className="flex items-center gap-1">
+                      <Hash className="w-3 h-3" />
+                      Order #
                     </div>
                   </TableHead>
                   <TableHead>
@@ -107,8 +131,22 @@ export const OrderTable = ({
                       Phone
                     </div>
                   </TableHead>
-                  <TableHead>Items</TableHead>
+                  <TableHead className="text-center">
+                    <div className="flex items-center gap-1 justify-center">
+                      <ShoppingBag className="w-3 h-3" />
+                      Items
+                    </div>
+                  </TableHead>
+                  <TableHead className="hidden lg:table-cell">What They Ordered</TableHead>
                   <TableHead className="text-right">Total</TableHead>
+                  {isPaid && (
+                    <TableHead className="hidden xl:table-cell">
+                      <div className="flex items-center gap-1">
+                        <Receipt className="w-3 h-3" />
+                        Invoice
+                      </div>
+                    </TableHead>
+                  )}
                   {!isPending && <TableHead className="w-[100px]">Action</TableHead>}
                 </TableRow>
               </TableHeader>
@@ -116,6 +154,7 @@ export const OrderTable = ({
                 {orders.map((order) => {
                   const isUnacked = unacknowledged.has(order.id);
                   const isExpanded = expandedOrder === order.id;
+                  const totalItems = getTotalItemCount(order.items);
                   
                   return (
                     <>
@@ -135,8 +174,14 @@ export const OrderTable = ({
                             ) : (
                               <ChevronDown className="w-3 h-3 text-muted-foreground" />
                             )}
-                            {formatTime(order.created_at)}
+                            <div className="flex flex-col">
+                              <span className="text-xs text-muted-foreground">{formatDate(order.created_at)}</span>
+                              <span className="font-semibold">{formatTime(order.created_at)}</span>
+                            </div>
                           </div>
+                        </TableCell>
+                        <TableCell>
+                          <span className="font-mono text-sm font-bold text-primary">{order.order_number}</span>
                         </TableCell>
                         <TableCell className="font-medium">
                           {order.customer_name}
@@ -144,12 +189,28 @@ export const OrderTable = ({
                         <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
                           {order.customer_phone}
                         </TableCell>
-                        <TableCell className="text-sm max-w-[150px] truncate">
+                        <TableCell className="text-center">
+                          <Badge variant="secondary" className="font-bold">
+                            {totalItems}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell text-sm max-w-[200px] truncate text-muted-foreground">
                           {getItemsPreview(order.items)}
                         </TableCell>
                         <TableCell className="text-right font-semibold">
                           AED {order.total_amount.toFixed(2)}
                         </TableCell>
+                        {isPaid && (
+                          <TableCell className="hidden xl:table-cell">
+                            {order.payment_reference ? (
+                              <span className="font-mono text-xs bg-muted px-2 py-1 rounded">
+                                {order.payment_reference.slice(0, 12)}...
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground text-xs">-</span>
+                            )}
+                          </TableCell>
+                        )}
                         {!isPending && (
                           <TableCell onClick={(e) => e.stopPropagation()}>
                             {isUnacked ? (
@@ -175,35 +236,102 @@ export const OrderTable = ({
                       {/* Expanded Details */}
                       {isExpanded && (
                         <TableRow className="bg-muted/30">
-                          <TableCell colSpan={isPending ? 5 : 6} className="p-4">
+                          <TableCell colSpan={isPaid ? 9 : 7} className="p-4">
                             <div className="bg-card rounded-lg border p-4 space-y-4">
-                              {/* Customer Info */}
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                              {/* Customer & Order Info */}
+                              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 text-sm">
                                 <div>
-                                  <span className="text-muted-foreground">Order #:</span>
-                                  <p className="font-mono font-medium">{order.order_number}</p>
+                                  <span className="text-muted-foreground flex items-center gap-1">
+                                    <Hash className="w-3 h-3" /> Order #
+                                  </span>
+                                  <p className="font-mono font-bold text-primary">{order.order_number}</p>
                                 </div>
                                 <div>
-                                  <span className="text-muted-foreground">Phone:</span>
+                                  <span className="text-muted-foreground flex items-center gap-1">
+                                    <User className="w-3 h-3" /> Visitor ID
+                                  </span>
+                                  <p className="font-mono text-xs truncate max-w-[100px]" title={order.visitor_id}>
+                                    {order.visitor_id.slice(0, 8)}...
+                                  </p>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground flex items-center gap-1">
+                                    <Calendar className="w-3 h-3" /> Date
+                                  </span>
+                                  <p className="font-medium">{formatDate(order.created_at)}</p>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground flex items-center gap-1">
+                                    <Clock className="w-3 h-3" /> Time
+                                  </span>
+                                  <p className="font-medium">{formatTime(order.created_at)}</p>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground flex items-center gap-1">
+                                    <Phone className="w-3 h-3" /> Phone
+                                  </span>
                                   <p className="font-medium">{order.customer_phone}</p>
                                 </div>
                                 <div>
-                                  <span className="text-muted-foreground">Email:</span>
-                                  <p className="font-medium">{order.customer_email || '-'}</p>
+                                  <span className="text-muted-foreground">Email</span>
+                                  <p className="font-medium truncate">{order.customer_email || '-'}</p>
                                 </div>
-                                <div>
-                                  <span className="text-muted-foreground">Type:</span>
-                                  <Badge variant="outline" className="ml-1">
-                                    {order.order_type === 'dine_in' ? 'Dine In' : 'Takeaway'}
+                              </div>
+
+                              {/* Order Type & Payment Info */}
+                              <div className="flex flex-wrap gap-4 items-center border-t border-b py-3">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-muted-foreground text-sm">Type:</span>
+                                  <Badge variant="outline" className="font-medium">
+                                    {order.order_type === 'dine_in' ? '🍽️ Dine In' : '🥡 Takeaway'}
                                   </Badge>
                                 </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-muted-foreground text-sm">Status:</span>
+                                  <Badge className={isPaid ? 'bg-green-500' : 'bg-yellow-500'}>
+                                    {order.payment_status}
+                                  </Badge>
+                                </div>
+                                {order.payment_method && (
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-muted-foreground text-sm">Method:</span>
+                                    <Badge variant="secondary" className="flex items-center gap-1">
+                                      <CreditCard className="w-3 h-3" />
+                                      {order.payment_method}
+                                    </Badge>
+                                  </div>
+                                )}
+                                {order.payment_provider && (
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-muted-foreground text-sm">Provider:</span>
+                                    <span className="font-medium">{order.payment_provider}</span>
+                                  </div>
+                                )}
+                                {isPaid && order.payment_reference && (
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-muted-foreground text-sm flex items-center gap-1">
+                                      <Receipt className="w-3 h-3" /> Invoice:
+                                    </span>
+                                    <span className="font-mono text-xs bg-primary/10 px-2 py-1 rounded text-primary">
+                                      {order.payment_reference}
+                                    </span>
+                                  </div>
+                                )}
+                                {order.paid_at && (
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-muted-foreground text-sm">Paid at:</span>
+                                    <span className="font-medium">
+                                      {formatDate(order.paid_at)} {formatTime(order.paid_at)}
+                                    </span>
+                                  </div>
+                                )}
                               </div>
 
                               {/* Order Items */}
                               <div>
                                 <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
                                   <ShoppingBag className="w-4 h-4" />
-                                  Order Items
+                                  Order Items ({getTotalItemCount(order.items)} total)
                                 </h4>
                                 <div className="grid gap-2">
                                   {order.items.map((item) => (
@@ -213,7 +341,7 @@ export const OrderTable = ({
                                     >
                                       <div className="flex-1">
                                         <div className="flex items-center gap-2">
-                                          <span className="font-bold">{item.quantity}x</span>
+                                          <span className="font-bold text-primary">{item.quantity}x</span>
                                           <span className="font-medium">{item.item_name}</span>
                                           {item.item_category && (
                                             <Badge variant="outline" className="text-xs">
@@ -223,12 +351,12 @@ export const OrderTable = ({
                                         </div>
                                         {item.extras && (
                                           <p className="text-sm text-muted-foreground mt-1">
-                                            Extras: {item.extras}
+                                            ➕ Extras: {item.extras}
                                           </p>
                                         )}
                                         {item.notes && (
-                                          <p className="text-sm text-primary mt-1 italic">
-                                            Note: {item.notes}
+                                          <p className="text-sm text-primary mt-1 italic bg-primary/10 px-2 py-1 rounded">
+                                            📝 Note: {item.notes}
                                           </p>
                                         )}
                                       </div>
@@ -240,16 +368,26 @@ export const OrderTable = ({
                                 </div>
                               </div>
 
-                              {/* Notes */}
+                              {/* Order Notes */}
                               {(order.extra_notes || order.notes) && (
-                                <div className="bg-yellow-50 dark:bg-yellow-950/30 p-3 rounded-lg">
+                                <div className="bg-yellow-50 dark:bg-yellow-950/30 p-3 rounded-lg border border-yellow-200 dark:border-yellow-900">
                                   <h4 className="font-semibold text-sm mb-1 flex items-center gap-2">
                                     <FileText className="w-4 h-4" />
-                                    Order Notes
+                                    Customer Notes
                                   </h4>
                                   <p className="text-sm">{order.extra_notes || order.notes}</p>
                                 </div>
                               )}
+
+                              {/* Summary */}
+                              <div className="bg-muted/50 p-3 rounded-lg flex justify-between items-center">
+                                <span className="font-semibold">Subtotal:</span>
+                                <span>AED {order.subtotal.toFixed(2)}</span>
+                              </div>
+                              <div className="bg-primary/10 p-3 rounded-lg flex justify-between items-center">
+                                <span className="font-bold text-lg">Total:</span>
+                                <span className="font-bold text-lg text-primary">AED {order.total_amount.toFixed(2)}</span>
+                              </div>
                             </div>
                           </TableCell>
                         </TableRow>
