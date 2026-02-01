@@ -29,10 +29,9 @@ const StaffLogin = () => {
         localStorage.setItem('admin_session', data.sessionToken);
         toast({
           title: "Welcome!",
-          description: "Redirecting to dashboard...",
+          description: "Redirecting to kitchen dashboard...",
         });
-        // Navigate to the visitors analytics page
-        navigate('/visitors');
+        navigate('/admin/kitchen');
       } else {
         throw new Error(data?.error || 'Login failed');
       }

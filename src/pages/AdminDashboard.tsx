@@ -45,9 +45,17 @@ const AdminDashboard = () => {
   }, []);
 
   const checkAuth = async () => {
+    const token = localStorage.getItem('admin_session');
+    if (!token) {
+      navigate('/admin/login');
+      return;
+    }
     try {
-      const { data, error } = await supabase.functions.invoke('admin-session');
+      const { data, error } = await supabase.functions.invoke('admin-session', {
+        headers: { 'x-admin-token': token },
+      });
       if (error || !data?.authenticated) {
+        localStorage.removeItem('admin_session');
         navigate('/admin/login');
       }
     } catch (error) {
@@ -56,10 +64,12 @@ const AdminDashboard = () => {
   };
 
   const loadItems = async () => {
+    const token = localStorage.getItem('admin_session');
     try {
       setLoading(true);
       const { data, error } = await supabase.functions.invoke('admin-items', {
         method: 'GET',
+        headers: token ? { 'x-admin-token': token } : {},
       });
 
       if (error) throw error;
@@ -119,10 +129,12 @@ const AdminDashboard = () => {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this item?')) return;
+    const token = localStorage.getItem('admin_session');
 
     try {
       const { error } = await supabase.functions.invoke('admin-item', {
         body: { id, action: 'delete' },
+        headers: token ? { 'x-admin-token': token } : {},
       });
 
       if (error) throw error;
@@ -144,6 +156,7 @@ const AdminDashboard = () => {
 
   const uploadImage = async (): Promise<string | null> => {
     if (!imageFile) return null;
+    const token = localStorage.getItem('admin_session');
 
     try {
       const { data: urlData, error: urlError } = await supabase.functions.invoke('admin-upload-url', {
@@ -151,6 +164,7 @@ const AdminDashboard = () => {
           fileName: imageFile.name,
           contentType: imageFile.type,
         },
+        headers: token ? { 'x-admin-token': token } : {},
       });
 
       if (urlError) throw urlError;
@@ -192,9 +206,13 @@ const AdminDashboard = () => {
         published: formData.published,
       };
 
+      const token = localStorage.getItem('admin_session');
+      const headers = token ? { 'x-admin-token': token } : {};
+
       if (editingItem) {
         const { error } = await supabase.functions.invoke('admin-item', {
           body: { id: editingItem.id, action: 'update', ...itemData },
+          headers,
         });
         if (error) throw error;
         toast({
@@ -204,6 +222,7 @@ const AdminDashboard = () => {
       } else {
         const { error } = await supabase.functions.invoke('admin-items', {
           body: { action: 'create', ...itemData },
+          headers,
         });
         if (error) throw error;
         toast({
