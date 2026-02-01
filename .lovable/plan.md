@@ -1,62 +1,175 @@
 
-# Kitchen Dashboard - Fixing Deployment Issue
 
-## Problem Identified
-The code files in the repository are **correct** and contain the two-column layout you requested:
-- `src/pages/KitchenDashboard.tsx` has `grid md:grid-cols-2` with separate Pending/Paid tables
-- `src/components/kitchen/OrderTable.tsx` has item name previews and acknowledge buttons
-- `src/hooks/useKitchenAlert.ts` has the continuous alert sound
+# Continuous Alert Sound System - Fix Plan
 
-**But your browser is showing the OLD version** with "Today's Orders" single table layout.
+## Problem Summary
+The current alert system has these issues:
+1. **Sound is NOT truly continuous** - plays once, then silence for 1.2 seconds, repeat
+2. **Sounds are too short** (0.15 to 1.5 seconds) with audible gaps
+3. **No maximum timeout** - you want a 2.5-minute safety cutoff
+4. **No audio file support** - currently only uses Web Audio API generated sounds
 
-## Root Cause
-This is a browser/deployment caching issue - the new code was saved but your browser is serving a cached version of the old JavaScript bundle.
+## Solution Overview
 
-## Solution
+We will:
+1. Make the alert **truly continuous** (no gaps) by using HTML5 `<audio>` element with `loop=true`
+2. Add **2.5-minute auto-stop** safety feature
+3. Support **both** built-in synth sounds AND audio file URLs
+4. Let you paste an MP3/WAV URL later when you find one you like
 
-### Step 1: Force Hard Refresh
-On the kitchen dashboard page (`/admin/kitchen`):
-- **Windows/Linux**: Press `Ctrl + Shift + R`
-- **Mac**: Press `Cmd + Shift + R`
-- Or: Open DevTools (F12) → Right-click refresh button → "Empty Cache and Hard Reload"
+---
 
-### Step 2: Clear Site Data (if Step 1 doesn't work)
-1. Open browser DevTools (F12)
-2. Go to **Application** tab
-3. Click **Clear site data**
-4. Refresh the page
+## Technical Changes
 
-### Step 3: Verify the New Layout
-After refresh, you should see:
-- Two side-by-side cards: "Pending Orders" (left) and "Paid Orders" (right)
-- Header shows counts for both Pending and Paid
-- Paid orders have a pulsing red "ACK" button when unacknowledged
-- Item names like "Burger, Coffee +2 more" instead of just "1 items"
+### File 1: `src/hooks/useKitchenAlert.ts` (Major Rewrite)
 
-## What the New Dashboard Looks Like
+**Current Behavior:**
+```text
+[SOUND]  ────gap────  [SOUND]  ────gap────  [SOUND]
+  0.5s      0.7s        0.5s      0.7s        0.5s
+```
 
-| Left Column | Right Column |
-|-------------|--------------|
-| ⏳ **Pending Orders (X)** | ✅ **Paid Orders (Y)** |
-| Orders awaiting payment | Orders that have been paid |
-| No alert sound | Continuous alert + ACK button |
-| Yellow header | Green header |
-| Expandable rows | Expandable rows + Acknowledge |
+**New Behavior:**
+```text
+[──────CONTINUOUS AUDIO LOOP──────────────────────>
+  No gaps, plays until ACK or 2.5 min timeout
+```
 
-## Technical Details
+**Changes:**
+- Add support for HTML5 `<audio>` element with `loop=true`
+- Add `maxDuration` parameter (default 150 seconds = 2.5 minutes)
+- Auto-stop after timeout, but keep "unacknowledged" badge visible
+- Support both modes:
+  - **Built-in synth**: Uses Web Audio API with tighter loop (every 600ms instead of 1200ms)
+  - **Audio file**: Uses `<audio>` tag with loop for truly gapless playback
 
-### Files Already Created/Updated:
-1. `src/hooks/useKitchenAlert.ts` - Web Audio API chime loop (C5-E5-G5 arpeggio)
-2. `src/components/kitchen/OrderTable.tsx` - Reusable table with item preview, expand, ACK button
-3. `src/pages/KitchenDashboard.tsx` - Two-column grid with realtime listeners
-4. `src/components/RouteAwareCookieConsent.tsx` - Hides cookies on admin/staff routes
+**New Hook Interface:**
+```typescript
+interface UseKitchenAlertOptions {
+  soundId: string;           // 'chime', 'bell', etc. OR 'custom'
+  customAudioUrl?: string;   // MP3/WAV URL when soundId='custom'
+  maxDuration?: number;      // Default 150000ms (2.5 min)
+}
 
-### Key Features Implemented:
-- **Sound triggers only for PAID orders** (not pending)
-- **Continuous loop** until staff clicks "ACK" button
-- **Item names shown** in collapsed row (e.g., "Burger, Coffee +2 more")
-- **Expandable details** with notes, extras, customer info
-- **Real-time movement** from Pending to Paid when payment completes
+const { isPlaying, startAlert, stopAlert, initAudioContext } = 
+  useKitchenAlert(options);
+```
 
-## If Issue Persists
-I can rebuild the KitchenDashboard component with a slightly different approach to force a new bundle hash, ensuring the browser fetches fresh code.
+### File 2: `src/components/kitchen/SoundPicker.tsx` (Enhance)
+
+**Add:**
+- New option: "Custom URL" at the bottom of the list
+- Text input field to paste an MP3/WAV URL
+- "Test URL" button to preview the custom sound
+- Save custom URL to localStorage alongside sound choice
+
+**New UI:**
+```text
+┌────────────────────────────────────────────┐
+│  Choose Alert Sound                    [X] │
+├────────────────────────────────────────────┤
+│  ○ Chime Arpeggio          [Test] [Loop]  │
+│  ○ Bell Ring               [Test] [Loop]  │
+│  ○ Alarm                   [Test] [Loop]  │
+│  ...                                       │
+│  ○ Custom Audio URL                        │
+│    ┌────────────────────────────────────┐  │
+│    │ https://example.com/alarm.mp3     │  │
+│    └────────────────────────────────────┘  │
+│    [Test URL] [Loop Preview]               │
+├────────────────────────────────────────────┤
+│  [Cancel]              [Use This Sound]    │
+└────────────────────────────────────────────┘
+```
+
+### File 3: `src/pages/KitchenDashboard.tsx` (Minor Update)
+
+**Changes:**
+- Pass `customAudioUrl` from localStorage to the hook
+- Add timeout callback to show toast when auto-stopped after 2.5 min
+- Keep badge visible even after timeout (staff should still acknowledge)
+
+### File 4: `src/components/kitchen/OrderTable.tsx` (No Change)
+
+Already has the ACK button - no changes needed.
+
+---
+
+## Sound Looping Approach
+
+### For Built-in Synth Sounds:
+```typescript
+// Tighter loop with no gaps
+intervalRef.current = setInterval(() => {
+  playSound();
+}, 600); // Reduced from 1200ms
+
+// Also extend each sound duration
+// E.g., chime now sustains 0.3s per note instead of 0.15s
+```
+
+### For Custom Audio URL:
+```typescript
+// True seamless loop using HTML5 Audio
+const audio = new Audio(customAudioUrl);
+audio.loop = true;
+audio.volume = 0.8;
+audio.play();
+
+// Stop after 2.5 min max
+setTimeout(() => {
+  audio.pause();
+  audio.currentTime = 0;
+}, 150000);
+```
+
+---
+
+## Safety Timeout Logic
+
+```text
+                   2.5 Minutes
+    ├─────────────────────────────────────────┤
+    │                                         │
+    │   SOUND PLAYING CONTINUOUSLY            │ → Auto-stop sound
+    │                                         │   Badge still shows
+    ├─────────────────────────────────────────┤
+                                              ▼
+                               Toast: "Alert timed out after 2.5 min"
+                               Badge: Still shows "New!" until ACK
+```
+
+---
+
+## Files Summary
+
+| File | Change Type | Description |
+|------|------------|-------------|
+| `src/hooks/useKitchenAlert.ts` | **Rewrite** | Add audio file support, 2.5 min timeout, tighter loop |
+| `src/components/kitchen/SoundPicker.tsx` | **Enhance** | Add custom URL input, loop preview button |
+| `src/pages/KitchenDashboard.tsx` | **Minor** | Pass custom URL, handle timeout callback |
+
+---
+
+## How to Use Custom Audio Later
+
+Once implemented, you can:
+1. Click the "Sound" button in kitchen dashboard
+2. Scroll to "Custom Audio URL" option
+3. Paste any public MP3/WAV URL (e.g., from freesound.org, soundcloud direct link, etc.)
+4. Click "Test URL" to preview
+5. Click "Use This Sound" to save
+
+The URL will be stored in localStorage and used for all future alerts.
+
+---
+
+## Expected Result
+
+After this fix:
+- Alert plays **continuously with no gaps** until acknowledged
+- Automatically stops after **2.5 minutes** (safety feature)
+- Badge stays visible until staff clicks ACK
+- Staff can choose between **10 built-in sounds** OR paste a **custom MP3/WAV URL**
+- Custom URL saved to browser for future use
+
