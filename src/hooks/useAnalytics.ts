@@ -62,7 +62,9 @@ export const useAnalytics = () => {
           session_id: sessionId,
           page_path: pagePath,
           page_title: pageTitle || document.title,
-          referrer: document.referrer || null
+          referrer: document.referrer || null,
+          scroll_depth: 0,
+          engagement_time: 0
         });
 
       lastPageView.current = pagePath;

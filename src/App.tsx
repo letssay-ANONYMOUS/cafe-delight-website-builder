@@ -24,6 +24,7 @@ import KitchenDashboard from "./pages/KitchenDashboard";
 import StaffLogin from "./pages/StaffLogin";
 import NotFound from "./pages/NotFound";
 import MenuItemDetail from "./pages/MenuItemDetail";
+import AnalyticsDashboard from "./pages/AnalyticsDashboard";
 import ProductDetail from "./pages/ProductDetail";
 
 const queryClient = new QueryClient();
@@ -54,6 +55,7 @@ const App = () => (
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/kitchen" element={<KitchenDashboard />} />
               <Route path="/staff/login" element={<StaffLogin />} />
+              <Route path="/visitors" element={<AnalyticsDashboard />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      anonymous_visitors: {
+        Row: {
+          browser: string | null
+          browser_version: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          device_type: string | null
+          fingerprint: string | null
+          id: string
+          ip_address: string | null
+          last_seen_at: string
+          os: string | null
+          screen_resolution: string | null
+          timezone: string | null
+          visitor_id: string
+        }
+        Insert: {
+          browser?: string | null
+          browser_version?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          device_type?: string | null
+          fingerprint?: string | null
+          id?: string
+          ip_address?: string | null
+          last_seen_at?: string
+          os?: string | null
+          screen_resolution?: string | null
+          timezone?: string | null
+          visitor_id: string
+        }
+        Update: {
+          browser?: string | null
+          browser_version?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          device_type?: string | null
+          fingerprint?: string | null
+          id?: string
+          ip_address?: string | null
+          last_seen_at?: string
+          os?: string | null
+          screen_resolution?: string | null
+          timezone?: string | null
+          visitor_id?: string
+        }
+        Relationships: []
+      }
       menu_item_views: {
         Row: {
           action: string
@@ -223,32 +274,88 @@ export type Database = {
         }
         Relationships: []
       }
+      page_interactions: {
+        Row: {
+          created_at: string
+          element_selector: string | null
+          element_text: string | null
+          id: string
+          interaction_type: string
+          page_path: string
+          scroll_depth: number | null
+          session_id: string | null
+          visitor_id: string
+          x_position: number | null
+          y_position: number | null
+        }
+        Insert: {
+          created_at?: string
+          element_selector?: string | null
+          element_text?: string | null
+          id?: string
+          interaction_type: string
+          page_path: string
+          scroll_depth?: number | null
+          session_id?: string | null
+          visitor_id: string
+          x_position?: number | null
+          y_position?: number | null
+        }
+        Update: {
+          created_at?: string
+          element_selector?: string | null
+          element_text?: string | null
+          id?: string
+          interaction_type?: string
+          page_path?: string
+          scroll_depth?: number | null
+          session_id?: string | null
+          visitor_id?: string
+          x_position?: number | null
+          y_position?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "page_interactions_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "visitor_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       page_views: {
         Row: {
+          engagement_time: number | null
           id: string
           page_path: string
           page_title: string | null
           referrer: string | null
+          scroll_depth: number | null
           session_id: string | null
           time_on_page: number | null
           viewed_at: string
           visitor_id: string
         }
         Insert: {
+          engagement_time?: number | null
           id?: string
           page_path: string
           page_title?: string | null
           referrer?: string | null
+          scroll_depth?: number | null
           session_id?: string | null
           time_on_page?: number | null
           viewed_at?: string
           visitor_id: string
         }
         Update: {
+          engagement_time?: number | null
           id?: string
           page_path?: string
           page_title?: string | null
           referrer?: string | null
+          scroll_depth?: number | null
           session_id?: string | null
           time_on_page?: number | null
           viewed_at?: string
