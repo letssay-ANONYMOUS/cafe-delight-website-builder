@@ -1,5 +1,5 @@
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const ADMIN_TOKEN_KEY = 'admin_session_token';
+const ADMIN_TOKEN_KEY = 'admin_session';
 
 interface MenuItemData {
   title: string;
@@ -32,9 +32,9 @@ export const adminService = {
         return { success: false, error: data.error || 'Login failed' };
       }
 
-      // Store token in localStorage
-      if (data.token) {
-        localStorage.setItem(ADMIN_TOKEN_KEY, data.token);
+      // Store session token in localStorage
+      if (data.sessionToken) {
+        localStorage.setItem(ADMIN_TOKEN_KEY, data.sessionToken);
       }
 
       return { success: true };

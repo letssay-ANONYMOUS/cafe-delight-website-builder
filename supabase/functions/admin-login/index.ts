@@ -33,19 +33,9 @@ serve(async (req) => {
     }
 
     console.log('Login attempt received');
-    console.log('Password provided length:', password.length);
-    console.log('Stored password length:', storedPassword.length);
-    console.log('Password match:', password === storedPassword);
 
-    // Simple password comparison (stored password can be plain text or hash)
-    // For bcrypt hashes that fail, fall back to direct comparison
-    let isValid = false;
-    
-    // Direct password comparison (for plain text stored password)
-    // Trim both to handle any trailing whitespace
-    if (password.trim() === storedPassword.trim()) {
-      isValid = true;
-    }
+    // Direct password comparison (trim to handle any whitespace)
+    const isValid = password.trim() === storedPassword.trim();
 
     if (!isValid) {
       console.log('Invalid password attempt');

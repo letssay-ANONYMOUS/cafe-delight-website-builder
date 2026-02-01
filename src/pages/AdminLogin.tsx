@@ -24,7 +24,8 @@ const AdminLogin = () => {
 
       if (error) throw error;
 
-      if (data.success) {
+      if (data.success && data.sessionToken) {
+        localStorage.setItem('admin_session', data.sessionToken);
         toast({
           title: 'Success',
           description: 'Logged in successfully',
