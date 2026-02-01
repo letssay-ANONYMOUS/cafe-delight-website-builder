@@ -1,3 +1,4 @@
+// Kitchen Dashboard v2 - Two-column Pending/Paid layout with audio alerts
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
