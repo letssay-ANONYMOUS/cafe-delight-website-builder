@@ -1,123 +1,195 @@
 
-## What’s happening (why it feels like I’m “asking again”)
-Right now the login cannot succeed because the backend is comparing your entered password to a stored secret value that is **not the same string**.
+# Kitchen Dashboard Enhancement Plan
 
-I verified this by calling the backend login endpoint directly:
-- It consistently returns **“Invalid password”**
-- Backend logs show the stored password is **13 characters long**
-- Both `CafeAdmin2026!` (14 chars) and `CafeAdmin2026` (13 chars) still fail, meaning the stored secret is a *different* 13‑character string
-
-I cannot read the secret value for security reasons, so the only reliable fix is to **overwrite it once to a known value**, then we test immediately.
+## Summary
+Redesign the kitchen dashboard with two separate tables (Pending/Paid), implement a continuous alert sound for PAID orders only with an acknowledgement button, remove cookie consent from staff/admin pages, and remove the cash payment option.
 
 ---
 
-## Goals you asked for
-1) **Basic functionality works** (login → kitchen dashboard)
-2) Analytics access can remain “same password” for now; later we can add a separate analytics password
-3) Stop the confusion/mismatch issues
+## Current State
+- **Kitchen Dashboard**: Single table showing all orders, plays short beep on ANY new order (including pending)
+- **Checkout Page**: Currently allows card payments via Ziina (no cash option exists already)
+- **Cookie Consent**: Shows on ALL pages including admin/staff/visitors
+- **Order Table**: Shows item count but not item names in the main row
 
 ---
 
-## Implementation plan
+## Changes Overview
 
-### Phase A — Make the password work (one decisive reset)
-1) **Overwrite the backend secret** `ADMIN_PASSWORD_HASH` to a new known password (copy/paste exactly):
-   - Suggested temporary password (simple, no symbols):  
-     `NawaKitchen2026`
-2) Keep `SESSION_SECRET` as-is (it’s already present and required for session tokens).
-3) Immediately verify backend accepts the new password by performing a test login request (I’ll run this verification once you’ve saved it).
+### 1. Two-Column Layout: Pending vs Paid
 
-**Success criteria:** a login request returns `{ success: true, sessionToken: "..." }`.
+| Pending Orders (Left) | Paid Orders (Right) |
+|-----------------------|---------------------|
+| Shows when checkout starts | Shows when payment completes |
+| Yellow badge | Green badge with glow |
+| No alert sound | Continuous alert + Acknowledge button |
+| Shows item names | Shows item names |
+| Expandable for notes | Expandable for notes |
 
----
+### 2. Continuous Alert for PAID Orders Only
+- Loop a pleasant chime sound when new PAID order arrives
+- Sound continues until staff clicks "Acknowledge" button
+- Pulsing red button for unacknowledged paid orders
+- Sound stops per-order when acknowledged
 
-### Phase B — Fix the staff flow to land on the kitchen dashboard (code change)
-Update the staff login screen to match what you selected:
-1) In `src/pages/StaffLogin.tsx`:
-   - After successful login, redirect to **`/admin/kitchen`** (kitchen dashboard), not `/visitors`
-   - Update the toast text to say “Redirecting to kitchen dashboard…”
+### 3. Remove Cookie Consent from Staff Pages
+Hide the cookie consent banner on:
+- `/admin/*` (Admin dashboard, login)
+- `/staff/*` (Staff login)
+- `/admin/kitchen` (Kitchen dashboard)
+- `/visitors` (Analytics)
 
-**Success criteria:** staff enters password → goes straight to kitchen dashboard.
-
----
-
-### Phase C — Fix broken admin authentication plumbing (so “basic functionality” is actually consistent)
-Right now there are multiple inconsistent token keys / auth styles, which causes random “not working” behavior:
-
-#### C1) Standardize the session token storage key everywhere
-- Use **one** localStorage key: `admin_session`  
-Currently:
-- Kitchen + Analytics + StaffLogin use `admin_session`
-- `adminService.ts` uses `admin_session_token` (different) → breaks admin modal login
-
-Plan:
-1) Update `src/services/adminService.ts` to use `admin_session` and store/read `sessionToken` (not `token`)
-2) Update `src/components/AdminPasswordModal.tsx` will work automatically once `adminService` is fixed
-
-#### C2) Ensure admin pages actually send the token to protected backend functions
-Some pages call protected backend functions but **don’t include the token header**, so they always fail auth.
-
-Plan:
-1) In `src/pages/AdminLogin.tsx`:
-   - Store `data.sessionToken` into `localStorage('admin_session')` on success
-2) In `src/pages/AdminDashboard.tsx`:
-   - For `admin-session`, `admin-items`, `admin-item`, `admin-upload-url` calls: include header `x-admin-token: <token>`
-   - If token missing/invalid, redirect to `/admin/login`
-
-#### C3) Fix backend upload auth mismatch (cookie vs token)
-`supabase/functions/admin-upload-url/index.ts` currently checks a cookie named `admin_session`, but your login system uses localStorage + `x-admin-token`.
-
-Plan:
-1) Update `supabase/functions/admin-upload-url/index.ts` to validate using the same `x-admin-token` HMAC method as `admin-items` / `admin-item`
-2) This makes image uploading in the admin dashboard actually work again
+### 4. Show Item Names in Table
+- Display first 2-3 item names in the collapsed row
+- Show "Burger, Coffee, +2 more" format
+- Full details with notes in expanded view
 
 ---
 
-### Phase D — Remove sensitive debug logs from login (cleanup)
-`admin-login` currently logs password lengths and match results. That’s useful for debugging but not good to keep.
+## Technical Implementation
 
-Plan:
-1) Remove the detailed password debug logs from `supabase/functions/admin-login/index.ts`
-2) Keep only minimal operational logs (e.g., “login attempt”, “success”, “invalid password”)
+### Files to Create
 
----
+**`src/hooks/useKitchenAlert.ts`** (NEW)
+- Web Audio API continuous chime loop
+- Musical arpeggio pattern (C5 -> E5 -> G5)
+- `startAlert()` and `stopAlert()` methods
+- Volume control (0.5 for audibility)
 
-### Phase E — End-to-end verification checklist (so we stop going in circles)
-After the secret reset + code changes, we verify these flows in order:
+**`src/components/kitchen/OrderTable.tsx`** (NEW)
+- Reusable table component
+- Props: `orders`, `type: 'pending' | 'paid'`, `onAcknowledge`
+- Shows item names preview
+- Expandable rows with notes form
 
-1) **Staff login**
-   - Go to `/staff/login`
-   - Enter `NawaKitchen2026`
-   - Confirm redirect to `/admin/kitchen`
+### Files to Modify
 
-2) **Kitchen dashboard access**
-   - Refresh the page on `/admin/kitchen`
-   - Confirm it does NOT bounce you back to login (token validated)
+**`src/pages/KitchenDashboard.tsx`**
+- Split into two-column responsive grid
+- Left: Pending orders (payment_status = 'pending')
+- Right: Paid orders (payment_status = 'paid')
+- Track `unacknowledgedOrders` state (Set of order IDs)
+- Listen for realtime UPDATE when payment_status changes to 'paid'
+- Trigger continuous alert ONLY for newly paid orders
+- Add Acknowledge button for each paid order
 
-3) **Analytics access (same password for now)**
-   - Go to `/visitors`
-   - Confirm it loads (and if not authenticated, it sends you to `/staff/login`)
-
-4) **Admin dashboard basics (optional but recommended)**
-   - Go to `/admin/login`
-   - Login, confirm it stores token and doesn’t immediately redirect you out
-   - Confirm menu items load
-
-5) **Publishing (for your real domain)**
-   - After we confirm everything works in preview, publish the frontend so routes like `/visitors` and `/admin/kitchen` work on your live domain too.
-
----
-
-## Risks / edge cases we’re addressing
-- Secret saved to a value you didn’t intend (common with copy/paste or multiple environments)
-- Multiple token key names (`admin_session` vs `admin_session_token`)
-- Protected backend functions being called without required headers
-- Upload endpoint using cookie auth while the app uses token auth
-- Different session expiry logic across pages/functions
+**`src/App.tsx`**
+- Wrap CookieConsent in route-aware component
+- Check if current path starts with `/admin`, `/staff`, or `/visitors`
+- Only render CookieConsent on customer-facing pages
 
 ---
 
-## Next improvements (later, once basic works)
-- Add a separate password for `/visitors` (analytics-only)
-- Replace password-only auth with real user accounts + roles
-- Add a simple “Staff home” screen (Kitchen / Analytics buttons) after login
+## Alert Sound Logic
+
+```text
+Order Flow:
+                                       
+  Customer                Kitchen Dashboard
+  ────────                ─────────────────
+      │                         │
+      │ Checkout (no payment)   │
+      ├────────────────────────►│ INSERT order (pending)
+      │                         │ → Appears in LEFT table
+      │                         │ → NO sound
+      │                         │
+      │ Payment Success         │
+      ├────────────────────────►│ UPDATE order (paid)
+      │                         │ → Moves to RIGHT table
+      │                         │ → CONTINUOUS SOUND starts
+      │                         │
+                                │ Staff clicks [Acknowledge]
+                                │ → Sound stops for that order
+```
+
+---
+
+## UI Layout
+
+```text
+┌───────────────────────────────────────────────────────────────────────┐
+│  Kitchen Dashboard                    [🔊] [↻] [↗]    Feb 1, 2026    │
+├───────────────────────────────────────────────────────────────────────┤
+│                                                                       │
+│  ┌─────────────────────────────┐  ┌─────────────────────────────────┐ │
+│  │  ⏳ PENDING (3)             │  │  ✅ PAID (2)                    │ │
+│  │  ─────────────────────────  │  │  ───────────────────────────    │ │
+│  │                             │  │  ┌─────────────────────────┐    │ │
+│  │  Ahmad | 050-123-4567       │  │  │ ★ Fatima | 055-987-6543│    │ │
+│  │  Burger, Coffee             │  │  │   Pasta, Salad          │    │ │
+│  │  AED 42.00 [▼ Expand]       │  │  │   AED 78.00             │    │ │
+│  │                             │  │  │   [🔔 ACKNOWLEDGE]      │    │ │
+│  │  ─────────────────────────  │  │  │   [▼ Expand]            │    │ │
+│  │                             │  │  └─────────────────────────┘    │ │
+│  │  Basem | 052-111-2222       │  │                                 │ │
+│  │  3 items | AED 96.00        │  │  Naveen | 056-333-4444          │ │
+│  │  [▼ Expand]                 │  │  Croissant, Latte               │ │
+│  │                             │  │  AED 54.00 (acknowledged)       │ │
+│  └─────────────────────────────┘  └─────────────────────────────────┘ │
+│                                                                       │
+└───────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Sound Design
+
+The continuous alert uses Web Audio API:
+- **Pattern**: C5 (523Hz) → E5 (659Hz) → G5 (784Hz) major chord arpeggio
+- **Timing**: 150ms per note, 300ms pause, then repeat
+- **Volume**: 0.5 (loud but not harsh)
+- **Type**: Sine wave for pleasant cafe sound
+
+---
+
+## Detailed Steps
+
+### Step 1: Create Kitchen Alert Hook
+New file with:
+- `AudioContext` management
+- `isPlaying` state
+- `startAlert()` - begins loop
+- `stopAlert()` - ends loop
+- Auto-cleanup on unmount
+
+### Step 2: Create Reusable OrderTable Component
+Props interface:
+```typescript
+interface OrderTableProps {
+  orders: OrderWithItems[];
+  type: 'pending' | 'paid';
+  unacknowledged?: Set<string>;
+  onAcknowledge?: (orderId: string) => void;
+}
+```
+Features:
+- Item names preview (first 2 items + count)
+- Expandable row with full details
+- Notes display
+- Acknowledge button (paid only)
+- Pulsing animation for unacknowledged
+
+### Step 3: Redesign Kitchen Dashboard
+- Two-column grid (responsive, stacks on mobile)
+- Track `unacknowledgedOrders` in state
+- On realtime UPDATE to 'paid': add to unacknowledged set, start sound
+- On acknowledge click: remove from set, stop sound if set empty
+
+### Step 4: Route-Aware Cookie Consent in App.tsx
+```typescript
+// Paths where cookie consent should NOT show
+const EXCLUDED_PATHS = ['/admin', '/staff', '/visitors'];
+
+// Wrap CookieConsent with location check
+```
+
+---
+
+## File Summary
+
+| File | Action | Description |
+|------|--------|-------------|
+| `src/hooks/useKitchenAlert.ts` | CREATE | Continuous audio loop hook |
+| `src/components/kitchen/OrderTable.tsx` | CREATE | Reusable order table with acknowledge |
+| `src/pages/KitchenDashboard.tsx` | REWRITE | Two-column layout, alert integration |
+| `src/App.tsx` | MODIFY | Route-aware cookie consent |
