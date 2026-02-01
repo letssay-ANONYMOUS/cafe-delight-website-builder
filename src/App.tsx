@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "@/contexts/CartContext";
 import { AdminProvider } from "@/contexts/AdminContext";
-import { CookieConsent } from "@/components/CookieConsent";
+import { RouteAwareCookieConsent } from "@/components/RouteAwareCookieConsent";
 import PageViewTracker from "@/components/PageViewTracker";
 import Home from "./pages/Home";
 import MenuPage from "./pages/MenuPage";
@@ -59,8 +59,8 @@ const App = () => (
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <RouteAwareCookieConsent />
           </BrowserRouter>
-          <CookieConsent />
         </TooltipProvider>
       </CartProvider>
     </AdminProvider>
