@@ -319,6 +319,41 @@ const KitchenDashboard = () => {
                     <span className="text-xs">Sound</span>
                   </Button>
 
+                  {/* Test Continuous Alert Button */}
+                  <Button
+                    variant={isPlaying ? "destructive" : "outline"}
+                    size="sm"
+                    onClick={() => {
+                      if (isPlaying) {
+                        stopAlert();
+                        toast({ 
+                          title: "Alert Stopped",
+                          description: "Continuous alert has been stopped."
+                        });
+                      } else {
+                        startAlert();
+                        toast({ 
+                          title: "Testing Continuous Alert",
+                          description: "Alert will loop for 2.5 minutes or until you click Stop.",
+                          duration: 5000,
+                        });
+                      }
+                    }}
+                    className="hidden sm:flex items-center gap-2"
+                  >
+                    {isPlaying ? (
+                      <>
+                        <VolumeX className="w-4 h-4" />
+                        <span className="text-xs">Stop Alert</span>
+                      </>
+                    ) : (
+                      <>
+                        <Volume2 className="w-4 h-4" />
+                        <span className="text-xs">Test Alert</span>
+                      </>
+                    )}
+                  </Button>
+
                   {/* Sound Toggle */}
                   <div className="flex items-center gap-2">
                     <Label htmlFor="sound" className="sr-only">Sound</Label>
