@@ -1,6 +1,6 @@
 import { useRef, useCallback, useEffect, useState } from 'react';
 
-// Sound definitions with LONGER durations for continuous feel
+// Sound definitions with MAXIMUM VOLUME for loud kitchen environments
 const soundLibrary: Record<string, (ctx: AudioContext) => void> = {
   chime: (ctx) => {
     const notes = [523.25, 659.25, 783.99];
@@ -13,7 +13,7 @@ const soundLibrary: Record<string, (ctx: AudioContext) => void> = {
       osc.type = 'sine';
       const start = ctx.currentTime + i * 0.12;
       gain.gain.setValueAtTime(0, start);
-      gain.gain.linearRampToValueAtTime(0.5, start + 0.02);
+      gain.gain.linearRampToValueAtTime(1.0, start + 0.02);
       gain.gain.exponentialRampToValueAtTime(0.01, start + 0.25);
       osc.start(start);
       osc.stop(start + 0.25);
@@ -26,7 +26,7 @@ const soundLibrary: Record<string, (ctx: AudioContext) => void> = {
     gain.connect(ctx.destination);
     osc.frequency.value = 880;
     osc.type = 'sine';
-    gain.gain.setValueAtTime(0.6, ctx.currentTime);
+    gain.gain.setValueAtTime(1.0, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
     osc.start();
     osc.stop(ctx.currentTime + 0.5);
@@ -40,7 +40,7 @@ const soundLibrary: Record<string, (ctx: AudioContext) => void> = {
       osc.frequency.value = freq;
       osc.type = 'sine';
       const start = ctx.currentTime + i * 0.2;
-      gain.gain.setValueAtTime(0.5, start);
+      gain.gain.setValueAtTime(1.0, start);
       gain.gain.exponentialRampToValueAtTime(0.01, start + 0.25);
       osc.start(start);
       osc.stop(start + 0.25);
@@ -55,7 +55,7 @@ const soundLibrary: Record<string, (ctx: AudioContext) => void> = {
       osc.frequency.value = 1000;
       osc.type = 'square';
       const start = ctx.currentTime + delay;
-      gain.gain.setValueAtTime(0.3, start);
+      gain.gain.setValueAtTime(1.0, start);
       gain.gain.setValueAtTime(0, start + 0.1);
       osc.start(start);
       osc.stop(start + 0.1);
@@ -68,7 +68,7 @@ const soundLibrary: Record<string, (ctx: AudioContext) => void> = {
     gain.connect(ctx.destination);
     osc.frequency.value = 1318.51;
     osc.type = 'sine';
-    gain.gain.setValueAtTime(0.4, ctx.currentTime);
+    gain.gain.setValueAtTime(1.0, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
     osc.start();
     osc.stop(ctx.currentTime + 0.4);
@@ -82,7 +82,7 @@ const soundLibrary: Record<string, (ctx: AudioContext) => void> = {
       osc.frequency.value = freq;
       osc.type = 'triangle';
       const start = ctx.currentTime + i * 0.08;
-      gain.gain.setValueAtTime(0.4, start);
+      gain.gain.setValueAtTime(1.0, start);
       gain.gain.exponentialRampToValueAtTime(0.01, start + 0.18);
       osc.start(start);
       osc.stop(start + 0.18);
@@ -97,7 +97,7 @@ const soundLibrary: Record<string, (ctx: AudioContext) => void> = {
       osc.frequency.value = freq;
       osc.type = 'sine';
       const start = ctx.currentTime + i * 0.04;
-      gain.gain.setValueAtTime(0.3, start);
+      gain.gain.setValueAtTime(1.0, start);
       gain.gain.exponentialRampToValueAtTime(0.01, start + 0.12);
       osc.start(start);
       osc.stop(start + 0.12);
@@ -110,7 +110,7 @@ const soundLibrary: Record<string, (ctx: AudioContext) => void> = {
     gain.connect(ctx.destination);
     osc.frequency.value = 1174.66;
     osc.type = 'triangle';
-    gain.gain.setValueAtTime(0.5, ctx.currentTime);
+    gain.gain.setValueAtTime(1.0, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
     osc.start();
     osc.stop(ctx.currentTime + 0.25);
@@ -122,7 +122,7 @@ const soundLibrary: Record<string, (ctx: AudioContext) => void> = {
     gain.connect(ctx.destination);
     osc.frequency.value = 130.81;
     osc.type = 'sine';
-    gain.gain.setValueAtTime(0.6, ctx.currentTime);
+    gain.gain.setValueAtTime(1.0, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
     osc.start();
     osc.stop(ctx.currentTime + 0.6);
@@ -136,7 +136,7 @@ const soundLibrary: Record<string, (ctx: AudioContext) => void> = {
       osc.frequency.value = 800;
       osc.type = 'sine';
       const start = ctx.currentTime + delay;
-      gain.gain.setValueAtTime(0.4, start);
+      gain.gain.setValueAtTime(1.0, start);
       gain.gain.exponentialRampToValueAtTime(0.01, start + 0.1);
       osc.start(start);
       osc.stop(start + 0.1);
@@ -218,7 +218,7 @@ export const useKitchenAlert = (options: UseKitchenAlertOptions | string = 'chim
       try {
         const audio = new Audio(customUrlRef.current);
         audio.loop = true;
-        audio.volume = 0.8;
+        audio.volume = 1.0;
         htmlAudioRef.current = audio;
         
         audio.play().catch(err => {
@@ -287,7 +287,7 @@ export const useKitchenAlert = (options: UseKitchenAlertOptions | string = 'chim
     return new Promise((resolve) => {
       try {
         const audio = new Audio(url);
-        audio.volume = 0.8;
+        audio.volume = 1.0;
         
         audio.oncanplaythrough = () => {
           audio.play()
@@ -315,7 +315,7 @@ export const useKitchenAlert = (options: UseKitchenAlertOptions | string = 'chim
       try {
         const audio = new Audio(url);
         audio.loop = true;
-        audio.volume = 0.8;
+        audio.volume = 1.0;
         
         audio.oncanplaythrough = () => {
           audio.play()
