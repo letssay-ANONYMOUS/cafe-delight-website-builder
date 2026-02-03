@@ -238,11 +238,16 @@ const KitchenDashboard = () => {
 
           setOrders(prev => [newOrder, ...prev]);
           
-          // Only show toast for new pending orders (no sound)
+          // Trigger alert for new pending orders
           if (newOrder.payment_status === 'pending') {
+            // Add to unacknowledged set to trigger alert sound
+            setUnacknowledgedOrders(prev => new Set([...prev, newOrder.id]));
+            // Auto-switch to pending view
+            setActiveView("pending");
             toast({
               title: "📋 New Pending Order",
               description: `Order ${newOrder.order_number} from ${newOrder.customer_name}`,
+              className: "bg-yellow-50 border-yellow-300"
             });
           }
         }
@@ -259,14 +264,8 @@ const KitchenDashboard = () => {
           const updatedOrder = payload.new as Order;
           const oldOrder = payload.old as Partial<Order>;
           
-          // Check if order just changed to 'paid'
+          // Check if order just changed to 'paid' - only show toast, no sound
           if (updatedOrder.payment_status === 'paid' && oldOrder.payment_status !== 'paid') {
-            // Add to unacknowledged set to trigger alert
-            setUnacknowledgedOrders(prev => new Set([...prev, updatedOrder.id]));
-            
-            // Auto-switch to paid view when new paid order comes in
-            setActiveView("paid");
-            
             toast({
               title: "💰 Order Paid!",
               description: `Order ${updatedOrder.order_number} from ${updatedOrder.customer_name} is ready!`,
@@ -381,13 +380,14 @@ const KitchenDashboard = () => {
                     <span className="text-xs">Sound</span>
                   </Button>
 
-                  {/* Test Continuous Alert Button */}
+                  {/* Test/Stop Alert Button - Always visible, prominent when playing */}
                   <Button
                     variant={isPlaying ? "destructive" : "outline"}
-                    size="sm"
+                    size={isPlaying ? "default" : "sm"}
                     onClick={() => {
                       if (isPlaying) {
                         stopAlert();
+                        setUnacknowledgedOrders(new Set()); // Clear all unacked orders
                         toast({ 
                           title: "Alert Stopped",
                           description: "Continuous alert has been stopped."
@@ -401,17 +401,17 @@ const KitchenDashboard = () => {
                         });
                       }
                     }}
-                    className="hidden sm:flex items-center gap-2"
+                    className={`flex items-center gap-2 ${isPlaying ? 'animate-pulse shadow-lg' : ''}`}
                   >
                     {isPlaying ? (
                       <>
-                        <VolumeX className="w-4 h-4" />
-                        <span className="text-xs">Stop Alert</span>
+                        <VolumeX className="w-5 h-5" />
+                        <span className="font-semibold">Stop Alert</span>
                       </>
                     ) : (
                       <>
                         <Volume2 className="w-4 h-4" />
-                        <span className="text-xs">Test Alert</span>
+                        <span className="text-xs hidden sm:inline">Test Alert</span>
                       </>
                     )}
                   </Button>

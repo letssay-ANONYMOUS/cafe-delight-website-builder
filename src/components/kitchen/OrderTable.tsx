@@ -147,7 +147,7 @@ export const OrderTable = ({
                       </div>
                     </TableHead>
                   )}
-                  {!isPending && <TableHead className="w-[100px]">Action</TableHead>}
+                  <TableHead className="w-[100px]">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -211,26 +211,24 @@ export const OrderTable = ({
                             )}
                           </TableCell>
                         )}
-                        {!isPending && (
-                          <TableCell onClick={(e) => e.stopPropagation()}>
-                            {isUnacked ? (
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                className="animate-pulse"
-                                onClick={() => onAcknowledge?.(order.id)}
-                              >
-                                <Bell className="w-3 h-3 mr-1" />
-                                ACK
-                              </Button>
-                            ) : (
-                              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
-                                <Check className="w-3 h-3 mr-1" />
-                                Done
-                              </Badge>
-                            )}
-                          </TableCell>
-                        )}
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          {isUnacked ? (
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              className="animate-pulse"
+                              onClick={() => onAcknowledge?.(order.id)}
+                            >
+                              <Bell className="w-3 h-3 mr-1" />
+                              ACK
+                            </Button>
+                          ) : (
+                            <Badge variant="outline" className={isPaid ? "bg-green-50 text-green-700 border-green-300" : "bg-yellow-50 text-yellow-700 border-yellow-300"}>
+                              <Check className="w-3 h-3 mr-1" />
+                              {isPaid ? 'Done' : 'Seen'}
+                            </Badge>
+                          )}
+                        </TableCell>
                       </TableRow>
                       
                       {/* Expanded Details */}
