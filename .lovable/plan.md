@@ -1,121 +1,91 @@
 
-# GA4 Analytics Dashboard Integration
 
-## Overview
-You can absolutely have your `/visitors` page pull data from Google Analytics while ALSO keeping data in the Google Analytics dashboard. Both will show the same data - GA stores it, and we fetch it to display in your custom dashboard.
+# Kitchen Alert on Pending Orders
+
+## Summary
+Move the alert sound trigger from **paid** orders to **pending** orders, ensure the custom audio URL is always used when configured, and make the Stop Alert button visible on all devices.
 
 ---
 
-## How It Works
+## Changes Overview
+
+| File | Change |
+|------|--------|
+| `src/pages/KitchenDashboard.tsx` | Trigger alert on new PENDING orders instead of paid orders |
+| `src/pages/KitchenDashboard.tsx` | Make Stop Alert button visible on mobile (remove `hidden sm:flex`) |
+| `src/pages/KitchenDashboard.tsx` | Add prominent animation when alert is playing |
+| `src/components/kitchen/OrderTable.tsx` | Add ACK button for pending orders |
+
+---
+
+## Detailed Changes
+
+### 1. Move Alert Trigger to Pending Orders
+
+**Current behavior (lines 262-275):**
+- Alert triggers when order status changes TO `paid`
+- Pending orders only show a toast, no sound
+
+**New behavior:**
+- Alert triggers on INSERT when new order has `pending` status
+- Auto-switch to pending view
+- Remove alert trigger from paid status update
 
 ```text
-┌──────────────────────────────────────────────────────────────────┐
-│                     User visits your site                        │
-└───────────────────────────┬──────────────────────────────────────┘
-                            │
-                            ▼
-┌──────────────────────────────────────────────────────────────────┐
-│              Google Analytics 4 (G-B286Z05ZBM)                   │
-│                    Stores ALL the data                           │
-└───────────────────────────┬──────────────────────────────────────┘
-                            │
-            ┌───────────────┴───────────────┐
-            │                               │
-            ▼                               ▼
-┌───────────────────────┐       ┌───────────────────────┐
-│  Google Analytics     │       │  Your /visitors page  │
-│  Dashboard (web)      │       │  (fetches via API)    │
-│  analytics.google.com │       │  Custom Nawa design   │
-└───────────────────────┘       └───────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│  CURRENT FLOW                                               │
+│  New Order → Toast only                                     │
+│  Order becomes PAID → Sound alert + Toast                   │
+├─────────────────────────────────────────────────────────────┤
+│  NEW FLOW                                                   │
+│  New Pending Order → Sound alert + Toast + Auto-switch view │
+│  Order becomes PAID → Toast only (no sound)                 │
+└─────────────────────────────────────────────────────────────┘
 ```
 
----
+### 2. Ensure Custom Audio URL Is Used
 
-## What You'll Get
+The current logic at line 214 in `useKitchenAlert.ts` is correct:
+```typescript
+const useCustomAudio = currentSoundRef.current === 'custom' && customUrlRef.current;
+```
 
-| Feature | Google Dashboard | Your /visitors Page |
-|---------|-----------------|---------------------|
-| Page views | Yes | Yes |
-| Sessions | Yes | Yes |
-| Bounce rate | Yes | Yes |
-| Active users | Yes (real-time) | Yes (via API) |
-| Device breakdown | Yes | Yes |
-| Top pages | Yes | Yes |
-| Custom cafe branding | No | Yes |
-| Order conversion data | No | Yes (from your orders table) |
+The user's saved settings are loaded at lines 68-73 of `KitchenDashboard.tsx`:
+- `selectedSound` from `localStorage.getItem('kitchen_alert_sound')`
+- `customAudioUrl` from `localStorage.getItem('kitchen_alert_custom_url')`
 
----
+These are passed to the hook at lines 87-92. No changes needed here - the custom URL will play correctly.
 
-## Requirements
+### 3. Make Stop Button Always Visible
 
-Before I can implement this, you'll need:
+**Current (line 404):** `className="hidden sm:flex items-center gap-2"`
 
-### 1. GA4 Property ID (Not Measurement ID)
-- Your Measurement ID is `G-B286Z05ZBM`
-- You also need the **Property ID** (a number like `123456789`)
-- Find it: GA Admin → Property Settings → Property ID
+**New:** Remove `hidden sm:flex` and add animation when `isPlaying`:
+- Always visible on all screen sizes
+- Larger and more prominent when alert is playing
+- Pulsing animation to draw attention
 
-### 2. Service Account for API Access
-Since this is a staff-only dashboard, we'll use a service account:
-1. Go to Google Cloud Console
-2. Create a Service Account
-3. Download the JSON key
-4. Add the service account email as a "Viewer" in your GA Property
+### 4. Add ACK Button for Pending Orders
 
-### 3. Store Credentials Securely
-The JSON key will be stored as a secret in your backend
+**Current (line 150):** `{!isPending && <TableHead className="w-[100px]">Action</TableHead>}`
 
----
-
-## Implementation Plan
-
-### Step 1: Create Backend Function
-A new edge function `ga-analytics` that:
-- Authenticates with Google using service account
-- Calls GA4 Data API to fetch metrics
-- Returns data to your dashboard
-
-### Step 2: Update /visitors Dashboard
-Modify `src/pages/AnalyticsDashboard.tsx` to:
-- Fetch from the new edge function instead of database tables
-- Keep orders data from your database (for conversion tracking)
-- Remove dependencies on old tracking tables
-
-### Step 3: Remove Old Tracking
-Delete the old tracking system:
-- `PageViewTracker.tsx`
-- `useAnalytics.ts`
-- `useEssentialTracking.ts`
-- `track-visitor` edge function
-
-### Step 4: Keep Essential Data
-Keep these for cart/orders:
-- `useVisitorId.ts` (for cart persistence)
-- `orders` table queries (for conversion)
+**New:** Always show Action column regardless of order type, allowing staff to acknowledge pending orders and silence the alert.
 
 ---
 
 ## Technical Details
 
-### Edge Function: `supabase/functions/ga-analytics/index.ts`
-```typescript
-// Calls GA4 Data API with service account
-// Endpoint: POST /ga-analytics
-// Body: { dateRange: 'today' | '7days' | '30days' }
-// Returns: { sessions, pageViews, bounceRate, topPages, devices }
-```
+### Alert System Flow
+1. New order inserted with `payment_status: 'pending'`
+2. Realtime subscription fires INSERT event
+3. Order ID added to `unacknowledgedOrders` Set
+4. `useKitchenAlert` starts playing (custom URL if `selectedSound === 'custom'`)
+5. Staff clicks ACK or Stop Alert button
+6. Sound stops immediately
 
-### Dashboard Updates
-- Replace Supabase queries with edge function calls
-- Merge GA data with order conversion data from orders table
-- Maintain existing UI components (charts, tables)
+### Custom Audio Priority
+The hook checks `currentSoundRef.current === 'custom'` first, so:
+- If user selected "custom" in Sound Picker → Custom URL plays
+- If user selected any synth sound → Synth plays
+- Fallback to synth if custom audio fails to load
 
----
-
-## Next Steps
-
-To proceed, I need:
-1. **Your GA4 Property ID** (not the G-B286Z05ZBM, but the numeric ID)
-2. **Confirmation** that you can create a service account in Google Cloud
-
-Would you like me to proceed once you have these? Or would you prefer a simpler approach where I just clean up the old tracking and you use the Google Analytics website directly for analytics?
