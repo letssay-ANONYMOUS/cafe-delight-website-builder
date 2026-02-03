@@ -1,77 +1,93 @@
 
-# Add "Test Continuous Alert" Button to Kitchen Dashboard
+# Google Analytics Integration
 
-## Problem
-There's no way to test the **full 2.5-minute continuous looping alert** without waiting for an actual paid order. Staff needs to hear exactly how the alert will sound in real conditions before a real order comes in.
-
-## Solution
-Add a dedicated "Test Alert" button in the kitchen dashboard header that triggers the exact same continuous alert (loops for up to 2.5 minutes or until manually stopped).
+## Overview
+This plan integrates Google Analytics 4 (GA4) with your Nawa Cafe project, respecting the existing cookie consent system and route exclusion policies.
 
 ---
 
-## Technical Changes
+## What Will Change
 
-### File: `src/pages/KitchenDashboard.tsx`
+### 1. Add GA4 Script to index.html
+Insert the Google Analytics gtag.js snippet in the `<head>` section, but configured to **not send data initially** (consent-aware loading).
 
-**Add a "Test Alert" button** next to the Sound button in the header area (around line 311-320):
+### 2. Create GoogleAnalytics Component
+A new React component that:
+- Listens to cookie consent status
+- Only activates GA tracking when user accepts "analytics" cookies
+- Sends page views on route changes
+- Respects the same route exclusions as your existing tracking (no GA on `/admin`, `/staff`, `/visitors`)
 
-**New UI in header:**
-```
-[Sound] [Test Alert / Stop Alert] [Volume Toggle] [Refresh] [Fullscreen] [Logout]
-```
-
-**Implementation:**
-```typescript
-{/* Test Continuous Alert Button */}
-<Button
-  variant={isPlaying ? "destructive" : "outline"}
-  size="sm"
-  onClick={() => {
-    if (isPlaying) {
-      stopAlert();
-      toast({ 
-        title: "Alert Stopped",
-        description: "Continuous alert has been stopped."
-      });
-    } else {
-      startAlert();
-      toast({ 
-        title: "Testing Continuous Alert",
-        description: "Alert will loop for 2.5 minutes or until you click Stop.",
-        duration: 5000,
-      });
-    }
-  }}
-  className="hidden sm:flex items-center gap-2"
->
-  {isPlaying ? (
-    <>
-      <VolumeX className="w-4 h-4" />
-      <span className="text-xs">Stop Alert</span>
-    </>
-  ) : (
-    <>
-      <Volume2 className="w-4 h-4" />
-      <span className="text-xs">Test Alert</span>
-    </>
-  )}
-</Button>
-```
-
-**Behavior:**
-- Clicking "Test Alert" calls `startAlert()` - begins the **full continuous loop**
-- Button changes to "Stop Alert" (red/destructive) while playing
-- Clicking "Stop Alert" calls `stopAlert()` - ends immediately
-- If not stopped manually, alert auto-stops after **2.5 minutes** (uses existing `maxDuration: 150000` config)
-- Shows toast notification explaining the test
+### 3. Consent-Aware Activation
+- If user clicks "Accept All" - GA starts tracking immediately
+- If user clicks "Essential Only" or declines - GA stays disabled
+- If user previously consented - GA activates on page load
 
 ---
 
-## Files Changed
+## Technical Implementation
+
+### File Changes
 
 | File | Change |
 |------|--------|
-| `src/pages/KitchenDashboard.tsx` | Add ~20 lines for "Test Alert" button between Sound button and volume toggle |
+| `index.html` | Add gtag.js script with consent mode |
+| `src/components/GoogleAnalytics.tsx` | New component for consent-aware GA |
+| `src/App.tsx` | Import and add GoogleAnalytics component |
+
+---
+
+## Technical Details
+
+### index.html Changes
+```html
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-B286Z05ZBM"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  // Default to denied - will be updated by React consent component
+  gtag('consent', 'default', {
+    'analytics_storage': 'denied'
+  });
+  gtag('config', 'G-B286Z05ZBM');
+</script>
+```
+
+### GoogleAnalytics.tsx Component
+```typescript
+// Key functionality:
+// 1. Check useCookieConsent() for analytics permission
+// 2. If granted: gtag('consent', 'update', {'analytics_storage': 'granted'})
+// 3. Track page views on route changes via gtag('event', 'page_view', {...})
+// 4. Skip tracking on excluded routes (/admin, /staff, /visitors)
+```
+
+### App.tsx Addition
+```typescript
+import GoogleAnalytics from "@/components/GoogleAnalytics";
+// ...
+<BrowserRouter>
+  <GoogleAnalytics />  {/* Add here */}
+  <PageViewTracker />
+  {/* ... rest of routes */}
+</BrowserRouter>
+```
+
+---
+
+## Privacy Compliance
+
+- **Default Denied**: GA loads but doesn't track until consent is given
+- **Route Exclusions**: Same as your existing system - no tracking on admin/staff/analytics pages
+- **Consent Memory**: Respects the existing `nawa_cookie_consent` localStorage key
+- **Cookie Banner**: Works with your existing "Accept All" / "Essential Only" buttons - no changes needed
+
+---
 
 ## Result
-Staff can test the exact continuous looping alert (with their chosen sound or custom audio URL) directly from the kitchen dashboard, hearing exactly what will play when a real paid order arrives.
+- GA4 will track customer-facing pages (home, menu, cart, checkout, etc.)
+- Staff pages remain private
+- Full GDPR/cookie compliance with your existing consent system
+- Your Measurement ID: `G-B286Z05ZBM`
