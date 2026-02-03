@@ -8,6 +8,7 @@ import { CartProvider } from "@/contexts/CartContext";
 import { AdminProvider } from "@/contexts/AdminContext";
 import { RouteAwareCookieConsent } from "@/components/RouteAwareCookieConsent";
 import PageViewTracker from "@/components/PageViewTracker";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 import Home from "./pages/Home";
 import MenuPage from "./pages/MenuPage";
 import AboutPage from "./pages/AboutPage";
@@ -37,6 +38,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <GoogleAnalytics />
             <PageViewTracker />
             <Routes>
               <Route path="/" element={<Home />} />
