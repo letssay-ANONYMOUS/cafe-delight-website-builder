@@ -50,14 +50,99 @@ serve(async (req) => {
     // Build payment request - amount in fils (base units)
     const amountInFils = Math.round(Number(amount) * 100);
 
-    const paymentBody: Record<string, unknown> = {
+    // We'll add order_id to success_url after we create the order
+    // For now, build the base payment body
+    const basePaymentBody: Record<string, unknown> = {
       amount: amountInFils,
       currency_code: "AED",
       message: `Nawa Cafe - Order for ${customerName}`,
-      success_url: `${origin}/payment-success`,
       cancel_url: `${origin}/checkout`,
       failure_url: `${origin}/checkout?error=payment_failed`,
       ...(isPreviewOrigin ? { test: true } : {}),
+    };
+
+    // ===== SAVE ORDER TO DATABASE FIRST =====
+    // We need the order ID before creating Ziina payment to include in success URL
+    let orderData: { id: string; order_number: string } | null = null;
+    
+    try {
+      // Calculate subtotal
+      const subtotal = orderItems?.reduce((sum: number, item: any) => 
+        sum + (item.price * item.quantity), 0) || amount;
+
+      // Insert order into database (without payment reference yet)
+      const { data: insertedOrder, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          visitor_id: visitorId || 'unknown',
+          customer_name: customerName,
+          customer_phone: phoneNumber,
+          extra_notes: additionalNotes || null,
+          subtotal: subtotal,
+          total_amount: amount,
+          payment_status: 'pending',
+          payment_provider: 'ziina',
+          order_type: 'takeaway',
+        })
+        .select('id, order_number')
+        .single();
+
+      if (orderError) {
+        console.error("Error inserting order:", orderError);
+        return new Response(
+          JSON.stringify({
+            error: { provider: "database", message: "Failed to create order" },
+          }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200,
+          }
+        );
+      }
+      
+      orderData = insertedOrder;
+      console.log("Order created:", orderData);
+
+      // Insert order items
+      if (orderItems && orderItems.length > 0) {
+        const orderItemsToInsert = orderItems.map((item: any) => ({
+          order_id: orderData!.id,
+          item_name: item.name,
+          quantity: item.quantity,
+          unit_price: item.price,
+          total_price: item.price * item.quantity,
+          item_category: item.category || null,
+          extras: item.extras || null,
+          notes: item.notes || null,
+        }));
+
+        const { error: itemsError } = await supabase
+          .from('order_items')
+          .insert(orderItemsToInsert);
+
+        if (itemsError) {
+          console.error("Error inserting order items:", itemsError);
+        } else {
+          console.log("Order items created:", orderItemsToInsert.length);
+        }
+      }
+    } catch (dbError) {
+      console.error("Database error:", dbError);
+      return new Response(
+        JSON.stringify({
+          error: { provider: "database", message: "Database error occurred" },
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        }
+      );
+    }
+
+    // Now build the full payment body with success URL including order_id
+    const paymentBody = {
+      ...basePaymentBody,
+      success_url: `${origin}/payment-success?order_id=${orderData.id}`,
     };
 
     console.log("Creating Ziina payment intent:", JSON.stringify(paymentBody));
@@ -131,64 +216,14 @@ serve(async (req) => {
 
     console.log("Payment intent created successfully:", ziinaData.id);
 
-    // ===== SAVE ORDER TO DATABASE =====
-    let orderNumber = '';
-    try {
-      // Calculate subtotal
-      const subtotal = orderItems?.reduce((sum: number, item: any) => 
-        sum + (item.price * item.quantity), 0) || amount;
+    // Update the order with the Ziina payment reference
+    const { error: updateError } = await supabase
+      .from('orders')
+      .update({ payment_reference: ziinaData.id })
+      .eq('id', orderData.id);
 
-      // Insert order into database
-      const { data: orderData, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          visitor_id: visitorId || 'unknown',
-          customer_name: customerName,
-          customer_phone: phoneNumber,
-          extra_notes: additionalNotes || null,
-          subtotal: subtotal,
-          total_amount: amount,
-          payment_status: 'pending',
-          payment_provider: 'ziina',
-          payment_reference: ziinaData.id,
-          order_type: 'takeaway',
-        })
-        .select('id, order_number')
-        .single();
-
-      if (orderError) {
-        console.error("Error inserting order:", orderError);
-      } else {
-        console.log("Order created:", orderData);
-        orderNumber = orderData.order_number;
-
-        // Insert order items
-        if (orderItems && orderItems.length > 0) {
-          const orderItemsToInsert = orderItems.map((item: any) => ({
-            order_id: orderData.id,
-            item_name: item.name,
-            quantity: item.quantity,
-            unit_price: item.price,
-            total_price: item.price * item.quantity,
-            item_category: item.category || null,
-            extras: item.extras || null,
-            notes: item.notes || null,
-          }));
-
-          const { error: itemsError } = await supabase
-            .from('order_items')
-            .insert(orderItemsToInsert);
-
-          if (itemsError) {
-            console.error("Error inserting order items:", itemsError);
-          } else {
-            console.log("Order items created:", orderItemsToInsert.length);
-          }
-        }
-      }
-    } catch (dbError) {
-      console.error("Database error:", dbError);
-      // Continue with payment even if DB save fails
+    if (updateError) {
+      console.error("Error updating order with payment reference:", updateError);
     }
 
     // Send order to n8n webhook (non-blocking)
@@ -201,7 +236,7 @@ serve(async (req) => {
     webhookUrl.searchParams.append('items', JSON.stringify(orderItems || []));
     webhookUrl.searchParams.append('notes', additionalNotes || '');
     webhookUrl.searchParams.append('paymentIntentId', ziinaData.id);
-    webhookUrl.searchParams.append('orderNumber', orderNumber);
+    webhookUrl.searchParams.append('orderNumber', orderData.order_number);
 
     // Fire and forget webhook
     fetch(webhookUrl.toString(), { method: 'GET' }).catch(e => console.warn('Webhook failed:', e));
@@ -210,7 +245,7 @@ serve(async (req) => {
       JSON.stringify({
         url: ziinaData.redirect_url,
         paymentIntentId: ziinaData.id,
-        orderNumber: orderNumber,
+        orderNumber: orderData.order_number,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },

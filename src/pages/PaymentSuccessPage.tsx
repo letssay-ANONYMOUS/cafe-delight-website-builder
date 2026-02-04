@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { CheckCircle2, Loader2 } from 'lucide-react';
+import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const PaymentSuccessPage = () => {
@@ -12,20 +12,86 @@ const PaymentSuccessPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [verifying, setVerifying] = useState(true);
-  const sessionId = searchParams.get('session_id');
+  const [verified, setVerified] = useState(false);
+  const [orderNumber, setOrderNumber] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  
+  const paymentId = searchParams.get('payment_id');
+  const orderId = searchParams.get('order_id');
 
   useEffect(() => {
-    // Simulate payment verification
-    const timer = setTimeout(() => {
-      setVerifying(false);
-      toast({
-        title: "Payment Confirmed!",
-        description: "Thank you for your order. We'll start preparing it right away!",
-      });
-    }, 2000);
+    const verifyPayment = async () => {
+      // Check for required params
+      if (!orderId) {
+        setError('Missing order information. Please contact support.');
+        setVerifying(false);
+        return;
+      }
 
-    return () => clearTimeout(timer);
-  }, [toast]);
+      try {
+        // First, get the order to find the payment_reference (payment_id)
+        const { data: orderData, error: orderError } = await supabase
+          .from('orders')
+          .select('payment_reference, order_number')
+          .eq('id', orderId)
+          .single();
+
+        if (orderError || !orderData) {
+          console.error('Error fetching order:', orderError);
+          setError('Order not found. Please contact support.');
+          setVerifying(false);
+          return;
+        }
+
+        const actualPaymentId = paymentId || orderData.payment_reference;
+        
+        if (!actualPaymentId) {
+          setError('Missing payment information. Please contact support.');
+          setVerifying(false);
+          return;
+        }
+
+        console.log('Verifying payment:', { payment_id: actualPaymentId, order_id: orderId });
+
+        // Call the verification edge function
+        const { data, error: verifyError } = await supabase.functions.invoke('verify-ziina-payment', {
+          body: { 
+            payment_id: actualPaymentId, 
+            order_id: orderId 
+          }
+        });
+
+        console.log('Verification response:', data, verifyError);
+
+        if (verifyError) {
+          console.error('Verification error:', verifyError);
+          setError('Payment verification failed. Please contact support.');
+          setVerifying(false);
+          return;
+        }
+
+        if (data?.success) {
+          setVerified(true);
+          setOrderNumber(data.order_number);
+          toast({
+            title: "Payment Confirmed!",
+            description: "Thank you for your order. We'll start preparing it right away!",
+          });
+        } else {
+          // Payment not completed yet or failed
+          console.log('Payment not verified:', data);
+          setError(data?.error || 'Payment verification failed. Please try again or contact support.');
+        }
+      } catch (err) {
+        console.error('Verification exception:', err);
+        setError('An error occurred while verifying your payment. Please contact support.');
+      } finally {
+        setVerifying(false);
+      }
+    };
+
+    verifyPayment();
+  }, [orderId, paymentId, toast]);
 
   if (verifying) {
     return (
@@ -33,7 +99,52 @@ const PaymentSuccessPage = () => {
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin text-coffee-600 mx-auto mb-4" />
           <p className="text-lg text-coffee-700">Verifying your payment...</p>
+          <p className="text-sm text-coffee-500 mt-2">Please wait while we confirm your order</p>
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        
+        <section className="flex-1 flex items-center justify-center py-20 bg-cream-50">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-md mx-auto text-center">
+              <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-red-100 flex items-center justify-center">
+                <XCircle className="w-10 h-10 text-red-500" />
+              </div>
+              
+              <h1 className="font-playfair text-2xl font-bold text-coffee-800 mb-4">
+                Verification Issue
+              </h1>
+              
+              <p className="text-coffee-600 mb-8">
+                {error}
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button
+                  onClick={() => navigate('/checkout')}
+                  variant="outline"
+                  className="border-coffee-300 text-coffee-700"
+                >
+                  Back to Checkout
+                </Button>
+                <Button
+                  onClick={() => navigate('/contact')}
+                  className="bg-coffee-600 hover:bg-coffee-700"
+                >
+                  Contact Support
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <Footer />
       </div>
     );
   }
@@ -66,9 +177,9 @@ const PaymentSuccessPage = () => {
               Your order has been placed successfully.
             </p>
             
-            {sessionId && (
+            {orderNumber && (
               <p className="text-coffee-500 mb-8">
-                Order Reference: <span className="font-semibold">{sessionId.slice(-8).toUpperCase()}</span>
+                Order Reference: <span className="font-semibold">{orderNumber}</span>
               </p>
             )}
 

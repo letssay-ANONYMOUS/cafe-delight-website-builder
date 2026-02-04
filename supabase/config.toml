@@ -9,3 +9,5 @@ verify_jwt = false
 [functions.track-visitor]
 verify_jwt = false
 
+[functions.verify-ziina-payment]
+verify_jwt = false
