@@ -4,9 +4,10 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Check } from 'lucide-react';
-import { getAllMenuItems } from '@/data/menuData';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
+import { useMenuItems, toMenuCardItem } from '@/hooks/useMenuItems';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface OptionChoice {
   name: string;
@@ -28,6 +29,9 @@ const MenuItemDetail = () => {
   const { toast } = useToast();
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string[]>>({});
 
+  // Fetch menu items from backend
+  const { data: menuItems, isLoading, error } = useMenuItems();
+
   const handleBack = useCallback(() => {
     navigate('/menu');
   }, [navigate]);
@@ -46,8 +50,9 @@ const MenuItemDetail = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleBack]);
 
-  const allItems = getAllMenuItems();
-  const item = allItems.find(item => item.id === Number(id));
+  // Find item by card_number (id in URL)
+  const menuItem = menuItems?.find(item => item.card_number === Number(id));
+  const item = menuItem ? toMenuCardItem(menuItem) : null;
 
   const handleOptionSelect = (groupName: string, choiceName: string, maxSelect: number) => {
     setSelectedOptions(prev => {
@@ -71,7 +76,7 @@ const MenuItemDetail = () => {
     if (!item) return 0;
     let total = item.price;
     
-    const options = (item as any).options as OptionGroup[] | undefined;
+    const options = item.options as OptionGroup[] | undefined;
     if (options) {
       options.forEach(group => {
         const selected = selectedOptions[group.groupName] || [];
@@ -86,7 +91,7 @@ const MenuItemDetail = () => {
   };
 
   const isValidSelection = () => {
-    const options = (item as any)?.options as OptionGroup[] | undefined;
+    const options = item?.options as OptionGroup[] | undefined;
     if (!options) return true;
     
     return options.every(group => {
@@ -127,7 +132,32 @@ const MenuItemDetail = () => {
     });
   };
 
-  if (!item) {
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="pt-24 pb-16 px-4">
+          <div className="max-w-4xl mx-auto">
+            <Skeleton className="h-10 w-32 mb-6" />
+            <div className="grid md:grid-cols-2 gap-8">
+              <Skeleton className="aspect-square rounded-lg" />
+              <div className="space-y-4">
+                <Skeleton className="h-10 w-3/4" />
+                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-8 w-32" />
+                <Skeleton className="h-12 w-full" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Error or not found
+  if (error || !item) {
     return (
       <div className="min-h-screen">
         <Header />
@@ -145,7 +175,7 @@ const MenuItemDetail = () => {
     );
   }
 
-  const options = (item as any).options as OptionGroup[] | undefined;
+  const options = item.options as OptionGroup[] | undefined;
 
   return (
     <div className="min-h-screen bg-background">
@@ -225,7 +255,7 @@ const MenuItemDetail = () => {
                             <span className="font-medium">{choice.name}</span>
                           </div>
                           <span className="text-muted-foreground">
-                            {choice.price > 0 ? `+ ₿ ${choice.price.toFixed(2)}` : `₿ ${choice.price.toFixed(2)}`}
+                            {choice.price > 0 ? `+ AED ${choice.price.toFixed(2)}` : `AED ${choice.price.toFixed(2)}`}
                           </span>
                         </div>
                       );
