@@ -238,16 +238,22 @@ const KitchenDashboard = () => {
 
           setOrders(prev => [newOrder, ...prev]);
           
-          // Trigger alert for new pending orders
+          // For pending orders - just show toast, NO sound alert
+          // Sound only plays when payment is confirmed (UPDATE event)
           if (newOrder.payment_status === 'pending') {
-            // Add to unacknowledged set to trigger alert sound
-            setUnacknowledgedOrders(prev => new Set([...prev, newOrder.id]));
-            // Auto-switch to pending view
-            setActiveView("pending");
             toast({
               title: "📋 New Pending Order",
-              description: `Order ${newOrder.order_number} from ${newOrder.customer_name}`,
+              description: `Order ${newOrder.order_number} from ${newOrder.customer_name} - awaiting payment`,
               className: "bg-yellow-50 border-yellow-300"
+            });
+          } else if (newOrder.payment_status === 'paid') {
+            // Direct paid order (rare, but handle it)
+            setUnacknowledgedOrders(prev => new Set([...prev, newOrder.id]));
+            setActiveView("paid");
+            toast({
+              title: "💰 New Paid Order!",
+              description: `Order ${newOrder.order_number} from ${newOrder.customer_name}`,
+              className: "bg-green-50 border-green-300"
             });
           }
         }
@@ -264,11 +270,15 @@ const KitchenDashboard = () => {
           const updatedOrder = payload.new as Order;
           const oldOrder = payload.old as Partial<Order>;
           
-          // Check if order just changed to 'paid' - only show toast, no sound
+          // TRIGGER ALERT when order changes TO 'paid' - THIS IS WHERE SOUND PLAYS!
           if (updatedOrder.payment_status === 'paid' && oldOrder.payment_status !== 'paid') {
+            // Add to unacknowledged set - this triggers the alert sound
+            setUnacknowledgedOrders(prev => new Set([...prev, updatedOrder.id]));
+            // Auto-switch to paid view so staff sees the order
+            setActiveView("paid");
             toast({
-              title: "💰 Order Paid!",
-              description: `Order ${updatedOrder.order_number} from ${updatedOrder.customer_name} is ready!`,
+              title: "💰 New Paid Order!",
+              description: `Order ${updatedOrder.order_number} from ${updatedOrder.customer_name} is ready to prepare!`,
               className: "bg-green-50 border-green-300"
             });
           }
@@ -380,41 +390,53 @@ const KitchenDashboard = () => {
                     <span className="text-xs">Sound</span>
                   </Button>
 
-                  {/* Test/Stop Alert Button - Always visible, prominent when playing */}
-                  <Button
-                    variant={isPlaying ? "destructive" : "outline"}
-                    size={isPlaying ? "default" : "sm"}
-                    onClick={() => {
-                      if (isPlaying) {
-                        stopAlert();
-                        setUnacknowledgedOrders(new Set()); // Clear all unacked orders
-                        toast({ 
-                          title: "Alert Stopped",
-                          description: "Continuous alert has been stopped."
-                        });
-                      } else {
+                  {/* STACKED STOP BUTTONS - One for each unacknowledged order */}
+                  {isPlaying && unacknowledgedOrders.size > 0 && (
+                    <div className="flex flex-col gap-1">
+                      {Array.from(unacknowledgedOrders).map((orderId) => {
+                        const order = orders.find(o => o.id === orderId);
+                        const orderNum = order?.order_number?.split('-').pop() || orderId.slice(0, 6);
+                        return (
+                          <Button
+                            key={orderId}
+                            variant="destructive"
+                            size="default"
+                            onClick={() => {
+                              handleAcknowledge(orderId);
+                              toast({ 
+                                title: "Order Acknowledged",
+                                description: `Order #${orderNum} acknowledged - ${unacknowledgedOrders.size - 1} remaining`
+                              });
+                            }}
+                            className="flex items-center gap-2 animate-pulse shadow-lg"
+                          >
+                            <VolumeX className="w-5 h-5" />
+                            <span className="font-semibold">Stop #{orderNum}</span>
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Test Alert Button - Only show when not playing */}
+                  {!isPlaying && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
                         startAlert();
                         toast({ 
                           title: "Testing Continuous Alert",
                           description: "Alert will loop for 2.5 minutes or until you click Stop.",
                           duration: 5000,
                         });
-                      }
-                    }}
-                    className={`flex items-center gap-2 ${isPlaying ? 'animate-pulse shadow-lg' : ''}`}
-                  >
-                    {isPlaying ? (
-                      <>
-                        <VolumeX className="w-5 h-5" />
-                        <span className="font-semibold">Stop Alert</span>
-                      </>
-                    ) : (
-                      <>
-                        <Volume2 className="w-4 h-4" />
-                        <span className="text-xs hidden sm:inline">Test Alert</span>
-                      </>
-                    )}
-                  </Button>
+                      }}
+                      className="flex items-center gap-2"
+                    >
+                      <Volume2 className="w-4 h-4" />
+                      <span className="text-xs hidden sm:inline">Test Alert</span>
+                    </Button>
+                  )}
 
                   {/* Sound Toggle */}
                   <div className="flex items-center gap-2">
