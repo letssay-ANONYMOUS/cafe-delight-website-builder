@@ -1,136 +1,125 @@
 
-# Instant Loading Strategy - Hero Sections & Page-Specific Card Loading
+# Fix Analytics Not Working - Consent State Synchronization
 
-## Current State Analysis
+## Problem
 
-### Hero Images Found:
-| Page | Image Source | Current Loading | Issue |
-|------|-------------|-----------------|-------|
-| Home (Hero.tsx) | Unsplash URL | `loading="eager"` + `fetchPriority="high"` | Already optimized |
-| Catering | Local asset (`catering-hero.png`) | No loading attribute | **SLOW - needs fix** |
-| Locations | No hero image (gradient only) | N/A | No change needed |
-| About | 4 grid images | No loading attribute | **Needs eager loading** |
+When you click "Accept All" on the cookie banner, the analytics consent is saved to storage but **Google Analytics never receives the update** until you manually refresh the page.
 
-### Card Images:
-| Component | Current Loading | Behavior Needed |
-|-----------|-----------------|-----------------|
-| MenuCard.tsx | `loading="lazy"` | Eager when ON menu page, lazy elsewhere |
-| StoreProductCard.tsx | No attribute | Eager when ON store page, lazy elsewhere |
-| Menu.tsx category thumbnails | `loading="eager"` | Already correct |
+This happens because the different parts of the app don't communicate with each other when consent changes.
+
+## Solution
+
+Add a simple notification system so that when you click "Accept All", all parts of the app that need to know about analytics consent get updated immediately.
 
 ---
 
-## Implementation Plan
+## Technical Implementation
 
-### 1. Fix Catering Hero (Instant Load)
+### File: `src/components/CookieConsent.tsx`
 
-**File**: `src/pages/CateringPage.tsx`
-
-Add eager loading attributes to the hero image:
+**Change 1**: Add a custom event constant at the top of the file:
 ```tsx
-<img 
-  src={cateringHeroImage} 
-  alt="NAWA Café Catering Services" 
-  loading="eager"
-  decoding="async"
-  fetchPriority="high"
-  className="w-full h-full object-cover"
-/>
+const CONSENT_CHANGED_EVENT = 'nawa_consent_changed';
 ```
 
-### 2. Fix About Page Images (Instant Load)
-
-**File**: `src/components/About.tsx`
-
-Add eager loading to all 4 grid images:
+**Change 2**: Update `saveConsent` function to dispatch event after saving:
 ```tsx
-<img
-  src={aboutCoffee1}
-  alt="Premium coffee with latte art"
-  loading="eager"
-  decoding="async"
-  fetchPriority="high"
-  className="..."
-/>
+const saveConsent = (preferences: CookiePreferences) => {
+  const consentData = {
+    ...preferences,
+    timestamp: new Date().toISOString(),
+    version: '1.0',
+  };
+  localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(consentData));
+  
+  // NEW: Notify all components that consent has changed
+  window.dispatchEvent(new CustomEvent(CONSENT_CHANGED_EVENT, { 
+    detail: preferences 
+  }));
+  
+  setShowBanner(false);
+};
 ```
 
-### 3. Smart Card Loading Based on Current Page
-
-**File**: `src/components/MenuCard.tsx`
-
-Pass a prop to control loading behavior:
+**Change 3**: Update `useCookieConsent` hook to listen for the event:
 ```tsx
-interface MenuCardProps {
-  item: {...};
-  cardNumber?: number;
-  eagerLoad?: boolean;  // NEW: Controls loading strategy
-  onEdit?: () => void;
-  onDelete?: () => void;
-}
+export const useCookieConsent = () => {
+  const [consent, setConsent] = useState<CookiePreferences | null>(null);
 
-// In the img tag:
-<img
-  src={item.image}
-  alt={item.name}
-  loading={eagerLoad ? "eager" : "lazy"}
-  decoding="async"
-  fetchPriority={eagerLoad ? "high" : "auto"}
-  className="..."
-/>
-```
+  useEffect(() => {
+    // Load initial consent from storage
+    const loadConsent = () => {
+      const stored = localStorage.getItem(COOKIE_CONSENT_KEY);
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          setConsent({
+            essential: parsed.essential ?? true,
+            analytics: parsed.analytics ?? false,
+            marketing: parsed.marketing ?? false,
+          });
+        } catch {
+          setConsent({ essential: true, analytics: false, marketing: false });
+        }
+      }
+    };
+    
+    loadConsent();
 
-**File**: `src/components/Menu.tsx`
+    // NEW: Listen for consent changes from the banner
+    const handleConsentChange = (event: Event) => {
+      const customEvent = event as CustomEvent<CookiePreferences>;
+      setConsent(customEvent.detail);
+    };
 
-Pass `eagerLoad={true}` since this component only renders on the menu page:
-```tsx
-<MenuCard
-  key={item.id}
-  item={cardItem}
-  cardNumber={item.card_number}
-  eagerLoad={true}  // All cards load instantly on menu page
-  onEdit={() => handleEdit(item)}
-  onDelete={() => handleDelete(item)}
-/>
-```
+    window.addEventListener(CONSENT_CHANGED_EVENT, handleConsentChange);
+    return () => {
+      window.removeEventListener(CONSENT_CHANGED_EVENT, handleConsentChange);
+    };
+  }, []);
 
-### 4. Store Product Cards (Instant Load on Store Page)
-
-**File**: `src/components/StoreProductCard.tsx`
-
-Add eager loading since this component only renders on the store page:
-```tsx
-<img 
-  src={product.image} 
-  alt={product.name}
-  loading="eager"
-  decoding="async"
-  fetchPriority="high"
-  className="..."
-/>
+  return consent;
+};
 ```
 
 ---
 
-## Summary of Changes
+## How It Works After Fix
 
-| File | Change |
-|------|--------|
-| `src/pages/CateringPage.tsx` | Add `loading="eager"` + `fetchPriority="high"` to hero image |
-| `src/components/About.tsx` | Add eager loading to all 4 grid images |
-| `src/components/MenuCard.tsx` | Add `eagerLoad` prop to control loading behavior |
-| `src/components/Menu.tsx` | Pass `eagerLoad={true}` to MenuCard |
-| `src/components/StoreProductCard.tsx` | Add eager loading to product images |
+```text
+User clicks "Accept All"
+       ↓
+saveConsent() runs
+       ↓
+├── Saves to localStorage
+└── Dispatches 'nawa_consent_changed' event
+       ↓
+useCookieConsent() hook receives event
+       ↓
+Updates state to { analytics: true, ... }
+       ↓
+GoogleAnalytics component re-renders
+       ↓
+Calls gtag('consent', 'update', { analytics_storage: 'granted' })
+       ↓
+GA4 starts tracking immediately!
+```
 
 ---
 
-## Technical Notes
+## Files to Modify
 
-- `loading="eager"` = Browser loads image immediately (not deferred)
-- `fetchPriority="high"` = Browser prioritizes this resource in the network queue
-- `decoding="async"` = Browser decodes image off main thread (doesn't block rendering)
+| File | Changes |
+|------|---------|
+| `src/components/CookieConsent.tsx` | Add event constant, dispatch in `saveConsent`, update hook to listen |
 
-This ensures:
-1. All hero sections load instantly across the site
-2. Menu cards load instantly when customer opens /menu
-3. Store cards load instantly when customer opens /store
-4. Cards remain lazy-loaded if referenced from other pages (future-proofing)
+---
+
+## Verification Steps
+
+After implementation:
+1. Open the site in an incognito window (to get fresh consent state)
+2. Open browser DevTools → Network tab
+3. Filter by "google" or "analytics"
+4. Click "Accept All" on the cookie banner
+5. You should see GA requests start appearing immediately without needing to refresh
