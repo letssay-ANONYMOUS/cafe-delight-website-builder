@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Cookie, X } from 'lucide-react';
 
 const COOKIE_CONSENT_KEY = 'nawa_cookie_consent';
+const CONSENT_CHANGED_EVENT = 'nawa_consent_changed';
 
 type ConsentStatus = 'pending' | 'accepted' | 'declined';
 
@@ -32,6 +33,12 @@ export const CookieConsent = () => {
       version: '1.0',
     };
     localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(consentData));
+    
+    // Notify all components that consent has changed
+    window.dispatchEvent(new CustomEvent(CONSENT_CHANGED_EVENT, { 
+      detail: preferences 
+    }));
+    
     setShowBanner(false);
   };
 
@@ -146,19 +153,35 @@ export const useCookieConsent = () => {
   const [consent, setConsent] = useState<CookiePreferences | null>(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem(COOKIE_CONSENT_KEY);
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        setConsent({
-          essential: parsed.essential ?? true,
-          analytics: parsed.analytics ?? false,
-          marketing: parsed.marketing ?? false,
-        });
-      } catch {
-        setConsent({ essential: true, analytics: false, marketing: false });
+    // Load initial consent from storage
+    const loadConsent = () => {
+      const stored = localStorage.getItem(COOKIE_CONSENT_KEY);
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          setConsent({
+            essential: parsed.essential ?? true,
+            analytics: parsed.analytics ?? false,
+            marketing: parsed.marketing ?? false,
+          });
+        } catch {
+          setConsent({ essential: true, analytics: false, marketing: false });
+        }
       }
-    }
+    };
+    
+    loadConsent();
+
+    // Listen for consent changes from the banner
+    const handleConsentChange = (event: Event) => {
+      const customEvent = event as CustomEvent<CookiePreferences>;
+      setConsent(customEvent.detail);
+    };
+
+    window.addEventListener(CONSENT_CHANGED_EVENT, handleConsentChange);
+    return () => {
+      window.removeEventListener(CONSENT_CHANGED_EVENT, handleConsentChange);
+    };
   }, []);
 
   return consent;
