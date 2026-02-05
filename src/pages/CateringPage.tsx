@@ -126,6 +126,9 @@ const CateringPage = () => {
           <img 
             src={cateringHeroImage} 
             alt="NAWA Café Catering Services" 
+            loading="eager"
+            decoding="async"
+            fetchPriority="high"
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />

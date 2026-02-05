@@ -1,7 +1,7 @@
 import { Search, Plus, FolderPlus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useState, lazy, Suspense } from 'react';
+import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAdmin } from '@/contexts/AdminContext';
 import { AdminCardModal } from './AdminCardModal';
@@ -9,9 +9,7 @@ import { AdminSectionModal } from './AdminSectionModal';
 import { AdminDeleteConfirm } from './AdminDeleteConfirm';
 import { useToast } from '@/hooks/use-toast';
 import { useMenuItems, menuCategories, groupMenuItems, toMenuCardItem } from '@/hooks/useMenuItems';
-
-// Lazy load the card component for better performance
-const MenuCard = lazy(() => import('./MenuCard'));
+import MenuCard from './MenuCard';
 
 const Menu = () => {
   const [selectedCard, setSelectedCard] = useState<number | null>(null);
@@ -220,24 +218,19 @@ const Menu = () => {
                     
                     {/* Items Grid with Lazy Loading */}
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
-                      <Suspense fallback={
-                        <div className="col-span-full flex justify-center py-8">
-                          <div className="w-8 h-8 border-4 border-[#c9a962] border-t-transparent rounded-full animate-spin" />
-                        </div>
-                      }>
-                        {filteredItems.map((item) => {
-                          const cardItem = toMenuCardItem(item);
-                          return (
-                            <MenuCard
-                              key={item.id}
-                              item={cardItem}
-                              cardNumber={item.card_number}
-                              onEdit={() => handleEdit(item)}
-                              onDelete={() => handleDelete(item)}
-                            />
-                          );
-                        })}
-                      </Suspense>
+                      {filteredItems.map((item) => {
+                        const cardItem = toMenuCardItem(item);
+                        return (
+                          <MenuCard
+                            key={item.id}
+                            item={cardItem}
+                            cardNumber={item.card_number}
+                            eagerLoad={true}
+                            onEdit={() => handleEdit(item)}
+                            onDelete={() => handleDelete(item)}
+                          />
+                        );
+                      })}
                     </div>
                   </div>
                 );
