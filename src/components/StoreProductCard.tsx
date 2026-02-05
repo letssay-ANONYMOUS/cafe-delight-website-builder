@@ -67,6 +67,9 @@ const StoreProductCard = ({ product, onEdit, onDelete }: StoreProductCardProps) 
         <img 
           src={product.image} 
           alt={product.name}
+          loading="eager"
+          decoding="async"
+          fetchPriority="high"
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
         />
         <Badge className="absolute top-4 right-4 bg-coffee-600 text-white border-0">

@@ -76,21 +76,33 @@ const About = () => {
               <img
                 src={aboutCoffee1}
                 alt="Premium coffee with latte art"
+                loading="eager"
+                decoding="async"
+                fetchPriority="high"
                 className="rounded-xl md:rounded-2xl shadow-xl w-full h-36 md:h-48 object-cover"
               />
               <img
                 src="https://images.unsplash.com/photo-1610889556528-9a770e32642f?auto=format&fit=crop&w=400&q=80"
                 alt="Barista at work"
+                loading="eager"
+                decoding="async"
+                fetchPriority="high"
                 className="rounded-xl md:rounded-2xl shadow-xl w-full h-36 md:h-48 object-cover mt-6 md:mt-8"
               />
               <img
                 src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=400&q=80"
                 alt="Fresh coffee beans"
+                loading="eager"
+                decoding="async"
+                fetchPriority="high"
                 className="rounded-xl md:rounded-2xl shadow-xl w-full h-36 md:h-48 object-cover -mt-6 md:-mt-8"
               />
               <img
                 src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=400&q=80"
                 alt="Coffee cup art"
+                loading="eager"
+                decoding="async"
+                fetchPriority="high"
                 className="rounded-xl md:rounded-2xl shadow-xl w-full h-36 md:h-48 object-cover"
               />
             </div>

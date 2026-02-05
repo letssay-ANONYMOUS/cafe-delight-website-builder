@@ -14,11 +14,12 @@ interface MenuCardProps {
     image: string;
   };
   cardNumber?: number;
+  eagerLoad?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
 }
 
-const MenuCard = ({ item, cardNumber, onEdit, onDelete }: MenuCardProps) => {
+const MenuCard = ({ item, cardNumber, eagerLoad = false, onEdit, onDelete }: MenuCardProps) => {
   const navigate = useNavigate();
   const { isAdmin } = useAdmin();
   const { trackMenuItemView } = useAnalytics();
@@ -55,8 +56,9 @@ const MenuCard = ({ item, cardNumber, onEdit, onDelete }: MenuCardProps) => {
         <img
           src={item.image}
           alt={item.name}
-          loading="lazy"
+          loading={eagerLoad ? "eager" : "lazy"}
           decoding="async"
+          fetchPriority={eagerLoad ? "high" : "auto"}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
         <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-300" />
