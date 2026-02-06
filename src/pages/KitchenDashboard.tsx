@@ -101,20 +101,48 @@ const KitchenDashboard = () => {
     return () => window.removeEventListener('click', handleFirstInteraction);
   }, [initAudioContext]);
 
-  // Save sound preference
-  const handleSoundSelect = (soundId: string, customUrl?: string) => {
+  // Load shared custom audio URL from database on mount
+  useEffect(() => {
+    const loadSharedSettings = async () => {
+      const { data } = await supabase
+        .from('kitchen_settings')
+        .select('setting_value')
+        .eq('setting_key', 'custom_audio_url')
+        .single();
+      
+      if (data?.setting_value) {
+        setCustomAudioUrl(data.setting_value);
+        setSelectedSound('custom');
+        localStorage.setItem('kitchen_alert_sound', 'custom');
+        localStorage.setItem('kitchen_alert_custom_url', data.setting_value);
+      }
+    };
+    loadSharedSettings();
+  }, []);
+
+  // Save sound preference (to both localStorage and database for cross-device sync)
+  const handleSoundSelect = async (soundId: string, customUrl?: string) => {
     setSelectedSound(soundId);
     localStorage.setItem('kitchen_alert_sound', soundId);
     
     if (customUrl) {
       setCustomAudioUrl(customUrl);
       localStorage.setItem('kitchen_alert_custom_url', customUrl);
+      
+      // Save to database for cross-device sync
+      await supabase
+        .from('kitchen_settings')
+        .upsert({ 
+          setting_key: 'custom_audio_url', 
+          setting_value: customUrl,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'setting_key' });
     }
     
     toast({
       title: "Sound Updated",
       description: soundId === 'custom' 
-        ? "Custom audio URL saved as your alert sound."
+        ? "Custom audio URL saved and synced to all devices."
         : "Your alert sound preference has been saved.",
   });
   };
@@ -238,12 +266,14 @@ const KitchenDashboard = () => {
 
           setOrders(prev => [newOrder, ...prev]);
           
-          // For pending orders - just show toast, NO sound alert
-          // Sound only plays when payment is confirmed (UPDATE event)
+          // FOR TESTING: Trigger alert on PENDING orders (normally would be silent)
           if (newOrder.payment_status === 'pending') {
+            // Add to unacknowledged set - this triggers the alert sound
+            setUnacknowledgedOrders(prev => new Set([...prev, newOrder.id]));
+            setActiveView("pending");
             toast({
-              title: "📋 New Pending Order",
-              description: `Order ${newOrder.order_number} from ${newOrder.customer_name} - awaiting payment`,
+              title: "📋 New Pending Order!",
+              description: `Order ${newOrder.order_number} from ${newOrder.customer_name}`,
               className: "bg-yellow-50 border-yellow-300"
             });
           } else if (newOrder.payment_status === 'paid') {
@@ -270,18 +300,17 @@ const KitchenDashboard = () => {
           const updatedOrder = payload.new as Order;
           const oldOrder = payload.old as Partial<Order>;
           
-          // TRIGGER ALERT when order changes TO 'paid' - THIS IS WHERE SOUND PLAYS!
-          if (updatedOrder.payment_status === 'paid' && oldOrder.payment_status !== 'paid') {
-            // Add to unacknowledged set - this triggers the alert sound
-            setUnacknowledgedOrders(prev => new Set([...prev, updatedOrder.id]));
-            // Auto-switch to paid view so staff sees the order
-            setActiveView("paid");
-            toast({
-              title: "💰 New Paid Order!",
-              description: `Order ${updatedOrder.order_number} from ${updatedOrder.customer_name} is ready to prepare!`,
-              className: "bg-green-50 border-green-300"
-            });
-          }
+          // DISABLED FOR TESTING - Sound now triggers on PENDING orders instead
+          // To revert: Uncomment this block and remove setUnacknowledgedOrders from INSERT pending handler
+          // if (updatedOrder.payment_status === 'paid' && oldOrder.payment_status !== 'paid') {
+          //   setUnacknowledgedOrders(prev => new Set([...prev, updatedOrder.id]));
+          //   setActiveView("paid");
+          //   toast({
+          //     title: "💰 New Paid Order!",
+          //     description: `Order ${updatedOrder.order_number} from ${updatedOrder.customer_name} is ready to prepare!`,
+          //     className: "bg-green-50 border-green-300"
+          //   });
+          // }
           
           // Update order in state
           setOrders(prev => prev.map(order => 
