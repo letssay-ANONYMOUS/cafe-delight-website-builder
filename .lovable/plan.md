@@ -1,108 +1,154 @@
 
-# Fix Analytics Not Working - Consent State Synchronization
+# Kitchen Alert: Pending Trigger + Cross-Device Audio Sync
 
-## Problem
+## Overview
 
-When you click "Accept All" on the cookie banner, the analytics consent is saved to storage but **Google Analytics never receives the update** until you manually refresh the page.
-
-This happens because the different parts of the app don't communicate with each other when consent changes.
-
-## Solution
-
-Add a simple notification system so that when you click "Accept All", all parts of the app that need to know about analytics consent get updated immediately.
+Two changes requested:
+1. **Testing Mode**: Trigger alert sound on NEW PENDING orders instead of PAID orders
+2. **Cross-Device Sync**: Make your custom MP3 audio file available on all devices running the kitchen dashboard
 
 ---
 
-## Technical Implementation
+## Problem with Current Custom Audio
 
-### File: `src/components/CookieConsent.tsx`
+Currently, when you add a custom MP3 URL via the Sound Picker, it saves to `localStorage` on that specific browser/device only. Other devices (tablets, phones, other computers) won't have access to that URL.
 
-**Change 1**: Add a custom event constant at the top of the file:
-```tsx
-const CONSENT_CHANGED_EVENT = 'nawa_consent_changed';
+**Solution**: Store the custom audio URL in the database so all kitchen dashboard instances can read it.
+
+---
+
+## Technical Changes
+
+### 1. Create Database Table for Kitchen Settings
+
+Create a new table `kitchen_settings` to store shared settings like the custom audio URL:
+
+```sql
+CREATE TABLE public.kitchen_settings (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  setting_key text UNIQUE NOT NULL,
+  setting_value text,
+  updated_at timestamp with time zone DEFAULT now()
+);
+
+-- Allow authenticated staff to read/write
+ALTER TABLE public.kitchen_settings ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow all access to kitchen settings" 
+  ON public.kitchen_settings FOR ALL USING (true);
 ```
 
-**Change 2**: Update `saveConsent` function to dispatch event after saving:
-```tsx
-const saveConsent = (preferences: CookiePreferences) => {
-  const consentData = {
-    ...preferences,
-    timestamp: new Date().toISOString(),
-    version: '1.0',
-  };
-  localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(consentData));
-  
-  // NEW: Notify all components that consent has changed
-  window.dispatchEvent(new CustomEvent(CONSENT_CHANGED_EVENT, { 
-    detail: preferences 
-  }));
-  
-  setShowBanner(false);
-};
-```
+### 2. Update KitchenDashboard.tsx
 
-**Change 3**: Update `useCookieConsent` hook to listen for the event:
-```tsx
-export const useCookieConsent = () => {
-  const [consent, setConsent] = useState<CookiePreferences | null>(null);
+**File**: `src/pages/KitchenDashboard.tsx`
 
-  useEffect(() => {
-    // Load initial consent from storage
-    const loadConsent = () => {
-      const stored = localStorage.getItem(COOKIE_CONSENT_KEY);
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          setConsent({
-            essential: parsed.essential ?? true,
-            analytics: parsed.analytics ?? false,
-            marketing: parsed.marketing ?? false,
-          });
-        } catch {
-          setConsent({ essential: true, analytics: false, marketing: false });
-        }
-      }
-    };
+**Change A - Load custom audio from database on mount:**
+```tsx
+// Add effect to load custom audio URL from database
+useEffect(() => {
+  const loadSharedSettings = async () => {
+    const { data } = await supabase
+      .from('kitchen_settings')
+      .select('setting_value')
+      .eq('setting_key', 'custom_audio_url')
+      .single();
     
-    loadConsent();
+    if (data?.setting_value) {
+      setCustomAudioUrl(data.setting_value);
+      setSelectedSound('custom');
+    }
+  };
+  loadSharedSettings();
+}, []);
+```
 
-    // NEW: Listen for consent changes from the banner
-    const handleConsentChange = (event: Event) => {
-      const customEvent = event as CustomEvent<CookiePreferences>;
-      setConsent(customEvent.detail);
-    };
-
-    window.addEventListener(CONSENT_CHANGED_EVENT, handleConsentChange);
-    return () => {
-      window.removeEventListener(CONSENT_CHANGED_EVENT, handleConsentChange);
-    };
-  }, []);
-
-  return consent;
+**Change B - Save to database when custom URL is set:**
+```tsx
+const handleSoundSelect = async (soundId: string, customUrl?: string) => {
+  setSelectedSound(soundId);
+  localStorage.setItem('kitchen_alert_sound', soundId);
+  
+  if (customUrl) {
+    setCustomAudioUrl(customUrl);
+    // Save to BOTH localStorage (fallback) and database (sync)
+    localStorage.setItem('kitchen_alert_custom_url', customUrl);
+    
+    await supabase
+      .from('kitchen_settings')
+      .upsert({ 
+        setting_key: 'custom_audio_url', 
+        setting_value: customUrl,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'setting_key' });
+  }
+  
+  toast({...});
 };
+```
+
+**Change C - Switch alert trigger from PAID to PENDING:**
+
+In the INSERT handler (around line 241-258):
+```tsx
+// BEFORE: Pending orders silent
+if (newOrder.payment_status === 'pending') {
+  toast({...}); // toast only
+}
+
+// AFTER: Pending orders trigger alert (FOR TESTING)
+if (newOrder.payment_status === 'pending') {
+  setUnacknowledgedOrders(prev => new Set([...prev, newOrder.id]));
+  setActiveView("pending");
+  toast({
+    title: "📋 New Pending Order!",
+    description: `Order ${newOrder.order_number} from ${newOrder.customer_name}`,
+    className: "bg-yellow-50 border-yellow-300"
+  });
+}
+```
+
+In the UPDATE handler (around line 274-284):
+```tsx
+// BEFORE: Paid orders trigger alert
+if (updatedOrder.payment_status === 'paid' && oldOrder.payment_status !== 'paid') {
+  setUnacknowledgedOrders(prev => new Set([...prev, updatedOrder.id]));
+  ...
+}
+
+// AFTER: Commented out for testing
+// DISABLED FOR TESTING - uncomment to restore paid order alerts
+// if (updatedOrder.payment_status === 'paid' && oldOrder.payment_status !== 'paid') {
+//   setUnacknowledgedOrders(prev => new Set([...prev, updatedOrder.id]));
+//   ...
+// }
 ```
 
 ---
 
-## How It Works After Fix
+## How It Works After Implementation
 
-```text
-User clicks "Accept All"
+### Alert Trigger (Testing Mode)
+```
+New Order Created (pending) → INSERT event
        ↓
-saveConsent() runs
+Add to unacknowledgedOrders set
        ↓
-├── Saves to localStorage
-└── Dispatches 'nawa_consent_changed' event
+Alert sound starts playing!
        ↓
-useCookieConsent() hook receives event
+Staff acknowledges → sound stops
+```
+
+### Custom Audio Sync
+```
+Device A: Sets custom MP3 URL
        ↓
-Updates state to { analytics: true, ... }
+URL saved to database + localStorage
        ↓
-GoogleAnalytics component re-renders
+Device B, C, D: Open kitchen dashboard
        ↓
-Calls gtag('consent', 'update', { analytics_storage: 'granted' })
+Load custom URL from database
        ↓
-GA4 starts tracking immediately!
+All devices play same MP3!
 ```
 
 ---
@@ -111,15 +157,13 @@ GA4 starts tracking immediately!
 
 | File | Changes |
 |------|---------|
-| `src/components/CookieConsent.tsx` | Add event constant, dispatch in `saveConsent`, update hook to listen |
+| Database | Create `kitchen_settings` table |
+| `src/pages/KitchenDashboard.tsx` | Load/save custom URL from database, switch trigger to pending |
 
 ---
 
-## Verification Steps
+## Reverting After Testing
 
-After implementation:
-1. Open the site in an incognito window (to get fresh consent state)
-2. Open browser DevTools → Network tab
-3. Filter by "google" or "analytics"
-4. Click "Accept All" on the cookie banner
-5. You should see GA requests start appearing immediately without needing to refresh
+To switch back to production mode (paid orders trigger):
+1. Remove the `setUnacknowledgedOrders` call from the INSERT handler
+2. Uncomment the UPDATE handler code for paid orders
