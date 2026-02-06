@@ -208,6 +208,9 @@ const soundOptions: SoundOption[] = [
   }
 ];
 
+// Preset audio file URL for kitchen alerts
+export const PRESET_AUDIO_URL = 'https://files.catbox.moe/x0nryt.wav';
+
 interface SoundPickerProps {
   onSelect: (soundId: string, customUrl?: string) => void;
   onClose: () => void;
@@ -384,7 +387,13 @@ export const SoundPicker = ({
       return;
     }
     stopCustomAudio();
-    onSelect(selectedId, selectedId === 'custom' ? customUrl.trim() : undefined);
+    
+    // Handle nawa-preset as custom with preset URL
+    if (selectedId === 'nawa-preset') {
+      onSelect('custom', PRESET_AUDIO_URL);
+    } else {
+      onSelect(selectedId, selectedId === 'custom' ? customUrl.trim() : undefined);
+    }
     onClose();
   };
 
@@ -438,6 +447,56 @@ export const SoundPicker = ({
               </Button>
             </div>
           ))}
+
+          {/* NAWA Preset Sound */}
+          <div
+            className={`flex items-center justify-between p-3 rounded-lg border-2 transition-all cursor-pointer ${
+              selectedId === 'nawa-preset'
+                ? 'border-primary bg-primary/10'
+                : 'border-border hover:border-primary/50'
+            }`}
+            onClick={() => {
+              setSelectedId('nawa-preset');
+              setCustomUrl(PRESET_AUDIO_URL);
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                selectedId === 'nawa-preset' ? 'bg-primary text-primary-foreground' : 'bg-amber-100'
+              }`}>
+                {selectedId === 'nawa-preset' ? <Check className="w-4 h-4" /> : <span className="text-lg">☕</span>}
+              </div>
+              <div>
+                <p className="font-medium">NAWA Alert</p>
+                <p className="text-xs text-muted-foreground">Custom café alert sound</p>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsTestingUrl(true);
+                const audio = new Audio(PRESET_AUDIO_URL);
+                audio.volume = 0.8;
+                audio.oncanplaythrough = () => {
+                  audio.play().then(() => {
+                    setTimeout(() => {
+                      audio.pause();
+                      setIsTestingUrl(false);
+                    }, 3000);
+                  });
+                };
+                audio.onerror = () => setIsTestingUrl(false);
+                audio.load();
+              }}
+              disabled={isTestingUrl}
+              className="shrink-0"
+            >
+              <Play className={`w-3 h-3 mr-1 ${isTestingUrl ? 'animate-pulse' : ''}`} />
+              {isTestingUrl ? 'Playing' : 'Test'}
+            </Button>
+          </div>
 
           {/* Custom Audio URL option */}
           <div

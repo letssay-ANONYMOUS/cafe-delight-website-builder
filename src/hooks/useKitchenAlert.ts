@@ -1,5 +1,8 @@
 import { useRef, useCallback, useEffect, useState } from 'react';
 
+// Preset audio file URL for kitchen alerts (NAWA custom sound)
+export const PRESET_AUDIO_URL = 'https://files.catbox.moe/x0nryt.wav';
+
 // Sound definitions with MAXIMUM VOLUME for loud kitchen environments
 const soundLibrary: Record<string, (ctx: AudioContext) => void> = {
   chime: (ctx) => {
