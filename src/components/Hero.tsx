@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { Coffee, UserCircle, Home } from 'lucide-react';
 import { fadeUp, staggerContainer, buttonHover } from '@/lib/motionVariants';
+import heroImage from '@/assets/hero-nawa.png';
 
 const Hero = () => {
   return (
@@ -11,7 +12,7 @@ const Hero = () => {
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
         <img
-          src="https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=2000&q=80"
+          src={heroImage}
           alt="Premium coffee shop interior"
           loading="eager"
           decoding="async"
