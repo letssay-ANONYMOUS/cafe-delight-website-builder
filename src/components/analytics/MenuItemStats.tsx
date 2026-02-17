@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
 
 interface MenuItemStatsProps {
   dateRange: 'today' | '7days' | '30days';
@@ -37,21 +36,25 @@ export const MenuItemStats = ({ dateRange }: MenuItemStatsProps) => {
           startDate = startOfToday;
       }
 
-      const { data: menuViews } = await supabase
-        .from('menu_item_views')
-        .select('item_name, action')
-        .gte('viewed_at', startDate.toISOString());
-
-      if (!menuViews) {
-        setData([]);
-        setIsLoading(false);
-        return;
-      }
+      // Fetch via admin edge function instead of direct DB query
+      const token = sessionStorage.getItem('admin_session') || '';
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const response = await fetch(
+        `${supabaseUrl}/functions/v1/admin-orders?mode=menu_item_views&start_date=${startDate.toISOString()}`,
+        {
+          headers: {
+            'x-admin-token': token,
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+        }
+      );
+      const result = await response.json();
+      const menuViews = result.data || [];
 
       // Aggregate by item
       const itemStats: Record<string, { views: number; addToCart: number }> = {};
       
-      menuViews.forEach(mv => {
+      menuViews.forEach((mv: { item_name: string; action: string }) => {
         if (!itemStats[mv.item_name]) {
           itemStats[mv.item_name] = { views: 0, addToCart: 0 };
         }

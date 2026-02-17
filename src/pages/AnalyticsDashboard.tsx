@@ -68,7 +68,7 @@ const AnalyticsDashboard = () => {
   // Check authentication - use admin_session key like StaffLogin
   useEffect(() => {
     const checkAuth = () => {
-      const token = localStorage.getItem(ADMIN_SESSION_KEY);
+      const token = sessionStorage.getItem(ADMIN_SESSION_KEY);
       if (!token) {
         navigate('/staff/login');
         return;
@@ -82,7 +82,7 @@ const AnalyticsDashboard = () => {
         const eightHours = 8 * 60 * 60 * 1000;
         
         if (now - timestamp > eightHours) {
-          localStorage.removeItem(ADMIN_SESSION_KEY);
+          sessionStorage.removeItem(ADMIN_SESSION_KEY);
           navigate('/staff/login');
           return;
         }
@@ -134,7 +134,7 @@ const AnalyticsDashboard = () => {
         .order('last_seen_at', { ascending: false });
 
       // Fetch orders for conversion via admin edge function
-      const token = localStorage.getItem('admin_session') || '';
+      const token = sessionStorage.getItem('admin_session') || '';
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const ordersResponse = await fetch(
         `${supabaseUrl}/functions/v1/admin-orders?mode=count&start_date=${startDate.toISOString()}&payment_status=paid`,
@@ -240,7 +240,7 @@ const AnalyticsDashboard = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem(ADMIN_SESSION_KEY);
+    sessionStorage.removeItem(ADMIN_SESSION_KEY);
     navigate('/staff/login');
   };
 

@@ -45,7 +45,7 @@ const AdminDashboard = () => {
   }, []);
 
   const checkAuth = async () => {
-    const token = localStorage.getItem('admin_session');
+    const token = sessionStorage.getItem('admin_session');
     if (!token) {
       navigate('/admin/login');
       return;
@@ -55,7 +55,7 @@ const AdminDashboard = () => {
         headers: { 'x-admin-token': token },
       });
       if (error || !data?.authenticated) {
-        localStorage.removeItem('admin_session');
+        sessionStorage.removeItem('admin_session');
         navigate('/admin/login');
       }
     } catch (error) {
@@ -64,7 +64,7 @@ const AdminDashboard = () => {
   };
 
   const loadItems = async () => {
-    const token = localStorage.getItem('admin_session');
+    const token = sessionStorage.getItem('admin_session');
     try {
       setLoading(true);
       const { data, error } = await supabase.functions.invoke('admin-items', {
@@ -129,7 +129,7 @@ const AdminDashboard = () => {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this item?')) return;
-    const token = localStorage.getItem('admin_session');
+    const token = sessionStorage.getItem('admin_session');
 
     try {
       const { error } = await supabase.functions.invoke('admin-item', {
@@ -156,7 +156,7 @@ const AdminDashboard = () => {
 
   const uploadImage = async (): Promise<string | null> => {
     if (!imageFile) return null;
-    const token = localStorage.getItem('admin_session');
+    const token = sessionStorage.getItem('admin_session');
 
     try {
       const { data: urlData, error: urlError } = await supabase.functions.invoke('admin-upload-url', {
@@ -206,7 +206,7 @@ const AdminDashboard = () => {
         published: formData.published,
       };
 
-      const token = localStorage.getItem('admin_session');
+      const token = sessionStorage.getItem('admin_session');
       const headers = token ? { 'x-admin-token': token } : {};
 
       if (editingItem) {
