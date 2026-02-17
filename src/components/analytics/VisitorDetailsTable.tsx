@@ -143,7 +143,7 @@ export const VisitorDetailsTable = ({ dateRange }: VisitorDetailsTableProps) => 
         .gte('viewed_at', startDate.toISOString());
 
       // Fetch orders via admin edge function
-      const token = localStorage.getItem('admin_session') || '';
+      const token = sessionStorage.getItem('admin_session') || '';
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const ordersResponse = await fetch(
         `${supabaseUrl}/functions/v1/admin-orders?mode=visitor_ids&start_date=${startDate.toISOString()}`,

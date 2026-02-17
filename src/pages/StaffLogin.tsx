@@ -26,7 +26,7 @@ const StaffLogin = () => {
       if (error) throw error;
 
       if (data?.sessionToken) {
-        localStorage.setItem('admin_session', data.sessionToken);
+        sessionStorage.setItem('admin_session', data.sessionToken);
         toast({
           title: "Welcome!",
           description: "Redirecting to kitchen dashboard...",

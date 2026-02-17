@@ -64,7 +64,19 @@ serve(async (req) => {
     const paymentStatus = url.searchParams.get("payment_status");
 
     if (mode === "count") {
-      // Return just the count of paid orders (for analytics)
+      const table = url.searchParams.get("table") || "orders";
+      
+      if (table === "page_views") {
+        let query = supabase.from("page_views").select("id", { count: "exact", head: true });
+        if (startDate) query = query.gte("viewed_at", startDate);
+        const { count, error } = await query;
+        if (error) throw error;
+        return new Response(JSON.stringify({ count }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Default: count orders
       let query = supabase
         .from("orders")
         .select("id", { count: "exact", head: true });
@@ -89,6 +101,49 @@ serve(async (req) => {
       if (error) throw error;
 
       return new Response(JSON.stringify({ data }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (mode === "menu_item_views") {
+      // Analytics: count menu item views/add_to_cart
+      let query = supabase.from("menu_item_views").select("item_name, action");
+      if (startDate) query = query.gte("viewed_at", startDate);
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      return new Response(JSON.stringify({ data: data || [] }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (mode === "menu_item_view_counts") {
+      // Analytics: counts for conversion funnel
+      const action = url.searchParams.get("action");
+      let query = supabase.from("menu_item_views").select("id", { count: "exact", head: true });
+      if (action) query = query.eq("action", action);
+      if (startDate) query = query.gte("viewed_at", startDate);
+
+      const { count, error } = await query;
+      if (error) throw error;
+
+      return new Response(JSON.stringify({ count }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (mode === "site_event_counts") {
+      // Analytics: count site events
+      const eventName = url.searchParams.get("event_name");
+      let query = supabase.from("site_events").select("id", { count: "exact", head: true });
+      if (eventName) query = query.eq("event_name", eventName);
+      if (startDate) query = query.gte("created_at", startDate);
+
+      const { count, error } = await query;
+      if (error) throw error;
+
+      return new Response(JSON.stringify({ count }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

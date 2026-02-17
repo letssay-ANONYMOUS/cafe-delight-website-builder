@@ -156,12 +156,14 @@ const KitchenDashboard = () => {
   useEffect(() => {
     checkAuth();
     loadOrders();
-    const channel = setupRealtimeSubscription();
+
+    // Poll for new orders every 10 seconds instead of using realtime subscriptions
+    const pollInterval = setInterval(() => {
+      loadOrders();
+    }, 10000);
 
     return () => {
-      if (channel) {
-        supabase.removeChannel(channel);
-      }
+      clearInterval(pollInterval);
       stopAlert();
     };
   }, [dateRange]);
@@ -176,7 +178,7 @@ const KitchenDashboard = () => {
   }, [unacknowledgedOrders.size, soundEnabled, startAlert, stopAlert]);
 
   const checkAuth = async () => {
-    const token = localStorage.getItem('admin_session');
+    const token = sessionStorage.getItem('admin_session');
     if (!token) {
       navigate('/staff/login');
       return;
@@ -188,7 +190,7 @@ const KitchenDashboard = () => {
       });
 
       if (error || (!data?.valid && !data?.authenticated)) {
-        localStorage.removeItem('admin_session');
+        sessionStorage.removeItem('admin_session');
         navigate('/staff/login');
       }
     } catch (error) {
@@ -201,7 +203,7 @@ const KitchenDashboard = () => {
     setIsLoading(true);
     try {
       const startDate = getDateFromRange(dateRange);
-      const token = localStorage.getItem('admin_session') || '';
+      const token = sessionStorage.getItem('admin_session') || '';
 
       const { data, error } = await supabase.functions.invoke('admin-orders', {
         headers: { 'x-admin-token': token },
@@ -343,7 +345,7 @@ const KitchenDashboard = () => {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('admin_session');
+    sessionStorage.removeItem('admin_session');
     navigate('/staff/login');
   };
 

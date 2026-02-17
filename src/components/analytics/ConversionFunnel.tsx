@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { supabase } from '@/integrations/supabase/client';
-import { ArrowRight } from 'lucide-react';
 
 interface ConversionFunnelProps {
   dateRange: 'today' | '7days' | '30days';
@@ -14,6 +12,22 @@ interface FunnelData {
   checkoutStarted: number;
   orderComplete: number;
 }
+
+const fetchAdminAnalytics = async (mode: string, params: Record<string, string> = {}) => {
+  const token = sessionStorage.getItem('admin_session') || '';
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const query = new URLSearchParams({ mode, ...params }).toString();
+  const response = await fetch(
+    `${supabaseUrl}/functions/v1/admin-orders?${query}`,
+    {
+      headers: {
+        'x-admin-token': token,
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      },
+    }
+  );
+  return response.json();
+};
 
 export const ConversionFunnel = ({ dateRange }: ConversionFunnelProps) => {
   const [data, setData] = useState<FunnelData>({
@@ -43,54 +57,23 @@ export const ConversionFunnel = ({ dateRange }: ConversionFunnelProps) => {
           startDate = startOfToday;
       }
 
-      // Fetch page views
-      const { count: pageViews } = await supabase
-        .from('page_views')
-        .select('*', { count: 'exact', head: true })
-        .gte('viewed_at', startDate.toISOString());
+      const sd = startDate.toISOString();
 
-      // Fetch menu views
-      const { count: menuViews } = await supabase
-        .from('menu_item_views')
-        .select('*', { count: 'exact', head: true })
-        .eq('action', 'view')
-        .gte('viewed_at', startDate.toISOString());
-
-      // Fetch add to cart
-      const { count: addToCart } = await supabase
-        .from('menu_item_views')
-        .select('*', { count: 'exact', head: true })
-        .eq('action', 'add_to_cart')
-        .gte('viewed_at', startDate.toISOString());
-
-      // Fetch checkout started events
-      const { count: checkoutStarted } = await supabase
-        .from('site_events')
-        .select('*', { count: 'exact', head: true })
-        .eq('event_name', 'checkout_started')
-        .gte('created_at', startDate.toISOString());
-
-      // Fetch completed orders via admin edge function
-      const token = localStorage.getItem('admin_session') || '';
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const ordersResponse = await fetch(
-        `${supabaseUrl}/functions/v1/admin-orders?mode=count&start_date=${startDate.toISOString()}&payment_status=paid`,
-        {
-          headers: {
-            'x-admin-token': token,
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-        }
-      );
-      const ordersResult = await ordersResponse.json();
-      const orderComplete = ordersResult.count || 0;
+      // Fetch all counts via admin edge function
+      const [pageViewsRes, menuViewsRes, addToCartRes, checkoutRes, ordersRes] = await Promise.all([
+        fetchAdminAnalytics('count', { start_date: sd, table: 'page_views' }),
+        fetchAdminAnalytics('menu_item_view_counts', { start_date: sd, action: 'view' }),
+        fetchAdminAnalytics('menu_item_view_counts', { start_date: sd, action: 'add_to_cart' }),
+        fetchAdminAnalytics('site_event_counts', { start_date: sd, event_name: 'checkout_started' }),
+        fetchAdminAnalytics('count', { start_date: sd, payment_status: 'paid' }),
+      ]);
 
       setData({
-        pageViews: pageViews || 0,
-        menuViews: menuViews || 0,
-        addToCart: addToCart || 0,
-        checkoutStarted: checkoutStarted || 0,
-        orderComplete: orderComplete || 0
+        pageViews: pageViewsRes.count || 0,
+        menuViews: menuViewsRes.count || 0,
+        addToCart: addToCartRes.count || 0,
+        checkoutStarted: checkoutRes.count || 0,
+        orderComplete: ordersRes.count || 0
       });
       setIsLoading(false);
     };
