@@ -85,40 +85,53 @@ const Header = () => {
         </div>
 
         {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="md:hidden fixed top-16 left-0 right-0 bg-white/95 backdrop-blur-sm border-b border-coffee-200 shadow-lg z-50">
-            <nav className="flex flex-col space-y-4 p-4">
-              {navItems.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => setIsMenuOpen(false)}
-                  className={`font-medium py-2 text-left transition-colors duration-200 ${
-                    isActive(item.path)
-                      ? 'text-coffee-900 font-semibold'
-                      : 'text-coffee-700 hover:text-coffee-900'
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              ))}
-              <Link to="/cart" onClick={() => setIsMenuOpen(false)}>
-                <Button variant="outline" size="sm" className="rounded-full w-fit gap-2 relative">
-                  <ShoppingCart className="h-4 w-4" />
-                  Cart
-                  {cartCount > 0 && (
-                    <span className="bg-coffee-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center ml-1">
-                      {cartCount}
-                    </span>
-                  )}
-                </Button>
+        <div
+          className={`md:hidden fixed top-16 left-0 right-0 bg-white/95 backdrop-blur-sm border-b border-coffee-200 shadow-lg z-50 overflow-hidden transition-all duration-300 ease-in-out ${
+            isMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0 border-b-0 shadow-none'
+          }`}
+        >
+          <nav className="flex flex-col space-y-4 p-4">
+            {navItems.map((item, index) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                onClick={() => setIsMenuOpen(false)}
+                className={`font-medium py-2 text-left transition-all duration-300 ${
+                  isMenuOpen ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'
+                } ${
+                  isActive(item.path)
+                    ? 'text-coffee-900 font-semibold'
+                    : 'text-coffee-700 hover:text-coffee-900'
+                }`}
+                style={{ transitionDelay: isMenuOpen ? `${index * 40}ms` : '0ms' }}
+              >
+                {item.label}
               </Link>
+            ))}
+            <Link to="/cart" onClick={() => setIsMenuOpen(false)}
+              className={`transition-all duration-300 ${isMenuOpen ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'}`}
+              style={{ transitionDelay: isMenuOpen ? `${navItems.length * 40}ms` : '0ms' }}
+            >
+              <Button variant="outline" size="sm" className="rounded-full w-fit gap-2 relative">
+                <ShoppingCart className="h-4 w-4" />
+                Cart
+                {cartCount > 0 && (
+                  <span className="bg-coffee-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center ml-1">
+                    {cartCount}
+                  </span>
+                )}
+              </Button>
+            </Link>
+            <div
+              className={`transition-all duration-300 ${isMenuOpen ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'}`}
+              style={{ transitionDelay: isMenuOpen ? `${(navItems.length + 1) * 40}ms` : '0ms' }}
+            >
               <Button className="bg-coffee-600 hover:bg-coffee-700 text-white px-6 py-2 rounded-full w-fit">
                 Order Now
               </Button>
-            </nav>
-          </div>
-        )}
+            </div>
+          </nav>
+        </div>
       </div>
     </header>
   );
