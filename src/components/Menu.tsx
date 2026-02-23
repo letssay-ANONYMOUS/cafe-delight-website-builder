@@ -1,7 +1,7 @@
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
-import { useMenuCards } from '@/hooks/useMenuCards';
+import { useMenuCards, menuSections, groupCardsBySections, type MenuCard } from '@/hooks/useMenuCards';
 import { Card } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 
@@ -10,15 +10,27 @@ const Menu = () => {
   const { data: menuCards, isLoading, error } = useMenuCards();
   const navigate = useNavigate();
 
-  const filteredCards = (menuCards || []).filter((card) => {
-    if (!searchQuery.trim()) return true;
+  const grouped = menuCards ? groupCardsBySections(menuCards) : {};
+
+  const filterCards = (cards: MenuCard[]) => {
+    if (!searchQuery.trim()) return cards;
     const q = searchQuery.toLowerCase();
-    return (
-      card.name?.toLowerCase().includes(q) ||
-      card.description?.toLowerCase().includes(q) ||
-      card.price?.toLowerCase().includes(q)
+    return cards.filter(
+      (card) =>
+        card.name?.toLowerCase().includes(q) ||
+        card.description?.toLowerCase().includes(q) ||
+        card.price?.toLowerCase().includes(q)
     );
-  });
+  };
+
+  const scrollToSection = (sectionId: string) => {
+    const el = document.getElementById(sectionId);
+    if (el) {
+      const offset = 150;
+      const pos = el.getBoundingClientRect().top + window.pageYOffset - offset;
+      window.scrollTo({ top: pos, behavior: 'smooth' });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -47,7 +59,9 @@ const Menu = () => {
       <div className="bg-[#4a5f4a]/80 backdrop-blur-md py-3 px-3 sm:px-6 lg:px-8 sticky top-16 z-10">
         <div className="container mx-auto">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
-            <h1 className="text-lg sm:text-2xl font-cinzel font-bold text-white whitespace-nowrap text-center sm:text-left">Specialty Coffee</h1>
+            <h1 className="text-lg sm:text-2xl font-cinzel font-bold text-white whitespace-nowrap text-center sm:text-left">
+              Specialty Coffee
+            </h1>
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-coffee-700 w-5 h-5" />
               <Input
@@ -62,49 +76,103 @@ const Menu = () => {
         </div>
       </div>
 
-      {/* Menu Cards Grid - flat list ordered by ID */}
-      <div className="container mx-auto px-3 sm:px-6 lg:px-8 py-8 pb-20">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-6">
-          {filteredCards.map((card) => (
-            <Card
-              key={card.id}
-              onClick={() => navigate(`/menu/${card.id}`)}
-              className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-transparent cursor-pointer"
-            >
-              {/* Image */}
-              <div className="relative overflow-hidden aspect-[4/3]">
-                <img
-                  src={card.image_url || '/placeholder.svg'}
-                  alt={card.name || ''}
-                  loading="lazy"
-                  decoding="async"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-300" />
-
-                {/* Card Number Badge */}
-                <div className="absolute top-2 left-2 w-10 h-10 bg-red-500 rounded-full flex items-center justify-center shadow-lg z-10">
-                  <span className="text-white font-bold text-lg">{card.id}</span>
-                </div>
-              </div>
-
-              {/* Golden Footer */}
-              <div className="bg-[#c9a962]/90 backdrop-blur-sm p-3 min-h-[5.5rem] flex flex-col justify-between">
-                <h3 className="font-semibold text-white text-xs sm:text-sm md:text-base leading-tight mb-1 line-clamp-2">
-                  {card.name}
-                </h3>
-                <div className="flex items-center justify-between">
-                  <p className="text-white/90 font-bold text-sm sm:text-base md:text-lg">
-                    {card.price}
+      {/* Section Navigation */}
+      <div className="overflow-x-auto py-4 px-3 sm:px-6 lg:px-8 scrollbar-hide">
+        <div className="container mx-auto">
+          <div className="flex gap-3 sm:gap-4 min-w-max justify-start">
+            {menuSections.map((section) => {
+              const sectionCards = grouped[section.id] || [];
+              if (sectionCards.length === 0) return null;
+              // Use the first card's image as section thumbnail
+              const thumbImage = sectionCards[0]?.image_url || '/placeholder.svg';
+              return (
+                <button
+                  key={section.id}
+                  onClick={() => scrollToSection(section.id)}
+                  className="flex-shrink-0 w-28 sm:w-40 group cursor-pointer"
+                >
+                  <div className="relative overflow-hidden rounded-lg aspect-[4/3] mb-2">
+                    <img
+                      src={thumbImage}
+                      alt={section.name}
+                      loading="eager"
+                      decoding="async"
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  </div>
+                  <p className="text-[#c9a962] text-sm font-medium text-center uppercase leading-tight">
+                    {section.name}
                   </p>
-                  <p className="text-white/60 text-[10px] hidden md:block">
-                    Click for details
-                  </p>
-                </div>
-              </div>
-            </Card>
-          ))}
+                </button>
+              );
+            })}
+          </div>
         </div>
+      </div>
+
+      {/* Menu Cards Grid by Section */}
+      <div className="container mx-auto px-3 sm:px-6 lg:px-8 pb-20">
+        {menuSections.map((section) => {
+          const sectionCards = grouped[section.id] || [];
+          const filtered = filterCards(sectionCards);
+          if (filtered.length === 0) return null;
+
+          return (
+            <div key={section.id} id={section.id} className="mb-16 scroll-mt-32">
+              {/* Section Header */}
+              <div className="mb-6">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-cinzel font-bold text-white mb-2 tracking-wide">
+                  {section.name}
+                </h2>
+                <div className="w-16 h-0.5 bg-[#c9a962]" />
+              </div>
+
+              {/* Cards Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-6">
+                {filtered.map((card) => (
+                  <Card
+                    key={card.id}
+                    onClick={() => navigate(`/menu/${card.id}`)}
+                    className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-transparent cursor-pointer"
+                  >
+                    {/* Image */}
+                    <div className="relative overflow-hidden aspect-[4/3]">
+                      <img
+                        src={card.image_url || '/placeholder.svg'}
+                        alt={card.name || ''}
+                        loading="lazy"
+                        decoding="async"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-300" />
+
+                      {/* Card Number Badge */}
+                      <div className="absolute top-2 left-2 w-10 h-10 bg-red-500 rounded-full flex items-center justify-center shadow-lg z-10">
+                        <span className="text-white font-bold text-lg">{card.id}</span>
+                      </div>
+                    </div>
+
+                    {/* Golden Footer */}
+                    <div className="bg-[#c9a962]/90 backdrop-blur-sm p-3 min-h-[5.5rem] flex flex-col justify-between">
+                      <h3 className="font-semibold text-white text-xs sm:text-sm md:text-base leading-tight mb-1 line-clamp-2">
+                        {card.name}
+                      </h3>
+                      <div className="flex items-center justify-between">
+                        <p className="text-white/90 font-bold text-sm sm:text-base md:text-lg">
+                          {card.price}
+                        </p>
+                        <p className="text-white/60 text-[10px] hidden md:block">
+                          Click for details
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </section>
   );
