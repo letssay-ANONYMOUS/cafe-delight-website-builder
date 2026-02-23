@@ -1,40 +1,47 @@
 
 
-# Menu Cards Full Replacement Plan
+# Plan: Insert CSV #5 Cards (135-167) and Fix Display Order
 
-## Overview
+## Current State
 
-You will send 5 CSV files containing all 167 menu cards. I will replace the entire menu database with this new data, processing each CSV sequentially without touching previously inserted cards.
+Cards 135-167 already exist in the database from a previous attempt, but with **wrong categories** (e.g., matcha items dumped under "cold-beverages", teas under "coffee"). They need to be deleted and re-inserted correctly.
 
-## How It Works
+The frontend also has a display bug: items are grouped by subcategory into separate grids, breaking the card_number sequence.
 
-Since the menu is entirely database-driven (fetched from the backend `menu_items` table), the process is:
+## Part 1: Database -- Delete and Re-insert Cards 135-167
 
-1. **Step 1 (on your first CSV):** Delete ALL existing menu items from the database, then insert the cards from CSV #1
-2. **Step 2 (CSV #2):** Insert ONLY the new cards -- no modifications to CSV #1 cards
-3. **Step 3 (CSV #3):** Insert ONLY the new cards -- no modifications to CSV #1 or #2 cards
-4. **Step 4 (CSV #4):** Insert ONLY the new cards -- no modifications to previous cards
-5. **Step 5 (CSV #5):** Insert ONLY the new cards -- no modifications to previous cards
+Delete all existing cards 135-167, then insert all 33 cards fresh with correct data from the CSV.
 
-No frontend code changes are needed. The menu page already reads from the database dynamically.
+**Category assignments based on the established menu sequence:**
 
-## Strict Rules I Will Follow
+| Cards | Category | Items |
+|-------|----------|-------|
+| 135 | infusion | HIBISCUS FRUIT BOTTEL 1 LT |
+| 136-139 | fresh-juice | Orange Juice, Lemon mint Juice, NAWA Dragon Fruit, ORA COLADA |
+| 140-142 | fresh-juice | Coca-Cola 290ml, Cola Light 290ml, Sprite 290ml |
+| 143-150 | matcha | Matcha Latte through MATCHA WITH ROSE ICE CREAM |
+| 151-154 | nawa-special-tea | EARL GREY SPECIAL through NAWA SPECIAL BLACK TEA |
+| 155 | appetisers | Burrata with cherry roasted tomatoes |
+| 156-157 | nawa-breakfast | Focaccia Halloumi Sandwich, Best Ever Avocado Sandwich |
+| 158-165 | nawa-breakfast | Plain Croissant through HAZELNUTS CROISSANT |
+| 166-167 | pastries | NAWA Cookie, NAWA Cookies - Box of 6 |
 
-- Each CSV batch is an INSERT-only operation (after the initial cleanup)
-- Previously inserted cards are never touched, updated, or re-inserted
-- Card numbers, titles, prices, descriptions, categories, images, and options will be set exactly as provided in each CSV
-- I will confirm the count of inserted cards after each batch
+All titles, prices, descriptions, and image URLs taken exactly from the CSV. Cards 1-134 are NOT touched.
 
-## What I Need From You
+## Part 2: Frontend -- Fix Card Display Order
 
-Go ahead and send CSV #1 whenever you are ready. For each CSV, please include:
-- Card number
-- Title
-- Description
-- Price
-- Category
-- Subcategory (if any)
-- Image URL/path
-- Options (if any, e.g. bean selections)
-- Tags (if any)
+Two files change. No data affected.
+
+### `src/hooks/useMenuItems.ts`
+- Change `groupMenuItems` to return a flat array per category (`{ [category]: MenuItem[] }`) sorted by `card_number`, instead of nested subcategory objects.
+
+### `src/components/Menu.tsx`
+- Remove the inner `Object.entries(categoryData)` loop (lines 214-257) that creates separate grids per subcategory.
+- Render one single grid per category with all items in `card_number` order.
+- Remove subcategory headers entirely -- they were splitting the sequential flow.
+
+## Result
+- 167 cards total, all in perfect 1-167 sequential order in the database
+- Frontend renders each category as one grid, cards flowing in card_number order
+- Cards 1-134 completely untouched
 
