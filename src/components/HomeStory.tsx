@@ -13,7 +13,7 @@ const HomeStory = () => {
                 src={homeBarista}
                 alt="Barista crafting latte art"
                 className="w-full h-[280px] sm:h-[400px] object-cover object-center"
-                loading="lazy"
+                loading="eager"
               />
             </div>
             {/* Floating accent card */}
