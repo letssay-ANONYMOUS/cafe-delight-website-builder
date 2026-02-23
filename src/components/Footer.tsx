@@ -234,16 +234,16 @@ const Footer = () => {
           <div>
             <h3 className="font-playfair text-xl font-semibold mb-4">Contact</h3>
             <div className="space-y-2 text-cream-200">
-              <p>Al Ain</p>
-              <p>United Arab Emirates</p>
+              <p>📍 Al Ain</p>
+              <p>📍 United Arab Emirates</p>
               <a href="tel:037800030" className="block hover:text-cream-100 transition-colors">
-                037800030
+                📱 037800030
               </a>
               <a href="tel:0506584176" className="block hover:text-cream-100 transition-colors">
-                0506584176
+                📱 0506584176
               </a>
               <a href="mailto:nawacafe22@gmail.com" className="block hover:text-cream-100 transition-colors">
-                nawacafe22@gmail.com
+                📧 nawacafe22@gmail.com
               </a>
             </div>
           </div>
