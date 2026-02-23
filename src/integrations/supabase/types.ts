@@ -86,6 +86,30 @@ export type Database = {
         }
         Relationships: []
       }
+      menu_cards: {
+        Row: {
+          description: string | null
+          id: number
+          image_url: string | null
+          name: string | null
+          price: string | null
+        }
+        Insert: {
+          description?: string | null
+          id: number
+          image_url?: string | null
+          name?: string | null
+          price?: string | null
+        }
+        Update: {
+          description?: string | null
+          id?: number
+          image_url?: string | null
+          name?: string | null
+          price?: string | null
+        }
+        Relationships: []
+      }
       menu_item_views: {
         Row: {
           action: string
