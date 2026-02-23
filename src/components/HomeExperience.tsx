@@ -3,7 +3,7 @@ const homeInterior = 'https://lomqlmqsoyayuegheetv.supabase.co/storage/v1/object
 const stats = [
   { value: '50+', label: 'Menu Items' },
   { value: '4.7★', label: 'Google Rating' },
-  { value: '2014', label: 'Est. Year' },
+  { value: '2021', label: 'Est. Year' },
   { value: '2', label: 'Locations' },
 ];
 
@@ -16,7 +16,7 @@ const HomeExperience = () => {
           src={homeInterior}
           alt="NAWA Café warm interior"
           className="w-full h-full object-cover"
-          loading="lazy"
+          loading="eager"
         />
         <div className="absolute inset-0 bg-black/50" />
         <div className="absolute inset-0 flex items-center justify-center text-center px-4">
