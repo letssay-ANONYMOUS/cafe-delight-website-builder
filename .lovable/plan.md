@@ -1,82 +1,40 @@
 
 
-# Website Beautification Plan
+# Menu Cards Full Replacement Plan
 
-Here is a summary of all the improvements, organized by area:
+## Overview
 
----
+You will send 5 CSV files containing all 167 menu cards. I will replace the entire menu database with this new data, processing each CSV sequentially without touching previously inserted cards.
 
-## 1. Catering Page -- Fix Hero Text Overlap
+## How It Works
 
-**Problem:** The hero has both "Elevated Catering" (from a previous version) and "Catering Services" overlapping.
+Since the menu is entirely database-driven (fetched from the backend `menu_items` table), the process is:
 
-**Fix:** Clean up to show only one heading ("Catering Services") with the subtitle and CTA button, properly spaced. No text overlap.
+1. **Step 1 (on your first CSV):** Delete ALL existing menu items from the database, then insert the cards from CSV #1
+2. **Step 2 (CSV #2):** Insert ONLY the new cards -- no modifications to CSV #1 cards
+3. **Step 3 (CSV #3):** Insert ONLY the new cards -- no modifications to CSV #1 or #2 cards
+4. **Step 4 (CSV #4):** Insert ONLY the new cards -- no modifications to previous cards
+5. **Step 5 (CSV #5):** Insert ONLY the new cards -- no modifications to previous cards
 
----
+No frontend code changes are needed. The menu page already reads from the database dynamically.
 
-## 2. Locations Page -- Add Visual Warmth
+## Strict Rules I Will Follow
 
-**Problem:** The page has a plain brown gradient hero with no imagery. It feels bare and disconnected from the rest of the site.
+- Each CSV batch is an INSERT-only operation (after the initial cleanup)
+- Previously inserted cards are never touched, updated, or re-inserted
+- Card numbers, titles, prices, descriptions, categories, images, and options will be set exactly as provided in each CSV
+- I will confirm the count of inserted cards after each batch
 
-**Changes:**
-- Replace the plain gradient hero with a full-height hero image using one of the existing cafe interior images (e.g., `home-interior-new.jpg`) with a dark overlay and elegant Cinzel typography (matching the homepage hero style).
-- Restyle the 3 info cards (Address, Phone, Hours) with a more premium look -- subtle hover effects, larger icons, and the Cinzel font for headings.
-- Add more vertical breathing room around the map embed.
+## What I Need From You
 
----
-
-## 3. Contact Page -- Add Hero and Visual Polish
-
-**Problem:** The page jumps straight into the contact cards with no visual introduction. Feels purely functional.
-
-**Changes:**
-- Add a hero section at the top of the Contact page (similar style to the Locations page hero) with a cafe image, dark overlay, and "Contact Us" heading in Cinzel font.
-- Replace the emoji icons (pin, phone, email) in the contact cards with proper Lucide icons for a more polished look.
-- Improve the card styling with subtle borders and refined spacing.
-
----
-
-## 4. Homepage "Visit NAWA Cafe" Section -- Elevate Design
-
-**Problem:** The 3 info cards look generic and template-like with basic rounded boxes.
-
-**Changes:**
-- Restyle cards with a more refined look: remove the circular icon containers and instead use inline icons next to headings.
-- Add a subtle background texture or warm gradient behind the entire section.
-- Use the Cinzel font consistently for headings.
-- Make the section feel more integrated with the rest of the premium homepage design.
-
----
-
-## 5. Footer -- Update Copyright Year
-
-**Problem:** Footer says "2024" but it's 2026.
-
-**Fix:** Change the hardcoded "2024" to "2026" (or use dynamic year via `new Date().getFullYear()`).
-
----
-
-## 6. Cookie Banner -- Make Less Obtrusive
-
-**Problem:** The cookie banner is large and heavy, covering significant screen space on every page load.
-
-**Changes:**
-- Make the banner more compact: reduce padding, use a single-line layout on desktop with buttons inline.
-- On mobile, keep it slim with stacked buttons but less padding.
-- This keeps compliance while reducing visual disruption.
-
----
-
-## Technical Details
-
-**Files to modify:**
-- `src/pages/LocationsPage.tsx` -- New hero with image, restyled info cards
-- `src/pages/ContactPage.tsx` -- Add hero section
-- `src/components/Contact.tsx` -- Replace emojis with Lucide icons, restyle cards
-- `src/components/HomeVisit.tsx` -- Restyle the visit section cards
-- `src/components/Footer.tsx` -- Update copyright year to dynamic
-- `src/components/CookieConsent.tsx` -- Compact layout
-- `src/pages/CateringPage.tsx` -- Verify hero has no text overlap (may already be fixed)
-
-**No new dependencies needed.** All changes use existing Tailwind classes, Lucide icons, and Cinzel/Playfair fonts already in the project.
+Go ahead and send CSV #1 whenever you are ready. For each CSV, please include:
+- Card number
+- Title
+- Description
+- Price
+- Category
+- Subcategory (if any)
+- Image URL/path
+- Options (if any, e.g. bean selections)
+- Tags (if any)
 
