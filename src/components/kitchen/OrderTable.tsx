@@ -24,6 +24,7 @@ import {
   Hash,
   CreditCard,
   Receipt,
+  MapPin,
 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -131,6 +132,12 @@ export const OrderTable = ({
                       Phone
                     </div>
                   </TableHead>
+                  <TableHead className="hidden md:table-cell">
+                    <div className="flex items-center gap-1">
+                      <MapPin className="w-3 h-3" />
+                      Location
+                    </div>
+                  </TableHead>
                   <TableHead className="text-center">
                     <div className="flex items-center gap-1 justify-center">
                       <ShoppingBag className="w-3 h-3" />
@@ -189,6 +196,16 @@ export const OrderTable = ({
                         <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
                           {order.customer_phone}
                         </TableCell>
+                        <TableCell className="hidden md:table-cell text-sm">
+                          {(order as any).customer_location ? (
+                            <span className="flex items-center gap-1 text-muted-foreground">
+                              <MapPin className="w-3 h-3 text-primary" />
+                              {(order as any).customer_location}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
                         <TableCell className="text-center">
                           <Badge variant="secondary" className="font-bold">
                             {totalItems}
@@ -234,7 +251,7 @@ export const OrderTable = ({
                       {/* Expanded Details */}
                       {isExpanded && (
                         <TableRow className="bg-muted/30">
-                          <TableCell colSpan={isPaid ? 9 : 7} className="p-4">
+                          <TableCell colSpan={isPaid ? 10 : 8} className="p-4">
                             <div className="bg-card rounded-lg border p-4 space-y-4">
                               {/* Customer & Order Info */}
                               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 text-sm">
@@ -275,6 +292,26 @@ export const OrderTable = ({
                                   <p className="font-medium truncate">{order.customer_email || '-'}</p>
                                 </div>
                               </div>
+
+                              {/* Location & IP Info */}
+                              {((order as any).customer_location || (order as any).ip_address) && (
+                                <div className="flex flex-wrap gap-4 items-center border-t py-3">
+                                  {(order as any).customer_location && (
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-muted-foreground text-sm flex items-center gap-1">
+                                        <MapPin className="w-3 h-3" /> Location:
+                                      </span>
+                                      <span className="font-medium">{(order as any).customer_location}</span>
+                                    </div>
+                                  )}
+                                  {(order as any).ip_address && (
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-muted-foreground text-sm">IP Address:</span>
+                                      <span className="font-mono text-xs bg-muted px-2 py-1 rounded">{(order as any).ip_address}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
 
                               {/* Order Type & Payment Info */}
                               <div className="flex flex-wrap gap-4 items-center border-t border-b py-3">

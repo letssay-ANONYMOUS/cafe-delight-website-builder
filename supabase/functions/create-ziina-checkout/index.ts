@@ -13,6 +13,34 @@ serve(async (req) => {
   }
 
   try {
+    // ===== CAPTURE CUSTOMER IP =====
+    const forwardedFor = req.headers.get("x-forwarded-for");
+    const cfConnectingIp = req.headers.get("cf-connecting-ip");
+    const realIp = req.headers.get("x-real-ip");
+    const customerIp = cfConnectingIp || (forwardedFor ? forwardedFor.split(",")[0].trim() : null) || realIp || null;
+    console.log("Customer IP:", customerIp);
+
+    // Resolve IP to district-level location
+    let customerLocation = "Unknown";
+    if (customerIp && customerIp !== "127.0.0.1") {
+      try {
+        const geoRes = await fetch(`http://ip-api.com/json/${customerIp}?fields=status,city,regionName,country,district,zip,lat,lon`);
+        const geo = await geoRes.json();
+        if (geo.status === "success") {
+          // Build granular location: district > city > region > country
+          const parts = [geo.district, geo.city, geo.regionName, geo.country].filter(Boolean);
+          // Remove duplicates (e.g. if district == city)
+          const unique = [...new Set(parts)];
+          customerLocation = unique.join(", ") || "Unknown";
+          console.log("Geolocation resolved:", customerLocation);
+        } else {
+          console.warn("Geolocation failed for IP:", customerIp);
+        }
+      } catch (geoErr) {
+        console.warn("Geolocation API error:", geoErr);
+      }
+    }
+
     const { customerName, phoneNumber, orderItems, additionalNotes, visitorId } = await req.json();
 
     console.log("Checkout request:", { customerName, phoneNumber, itemCount: orderItems?.length, visitorId });
@@ -130,6 +158,8 @@ serve(async (req) => {
           payment_status: 'pending',
           payment_provider: 'ziina',
           order_type: 'takeaway',
+          ip_address: customerIp,
+          customer_location: customerLocation,
         })
         .select('id, order_number')
         .single();
