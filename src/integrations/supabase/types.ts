@@ -452,6 +452,24 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       visitor_sessions: {
         Row: {
           browser: string | null
@@ -497,8 +515,16 @@ export type Database = {
     }
     Functions: {
       generate_order_number: { Args: never; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role: "admin" | "staff"
       order_type: "dine_in" | "takeaway"
       payment_method: "card" | "cash" | "ziina" | "stripe"
       payment_status: "pending" | "paid" | "failed" | "refunded" | "cancelled"
@@ -629,6 +655,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "staff"],
       order_type: ["dine_in", "takeaway"],
       payment_method: ["card", "cash", "ziina", "stripe"],
       payment_status: ["pending", "paid", "failed", "refunded", "cancelled"],
