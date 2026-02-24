@@ -260,10 +260,12 @@ export type Database = {
         Row: {
           created_at: string
           customer_email: string | null
+          customer_location: string | null
           customer_name: string
           customer_phone: string
           extra_notes: string | null
           id: string
+          ip_address: string | null
           notes: string | null
           order_number: string
           order_type: Database["public"]["Enums"]["order_type"]
@@ -280,10 +282,12 @@ export type Database = {
         Insert: {
           created_at?: string
           customer_email?: string | null
+          customer_location?: string | null
           customer_name: string
           customer_phone: string
           extra_notes?: string | null
           id?: string
+          ip_address?: string | null
           notes?: string | null
           order_number: string
           order_type?: Database["public"]["Enums"]["order_type"]
@@ -300,10 +304,12 @@ export type Database = {
         Update: {
           created_at?: string
           customer_email?: string | null
+          customer_location?: string | null
           customer_name?: string
           customer_phone?: string
           extra_notes?: string | null
           id?: string
+          ip_address?: string | null
           notes?: string | null
           order_number?: string
           order_type?: Database["public"]["Enums"]["order_type"]
