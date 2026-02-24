@@ -1,97 +1,67 @@
 
-# Replace Kitchen Hardcoded Password with Supabase Auth
 
-## Overview
-Remove the custom password/HMAC session system on the kitchen route and replace it with proper Supabase Auth (email/password login). The kitchen dashboard will only render for authenticated users, and orders will be fetched directly from the database using RLS policies tied to the authenticated user, with Realtime subscriptions for instant updates.
+# Fix Missing user_roles Table and Connect Your Staff Account
 
-## Changes
+## Problem
+The `user_roles` table was never actually created in the database -- the migration ended up as a no-op. The login page and auth gate code are already in place but fail because the table they reference doesn't exist.
 
-### 1. Database Migration
-- Create a `user_roles` table with an `app_role` enum (`admin`, `staff`) to control access
-- Add RLS policies so only authenticated users with `admin` or `staff` roles can SELECT from `orders` and `order_items`
-- Create a `has_role()` security definer function to avoid recursive RLS
-- Enable Realtime on the `orders` table (`ALTER PUBLICATION supabase_realtime ADD TABLE public.orders`)
-- Seed an initial staff user (you'll set their email/password via the Auth system)
+## What I'll Do
 
-### 2. New: `src/components/KitchenAuthGate.tsx`
-A wrapper component that:
-- Checks `supabase.auth.getSession()` on mount
-- Listens to `onAuthStateChange` for login/logout
-- If not authenticated, renders a login form (email + password)
-- If authenticated, verifies the user has `staff` or `admin` role via the `user_roles` table
-- If authorized, renders the kitchen dashboard as children
+### 1. Create the database migration
+Run a migration to create:
+- The `app_role` enum type (`admin`, `staff`)
+- The `user_roles` table (with `user_id` referencing auth users and a `role` column)
+- RLS policies so users can read their own roles
+- The `has_role()` security definer function used by RLS policies on orders/order_items
 
-### 3. Replace `src/pages/StaffLogin.tsx`
-Rewrite to use Supabase Auth instead of the custom admin-login edge function:
-- Standard email/password form calling `supabase.auth.signInWithPassword()`
-- On success, redirect to `/admin/kitchen`
-- Remove all references to `sessionStorage` admin tokens
+### 2. Update RLS policies on orders and order_items
+- Replace the current `SELECT` policy on `orders` (which uses `USING (false)` -- blocking all reads) with one that allows authenticated staff/admin to read orders
+- Tighten the `order_items` SELECT policy to staff/admin only (currently public)
 
-### 4. Update `src/pages/KitchenDashboard.tsx`
-Key changes:
-- **Remove** `checkAuth()` function (no more sessionStorage/admin-session calls)
-- **Remove** the `admin-orders` edge function fetch -- query `orders` and `order_items` tables directly via the Supabase client (RLS will gate access)
-- **Replace** the 10-second polling interval with a Supabase Realtime subscription:
-  ```text
-  supabase.channel('kitchen-orders')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, handler)
-    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' }, handler)
-    .subscribe()
-  ```
-  (The existing `setupRealtimeSubscription()` function already has this logic but was never called -- it will be activated and connected)
-- **Update** logout to call `supabase.auth.signOut()` then navigate to `/staff/login`
-- **Remove** all `sessionStorage` admin token references
+### 3. Add your staff account's role
+After the table is created, insert a row linking your auth user to the `staff` role so you can log in at `/staff/login` and access the kitchen dashboard.
 
-### 5. Update `src/App.tsx`
-- Wrap the `/admin/kitchen` route with the auth gate component
-- The `/staff/login` route stays as the entry point
-
-### 6. RLS Policy Changes (via migration)
-
-**New policies on `orders`:**
-- `SELECT` for authenticated users with `staff` or `admin` role (replaces the current `USING (false)` policy)
-
-**New policies on `order_items`:**
-- `SELECT` for authenticated users with `staff` or `admin` role (replaces the current public `USING (true)` policy which is a security issue)
-
-### 7. Cleanup
-- The `admin-orders` edge function remains available for analytics but the kitchen dashboard no longer depends on it
-- The `admin-login` and `admin-session` edge functions remain for the separate admin dashboard (not part of this change)
+## No Code Changes Needed
+The `StaffLogin.tsx`, `KitchenAuthGate.tsx`, and `KitchenDashboard.tsx` files are already correctly implemented from the previous work. This is purely a database fix.
 
 ## Technical Details
 
-### Migration SQL (summary)
+**Migration SQL (key parts):**
 ```text
--- Create role enum and user_roles table
 CREATE TYPE public.app_role AS ENUM ('admin', 'staff');
-CREATE TABLE public.user_roles (...);
 
--- Security definer function
-CREATE FUNCTION public.has_role(uuid, app_role) ...;
+CREATE TABLE public.user_roles (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  role app_role NOT NULL,
+  UNIQUE (user_id, role)
+);
 
--- New RLS on orders: staff/admin can SELECT
-CREATE POLICY "Staff can view orders" ON orders
+ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can read own roles" ON public.user_roles
   FOR SELECT TO authenticated
-  USING (public.has_role(auth.uid(), 'admin') OR public.has_role(auth.uid(), 'staff'));
+  USING (auth.uid() = user_id);
 
--- Same for order_items
--- Enable realtime
-ALTER PUBLICATION supabase_realtime ADD TABLE public.orders;
+CREATE OR REPLACE FUNCTION public.has_role(...)
+  -- security definer function to check roles without RLS recursion
+
+-- Replace orders SELECT policy
+DROP POLICY IF EXISTS "Select own order by id" ON public.orders;
+CREATE POLICY "Staff can view orders" ON public.orders
+  FOR SELECT TO authenticated
+  USING (has_role(auth.uid(), 'admin') OR has_role(auth.uid(), 'staff'));
+
+-- Tighten order_items SELECT
+DROP POLICY IF EXISTS "Anyone can view order items" ON public.order_items;
+CREATE POLICY "Staff can view order items" ON public.order_items
+  FOR SELECT TO authenticated
+  USING (has_role(auth.uid(), 'admin') OR has_role(auth.uid(), 'staff'));
+
+-- Insert your staff role (using the user ID from auth)
+INSERT INTO public.user_roles (user_id, role)
+SELECT id, 'staff' FROM auth.users LIMIT 1;
 ```
 
-### Data flow (after change)
-```text
-Staff opens /staff/login
-  -> enters email + password
-  -> supabase.auth.signInWithPassword()
-  -> redirects to /admin/kitchen
-  -> KitchenAuthGate checks session + role
-  -> KitchenDashboard queries orders directly (RLS allows it)
-  -> Realtime subscription fires on new/updated orders
-  -> Dashboard updates instantly
-```
+The last line assigns the `staff` role to the first auth user found -- which should be the account you just created.
 
-## What stays the same
-- The admin dashboard (`/admin`) and its separate login flow remain unchanged
-- The `AdminPasswordModal` and `AdminContext` are unaffected
-- All other edge functions continue working as before
