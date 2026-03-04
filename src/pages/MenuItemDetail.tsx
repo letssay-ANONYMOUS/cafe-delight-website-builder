@@ -33,7 +33,11 @@ const MenuItemDetail = () => {
   const { data: menuItems, isLoading, error } = useMenuItems();
 
   const handleBack = useCallback(() => {
-    navigate('/menu');
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/menu');
+    }
   }, [navigate]);
 
   useEffect(() => {
