@@ -7,12 +7,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ChefHat, Lock, Mail } from "lucide-react";
-import type { Session } from "@supabase/supabase-js";
 
 const StaffLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -46,47 +46,32 @@ const StaffLogin = () => {
     return null;
   }, []);
 
-  // Redirect only authorized staff/admin sessions
+  // On mount only: check if already logged in with valid role → redirect
   useEffect(() => {
     let mounted = true;
 
-    const routeIfAuthorized = async (session: Session | null) => {
-      if (!mounted || !session) return;
-
-      const hasAccess = await hasKitchenAccess(session.user.id);
-      if (!mounted) return;
-
-      if (hasAccess === true) {
-        navigate('/admin/kitchen', { replace: true });
-        return;
-      }
-
-      if (hasAccess === false) {
-        await supabase.auth.signOut();
-      }
-    };
-
     supabase.auth
       .getSession()
-      .then(({ data: { session } }) => {
-        void routeIfAuthorized(session);
+      .then(async ({ data: { session } }) => {
+        if (!mounted || !session) {
+          if (mounted) setCheckingSession(false);
+          return;
+        }
+
+        const hasAccess = await hasKitchenAccess(session.user.id);
+        if (!mounted) return;
+
+        if (hasAccess === true) {
+          navigate('/admin/kitchen', { replace: true });
+        } else {
+          setCheckingSession(false);
+        }
       })
-      .catch((err) => {
-        console.error('Staff login session check failed:', err);
+      .catch(() => {
+        if (mounted) setCheckingSession(false);
       });
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN') {
-        void routeIfAuthorized(session);
-      }
-    });
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
+    return () => { mounted = false; };
   }, [hasKitchenAccess, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -132,6 +117,14 @@ const StaffLogin = () => {
       setIsLoading(false);
     }
   };
+
+  if (checkingSession) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-100">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center p-4">
