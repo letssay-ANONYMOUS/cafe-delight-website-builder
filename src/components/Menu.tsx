@@ -1,14 +1,34 @@
-import { Search } from 'lucide-react';
+import { Search, ArrowUp } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useMenuCards, menuSections, groupCardsBySections, type MenuCard } from '@/hooks/useMenuCards';
 import { Card } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 
 const Menu = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [showScrollTop, setShowScrollTop] = useState(false);
   const { data: menuCards, isLoading, error } = useMenuCards();
   const navigate = useNavigate();
+
+  // Show scroll-to-top button when user scrolls past card 20 area
+  useEffect(() => {
+    const handleScroll = () => {
+      const card20El = document.querySelector('[data-card-index="20"]');
+      if (card20El) {
+        const rect = card20El.getBoundingClientRect();
+        setShowScrollTop(rect.top < 0);
+      } else {
+        setShowScrollTop(window.scrollY > 1500);
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const grouped = menuCards ? groupCardsBySections(menuCards) : {};
 
@@ -130,9 +150,10 @@ const Menu = () => {
 
               {/* Cards Grid */}
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-6">
-                {filtered.map((card) => (
+                {filtered.map((card, idx) => (
                   <Card
                     key={card.id}
+                    data-card-index={card.id}
                     onClick={() => navigate(`/menu/${card.id}`)}
                     className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-transparent cursor-pointer"
                   >
@@ -174,6 +195,17 @@ const Menu = () => {
           );
         })}
       </div>
+
+      {/* Scroll to top FAB */}
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-[#c9a962] text-white shadow-lg flex items-center justify-center hover:bg-[#b8953a] transition-all duration-300 animate-in fade-in zoom-in"
+          aria-label="Scroll to top"
+        >
+          <ArrowUp className="w-5 h-5" />
+        </button>
+      )}
     </section>
   );
 };
