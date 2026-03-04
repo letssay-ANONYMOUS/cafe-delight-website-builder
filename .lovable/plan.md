@@ -2,33 +2,35 @@
 
 ## Problem
 
-The kitchen dashboard's realtime UPDATE handler (lines 279-289 in `KitchenDashboard.tsx`) is **commented out** — it was disabled for testing purposes. This means when a customer pays and the order transitions from `pending` → `paid`, the kitchen gets no alert sound.
+Two race conditions cause the kitchen login to intermittently fail or loop:
 
-Currently, the alert only fires on new `pending` order INSERTs (the testing behavior).
+**Race 1 — Double navigation in StaffLogin:**
+When `handleLogin` calls `signInWithPassword`, it triggers the `SIGNED_IN` auth event. Both `handleLogin` AND the `onAuthStateChange` listener then race to check the role and navigate to `/admin/kitchen` simultaneously. This causes double role-checks and double navigations.
+
+**Race 2 — One-shot `authResolved` flag in KitchenAuthGate:**
+When the gate mounts, both `getSession()` and `onAuthStateChange(INITIAL_SESSION)` fire near-simultaneously. The `authResolved` flag means whichever resolves first wins — if `getSession` returns before the session is fully restored (returning null), it redirects to login and locks out the `SIGNED_IN` event that arrives moments later. On re-login, this creates the refresh loop.
+
+**Race 3 — Awaiting inside `onAuthStateChange`:**
+Per Supabase docs, awaiting async operations inside `onAuthStateChange` can block subsequent auth event processing, causing deadlocks.
 
 ## Plan
 
-### 1. Fix the realtime UPDATE handler in `KitchenDashboard.tsx`
+### 1. Rewrite StaffLogin — remove auth listener entirely
 
-**Uncomment and re-enable** the UPDATE subscription handler (lines 279-289) so that when an order's `payment_status` changes to `paid`, it:
-- Adds the order to `unacknowledgedOrders` (triggering the ringing alert)
-- Switches the view to "paid"
-- Shows a toast notification
+- Remove `onAuthStateChange` subscription and the `routeIfAuthorized` useEffect
+- On mount: call `getSession()` → if session exists and has role, redirect. Otherwise show form. Simple, no listener.
+- On form submit: `signInWithPassword` → check role → navigate. Single path, no races.
 
-**Remove** the alert trigger from the INSERT pending handler (line 248) — pending orders should appear silently. The ringing should only start when payment is confirmed.
+### 2. Rewrite KitchenAuthGate — remove one-shot flag, avoid awaiting in listener
 
-The updated logic:
+- Remove the `authResolved` one-shot flag
+- Use `getSession()` as the primary session restore mechanism
+- In `onAuthStateChange`: do NOT await. Use `setTimeout(0, () => validateSessionAccess(...))` to defer without blocking auth event processing
+- Allow state to be re-set on subsequent `SIGNED_IN` events (no one-shot blocking)
+- Keep the safety timeout but make it clearable on success
+- On `SIGNED_OUT`: reset state and redirect immediately
 
-- **INSERT (pending)**: Add order to state, switch to pending view, show a quiet toast. No alert sound.
-- **UPDATE (pending → paid)**: Add order to `unacknowledgedOrders` (triggers ringing), switch to paid view, show a loud toast.
-
-### 2. Verify the end-to-end flow
-
-The existing infrastructure already supports this:
-- `create-ziina-checkout` creates the order with `pending` status → triggers INSERT event → kitchen sees it
-- `verify-ziina-payment` updates order to `paid` → triggers UPDATE event → kitchen alert rings
-- Realtime is already enabled on the `orders` table
-- The `useKitchenAlert` hook handles continuous looping sound
-
-No database changes needed. Only `KitchenDashboard.tsx` needs editing.
+### Files changed
+- `src/components/KitchenAuthGate.tsx`
+- `src/pages/StaffLogin.tsx`
 
