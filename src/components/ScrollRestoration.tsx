@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useLocation, useNavigationType } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 const scrollPositions = new Map<string, number>();
 
@@ -32,7 +32,6 @@ const readScrollPosition = (pathname: string): number | null => {
 
 const ScrollRestoration = () => {
   const { pathname } = useLocation();
-  const navigationType = useNavigationType();
   const prevPathRef = useRef<string | null>(null);
   const restoringRef = useRef(false);
 
@@ -67,13 +66,14 @@ const ScrollRestoration = () => {
     };
   }, [pathname]);
 
-  // Restore on browser back/forward (POP), otherwise start at top
+  // Restore on browser back/forward (POP) AND normal navigation (PUSH), otherwise start at top
   useEffect(() => {
     if (prevPathRef.current === pathname) return;
     prevPathRef.current = pathname;
 
     const saved = readScrollPosition(pathname);
-    const shouldRestore = navigationType === 'POP' && typeof saved === 'number' && saved > 0;
+    // Allow restoration on ANY navigation type to remember positions completely globally
+    const shouldRestore = typeof saved === 'number' && saved > 0;
 
     if (shouldRestore) {
       const target = saved;
@@ -99,7 +99,7 @@ const ScrollRestoration = () => {
     }
 
     window.scrollTo(0, 0);
-  }, [pathname, navigationType]);
+  }, [pathname]);
 
   return null;
 };
