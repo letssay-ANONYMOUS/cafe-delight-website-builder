@@ -203,7 +203,7 @@ const Menu = () => {
                       <Card
                         data-card-index={card.id}
                         data-card-order={cardOrder}
-                        onClick={() => navigate(`/ menu / ${card.id} `)}
+                        onClick={() => navigate(`/menu/${card.id}`)}
                         className="group overflow-hidden border-0 shadow-lg transition-all duration-300 bg-transparent cursor-pointer hover:-translate-y-2 hover:shadow-[0_15px_30px_rgba(201,169,98,0.3)]"
                       >
                         {/* Image */}
