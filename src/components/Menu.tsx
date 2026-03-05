@@ -104,7 +104,7 @@ const Menu = () => {
   return (
     <section className="min-h-screen bg-gradient-to-b from-[#4a5f4a]/30 via-[#5a6f5a]/20 to-[#4a5f4a]/30">
       {/* Header with Search */}
-      <div className="bg-[#4a5f4a]/95 backdrop-blur-md py-3 px-3 sm:px-6 lg:px-8 sticky top-16 z-40 border-b border-white/10 shadow-sm">
+      <div className="bg-[#4a5f4a]/95 backdrop-blur-md py-3 px-3 sm:px-6 lg:px-8">
         <div className="container mx-auto">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
             <h1 className="text-lg sm:text-2xl font-cinzel font-bold text-white whitespace-nowrap text-center sm:text-left">
