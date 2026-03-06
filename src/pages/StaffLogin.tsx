@@ -17,33 +17,24 @@ const StaffLogin = () => {
   const { toast } = useToast();
 
   const hasKitchenAccess = useCallback(async (userId: string): Promise<boolean | null> => {
-    let lastError: unknown = null;
+    try {
+      // Perform a single, fast verification query without artificial timeouts
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .in('role', ['staff', 'admin'])
+        .limit(1);
 
-    for (let attempt = 0; attempt < 3; attempt += 1) {
-      try {
-        const { data, error } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', userId)
-          .in('role', ['staff', 'admin'])
-          .limit(1);
-
-        if (error) {
-          lastError = error;
-        } else {
-          return (data?.length ?? 0) > 0;
-        }
-      } catch (err) {
-        lastError = err;
+      if (error) {
+        console.error('Role validation error:', error);
+        return null;
       }
-
-      if (attempt < 2) {
-        await new Promise((resolve) => setTimeout(resolve, 250 * (attempt + 1)));
-      }
+      return (data?.length ?? 0) > 0;
+    } catch (err) {
+      console.error('Role validation exception:', err);
+      return null;
     }
-
-    console.error('Role validation failed after retries:', lastError);
-    return null;
   }, []);
 
   // On mount only: check if already logged in with valid role → redirect
@@ -171,8 +162,8 @@ const StaffLogin = () => {
                 className="h-12 text-lg"
               />
             </div>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="w-full h-12 text-lg font-semibold"
               disabled={isLoading}
             >
