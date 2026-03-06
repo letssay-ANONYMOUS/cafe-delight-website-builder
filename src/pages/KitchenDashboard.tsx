@@ -7,11 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { 
-  LogOut, 
-  RefreshCw, 
-  Volume2, 
-  VolumeX, 
+import {
+  LogOut,
+  RefreshCw,
+  Volume2,
+  VolumeX,
   Package,
   ExternalLink,
   Music,
@@ -62,10 +62,10 @@ const KitchenDashboard = () => {
   const [unacknowledgedOrders, setUnacknowledgedOrders] = useState<Set<string>>(new Set());
   const [activeView, setActiveView] = useState<KitchenView>("paid");
   const [showSoundPicker, setShowSoundPicker] = useState(false);
-  const [dateRange, setDateRange] = useState<DateRangeOption>(() => 
+  const [dateRange, setDateRange] = useState<DateRangeOption>(() =>
     (localStorage.getItem('kitchen_date_range') as DateRangeOption) || '1month'
   );
-  const [selectedSound, setSelectedSound] = useState(() => 
+  const [selectedSound, setSelectedSound] = useState(() =>
     localStorage.getItem('kitchen_alert_sound') || 'chime'
   );
   const [customAudioUrl, setCustomAudioUrl] = useState(() =>
@@ -109,7 +109,7 @@ const KitchenDashboard = () => {
         .select('setting_value')
         .eq('setting_key', 'custom_audio_url')
         .single();
-      
+
       if (data?.setting_value) {
         setCustomAudioUrl(data.setting_value);
         setSelectedSound('custom');
@@ -124,27 +124,27 @@ const KitchenDashboard = () => {
   const handleSoundSelect = async (soundId: string, customUrl?: string) => {
     setSelectedSound(soundId);
     localStorage.setItem('kitchen_alert_sound', soundId);
-    
+
     if (customUrl) {
       setCustomAudioUrl(customUrl);
       localStorage.setItem('kitchen_alert_custom_url', customUrl);
-      
+
       // Save to database for cross-device sync
       await supabase
         .from('kitchen_settings')
-        .upsert({ 
-          setting_key: 'custom_audio_url', 
+        .upsert({
+          setting_key: 'custom_audio_url',
           setting_value: customUrl,
           updated_at: new Date().toISOString()
         }, { onConflict: 'setting_key' });
     }
-    
+
     toast({
       title: "Sound Updated",
-      description: soundId === 'custom' 
+      description: soundId === 'custom'
         ? "Custom audio URL saved and synced to all devices."
         : "Your alert sound preference has been saved.",
-  });
+    });
   };
 
   // Handle date range change
@@ -229,7 +229,7 @@ const KitchenDashboard = () => {
         },
         async (payload) => {
           console.log('New order received:', payload);
-          
+
           const { data: itemsData } = await supabase
             .from('order_items')
             .select('*')
@@ -241,7 +241,7 @@ const KitchenDashboard = () => {
           };
 
           setOrders(prev => [newOrder, ...prev]);
-          
+
           if (newOrder.payment_status === 'pending') {
             // Pending orders appear silently - no alert sound
             setActiveView("pending");
@@ -265,6 +265,28 @@ const KitchenDashboard = () => {
       .on(
         'postgres_changes',
         {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'order_items'
+        },
+        (payload) => {
+          const newItem = payload.new as OrderItem;
+          // Dynamically push items into the parent order if they arrive after the initial order broadcast
+          setOrders(prev => prev.map(order =>
+            order.id === newItem.order_id
+              ? {
+                ...order,
+                items: order.items.find(i => i.id === newItem.id)
+                  ? order.items
+                  : [...order.items, newItem]
+              }
+              : order
+          ));
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
           event: 'UPDATE',
           schema: 'public',
           table: 'orders'
@@ -273,24 +295,37 @@ const KitchenDashboard = () => {
           console.log('Order updated:', payload);
           const updatedOrder = payload.new as Order;
           const oldOrder = payload.old as Partial<Order>;
-          
+
           // Trigger alert when order transitions to paid
           if (updatedOrder.payment_status === 'paid' && oldOrder.payment_status !== 'paid') {
             setUnacknowledgedOrders(prev => new Set([...prev, updatedOrder.id]));
             setActiveView("paid");
+
+            // Re-fetch items to guarantee the kitchen doesn't miss items dropped during race conditions
+            const { data: itemsData } = await supabase
+              .from('order_items')
+              .select('*')
+              .eq('order_id', updatedOrder.id);
+
+            setOrders(prev => prev.map(order =>
+              order.id === updatedOrder.id
+                ? { ...order, ...updatedOrder, items: itemsData || order.items }
+                : order
+            ));
+
             toast({
               title: "💰 New Paid Order!",
               description: `Order ${updatedOrder.order_number} from ${updatedOrder.customer_name} is ready to prepare!`,
               className: "bg-green-50 border-green-300"
             });
+          } else {
+            // Update order in state without triggering paid alerts
+            setOrders(prev => prev.map(order =>
+              order.id === updatedOrder.id
+                ? { ...order, ...updatedOrder }
+                : order
+            ));
           }
-          
-          // Update order in state
-          setOrders(prev => prev.map(order => 
-            order.id === updatedOrder.id 
-              ? { ...order, ...updatedOrder }
-              : order
-          ));
         }
       )
       .subscribe();
@@ -405,7 +440,7 @@ const KitchenDashboard = () => {
                             size="default"
                             onClick={() => {
                               handleAcknowledge(orderId);
-                              toast({ 
+                              toast({
                                 title: "Order Acknowledged",
                                 description: `Order #${orderNum} acknowledged - ${unacknowledgedOrders.size - 1} remaining`
                               });
@@ -427,7 +462,7 @@ const KitchenDashboard = () => {
                       size="sm"
                       onClick={() => {
                         startAlert();
-                        toast({ 
+                        toast({
                           title: "Testing Continuous Alert",
                           description: "Alert will loop for 2.5 minutes or until you click Stop.",
                           duration: 5000,
@@ -515,7 +550,7 @@ const KitchenDashboard = () => {
       {/* Sound Picker Modal */}
       {showSoundPicker && (
         <>
-          <div 
+          <div
             className="fixed inset-0 bg-black/50 z-40"
             onClick={() => setShowSoundPicker(false)}
           />
