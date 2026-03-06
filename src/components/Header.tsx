@@ -23,18 +23,18 @@ const Header = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 transform-gpu ${
-      isHome 
-        ? 'bg-black/30 backdrop-blur-sm border-b border-white/10' 
+    <header className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 transform-gpu ${isHome
+        ? 'bg-black/30 backdrop-blur-sm border-b border-white/10'
         : 'bg-white/95 backdrop-blur-sm border-b border-coffee-200 shadow-sm'
-    }`}>
+      }`}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center space-x-2">
-            <Coffee className={`h-8 w-8 ${isHome ? 'text-cream-400' : 'text-coffee-600'}`} />
-            <span className={`font-cinzel text-2xl font-bold ${isHome ? 'text-cream-400' : 'text-coffee-800'}`}>
-              NAWA CAFÉ
-            </span>
+          <Link to="/" className="flex items-center">
+            <img
+              src="/nawa-logo.jpg"
+              alt="Nawa Cafe Logo"
+              className="h-10 sm:h-12 w-auto object-contain transition-transform duration-300 hover:scale-105"
+            />
           </Link>
 
           {/* Desktop Navigation */}
@@ -43,23 +43,21 @@ const Header = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`font-medium transition-colors duration-200 ${
-                  isHome
+                className={`font-medium transition-colors duration-200 ${isHome
                     ? isActive(item.path)
                       ? 'text-cream-400 border-b-2 border-cream-400 pb-1'
                       : 'text-cream-200 hover:text-cream-400'
                     : isActive(item.path)
                       ? 'text-coffee-900 border-b-2 border-coffee-600 pb-1'
                       : 'text-coffee-700 hover:text-coffee-900'
-                }`}
+                  }`}
               >
                 {item.label}
               </Link>
             ))}
             <Link to="/cart">
-              <Button variant="outline" size="icon" className={`rounded-full relative ${
-                isHome ? 'border-cream-400 text-cream-400 hover:bg-cream-400/20' : ''
-              }`}>
+              <Button variant="outline" size="icon" className={`rounded-full relative ${isHome ? 'border-cream-400 text-cream-400 hover:bg-cream-400/20' : ''
+                }`}>
                 <ShoppingCart className="h-5 w-5" />
                 {cartCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-coffee-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
@@ -68,11 +66,10 @@ const Header = () => {
                 )}
               </Button>
             </Link>
-            <Button className={`px-6 py-2 rounded-full transition-all duration-300 transform hover:scale-105 ${
-              isHome 
-                ? 'bg-cream-400 hover:bg-cream-500 text-coffee-800' 
+            <Button className={`px-6 py-2 rounded-full transition-all duration-300 transform hover:scale-105 ${isHome
+                ? 'bg-cream-400 hover:bg-cream-500 text-coffee-800'
                 : 'bg-coffee-600 hover:bg-coffee-700 text-white'
-            }`}>
+              }`}>
               Order Now
             </Button>
           </nav>
@@ -90,11 +87,9 @@ const Header = () => {
 
         {/* Mobile Navigation */}
         <div
-          className={`md:hidden fixed top-16 left-0 right-0 ${
-            isHome ? 'bg-black/90 backdrop-blur-md' : 'bg-white/95 backdrop-blur-sm border-b border-coffee-200'
-          } shadow-lg z-50 overflow-hidden transition-all duration-300 ease-in-out ${
-            isMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0 border-b-0 shadow-none'
-          }`}
+          className={`md:hidden fixed top-16 left-0 right-0 ${isHome ? 'bg-black/90 backdrop-blur-md' : 'bg-white/95 backdrop-blur-sm border-b border-coffee-200'
+            } shadow-lg z-50 overflow-hidden transition-all duration-300 ease-in-out ${isMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0 border-b-0 shadow-none'
+            }`}
         >
           <nav className="flex flex-col space-y-4 p-4">
             {navItems.map((item, index) => (
@@ -102,13 +97,11 @@ const Header = () => {
                 key={item.path}
                 to={item.path}
                 onClick={() => setIsMenuOpen(false)}
-                className={`font-medium py-2 text-left transition-all duration-300 ${
-                  isMenuOpen ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'
-                } ${
-                  isHome
+                className={`font-medium py-2 text-left transition-all duration-300 ${isMenuOpen ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'
+                  } ${isHome
                     ? isActive(item.path) ? 'text-cream-400 font-semibold' : 'text-cream-200 hover:text-cream-400'
                     : isActive(item.path) ? 'text-coffee-900 font-semibold' : 'text-coffee-700 hover:text-coffee-900'
-                }`}
+                  }`}
                 style={{ transitionDelay: isMenuOpen ? `${index * 40}ms` : '0ms' }}
               >
                 {item.label}
@@ -118,9 +111,8 @@ const Header = () => {
               className={`transition-all duration-300 ${isMenuOpen ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'}`}
               style={{ transitionDelay: isMenuOpen ? `${navItems.length * 40}ms` : '0ms' }}
             >
-              <Button variant="outline" size="sm" className={`rounded-full w-fit gap-2 relative ${
-                isHome ? 'border-cream-400 text-cream-400' : ''
-              }`}>
+              <Button variant="outline" size="sm" className={`rounded-full w-fit gap-2 relative ${isHome ? 'border-cream-400 text-cream-400' : ''
+                }`}>
                 <ShoppingCart className="h-4 w-4" />
                 Cart
                 {cartCount > 0 && (
@@ -134,9 +126,8 @@ const Header = () => {
               className={`transition-all duration-300 ${isMenuOpen ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'}`}
               style={{ transitionDelay: isMenuOpen ? `${(navItems.length + 1) * 40}ms` : '0ms' }}
             >
-              <Button className={`px-6 py-2 rounded-full w-fit ${
-                isHome ? 'bg-cream-400 hover:bg-cream-500 text-coffee-800' : 'bg-coffee-600 hover:bg-coffee-700 text-white'
-              }`}>
+              <Button className={`px-6 py-2 rounded-full w-fit ${isHome ? 'bg-cream-400 hover:bg-cream-500 text-coffee-800' : 'bg-coffee-600 hover:bg-coffee-700 text-white'
+                }`}>
                 Order Now
               </Button>
             </div>
