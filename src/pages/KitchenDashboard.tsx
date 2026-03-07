@@ -1,5 +1,5 @@
-// Kitchen Dashboard v5 - With continuous alert system + custom audio support
-import { useState, useEffect, useCallback } from "react";
+// Kitchen Dashboard v6 - Inline auth + parallel data loading for instant load
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -15,7 +15,6 @@ import {
   Package,
   ExternalLink,
   Music,
-  Calendar
 } from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useKitchenAlert } from "@/hooks/useKitchenAlert";
@@ -31,7 +30,6 @@ interface OrderWithItems extends Order {
   items: OrderItem[];
 }
 
-// Date range options for order history
 type DateRangeOption = '1month' | '2months' | '3months' | '4months';
 
 const dateRangeLabels: Record<DateRangeOption, string> = {
@@ -43,19 +41,15 @@ const dateRangeLabels: Record<DateRangeOption, string> = {
 
 const getDateFromRange = (range: DateRangeOption): Date => {
   const now = new Date();
-  switch (range) {
-    case '1month':
-      return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-    case '2months':
-      return new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
-    case '3months':
-      return new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-    case '4months':
-      return new Date(now.getTime() - 120 * 24 * 60 * 60 * 1000);
-  }
+  const days = { '1month': 30, '2months': 60, '3months': 90, '4months': 120 }[range];
+  return new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
 };
 
 const KitchenDashboard = () => {
+  // Auth state (replaces KitchenAuthGate)
+  const [authState, setAuthState] = useState<'checking' | 'authorized' | 'unauthorized'>('checking');
+  const mountedRef = useRef(true);
+
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -74,7 +68,6 @@ const KitchenDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Handle timeout callback
   const handleAlertTimeout = useCallback(() => {
     toast({
       title: "Alert Timed Out",
@@ -83,11 +76,10 @@ const KitchenDashboard = () => {
     });
   }, [toast]);
 
-  // Use the enhanced alert hook with options object
   const { isPlaying, startAlert, stopAlert, initAudioContext } = useKitchenAlert({
     soundId: selectedSound,
     customAudioUrl: selectedSound === 'custom' ? customAudioUrl : undefined,
-    maxDuration: 150000, // 2.5 minutes
+    maxDuration: 150000,
     onTimeout: handleAlertTimeout,
   });
 
@@ -101,85 +93,121 @@ const KitchenDashboard = () => {
     return () => window.removeEventListener('click', handleFirstInteraction);
   }, [initAudioContext]);
 
-  // Load shared custom audio URL from database on mount
+  // ──────────────────────────────────────────────
+  // PARALLEL BOOT: auth check + data load at once
+  // ──────────────────────────────────────────────
   useEffect(() => {
-    const loadSharedSettings = async () => {
-      const { data } = await supabase
-        .from('kitchen_settings')
-        .select('setting_value')
-        .eq('setting_key', 'custom_audio_url')
-        .single();
+    mountedRef.current = true;
 
-      if (data?.setting_value) {
-        setCustomAudioUrl(data.setting_value);
-        setSelectedSound('custom');
-        localStorage.setItem('kitchen_alert_sound', 'custom');
-        localStorage.setItem('kitchen_alert_custom_url', data.setting_value);
+    // 1) Auth check (runs in parallel with data load)
+    const checkAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error || !session) {
+          if (mountedRef.current) navigate('/staff/login', { replace: true });
+          return;
+        }
+        const { data: roles } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', session.user.id)
+          .in('role', ['staff', 'admin'])
+          .limit(1);
+
+        if (!roles || roles.length === 0) {
+          await supabase.auth.signOut();
+          if (mountedRef.current) navigate('/staff/login', { replace: true });
+          return;
+        }
+        if (mountedRef.current) setAuthState('authorized');
+      } catch {
+        if (mountedRef.current) navigate('/staff/login', { replace: true });
       }
     };
-    loadSharedSettings();
-  }, []);
 
-  // Save sound preference (to both localStorage and database for cross-device sync)
-  const handleSoundSelect = async (soundId: string, customUrl?: string) => {
-    setSelectedSound(soundId);
-    localStorage.setItem('kitchen_alert_sound', soundId);
+    // 2) Data load (starts immediately, RLS enforces access)
+    const loadData = async () => {
+      try {
+        const startDate = getDateFromRange(dateRange);
 
-    if (customUrl) {
-      setCustomAudioUrl(customUrl);
-      localStorage.setItem('kitchen_alert_custom_url', customUrl);
+        // Fire orders + settings queries in parallel
+        const [ordersResult, settingsResult] = await Promise.all([
+          supabase
+            .from('orders')
+            .select('*')
+            .gte('created_at', startDate.toISOString())
+            .order('created_at', { ascending: false }),
+          supabase
+            .from('kitchen_settings')
+            .select('setting_value')
+            .eq('setting_key', 'custom_audio_url')
+            .single(),
+        ]);
 
-      // Save to database for cross-device sync
-      await supabase
-        .from('kitchen_settings')
-        .upsert({
-          setting_key: 'custom_audio_url',
-          setting_value: customUrl,
-          updated_at: new Date().toISOString()
-        }, { onConflict: 'setting_key' });
-    }
+        if (!mountedRef.current) return;
 
-    toast({
-      title: "Sound Updated",
-      description: soundId === 'custom'
-        ? "Custom audio URL saved and synced to all devices."
-        : "Your alert sound preference has been saved.",
+        // Apply settings
+        if (settingsResult.data?.setting_value) {
+          setCustomAudioUrl(settingsResult.data.setting_value);
+          setSelectedSound('custom');
+          localStorage.setItem('kitchen_alert_sound', 'custom');
+          localStorage.setItem('kitchen_alert_custom_url', settingsResult.data.setting_value);
+        }
+
+        // Process orders
+        if (ordersResult.error) throw ordersResult.error;
+        const ordersData = ordersResult.data || [];
+
+        if (ordersData.length > 0) {
+          const orderIds = ordersData.map(o => o.id);
+          const { data: itemsData } = await supabase
+            .from('order_items')
+            .select('*')
+            .in('order_id', orderIds);
+
+          if (!mountedRef.current) return;
+          const ordersWithItems: OrderWithItems[] = ordersData.map(order => ({
+            ...order,
+            items: (itemsData || []).filter(item => item.order_id === order.id),
+          }));
+          setOrders(ordersWithItems);
+        } else {
+          setOrders([]);
+        }
+      } catch (err) {
+        console.error('Error loading orders:', err);
+        if (mountedRef.current) {
+          toast({ variant: "destructive", title: "Error", description: "Failed to load orders" });
+        }
+      } finally {
+        if (mountedRef.current) setIsLoading(false);
+      }
+    };
+
+    // Fire both in parallel
+    checkAuth();
+    loadData();
+
+    // Auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT' && mountedRef.current) {
+        setAuthState('unauthorized');
+        navigate('/staff/login', { replace: true });
+      }
     });
-  };
-
-  // Handle date range change
-  const handleDateRangeChange = (range: DateRangeOption) => {
-    setDateRange(range);
-    localStorage.setItem('kitchen_date_range', range);
-  };
-
-  useEffect(() => {
-    loadOrders();
-
-    // Set up realtime subscription instead of polling
-    const channel = setupRealtimeSubscription();
 
     return () => {
-      supabase.removeChannel(channel);
-      stopAlert();
+      mountedRef.current = false;
+      subscription.unsubscribe();
     };
-  }, [dateRange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Manage alert sound based on unacknowledged orders
-  useEffect(() => {
-    if (soundEnabled && unacknowledgedOrders.size > 0) {
-      startAlert();
-    } else {
-      stopAlert();
-    }
-  }, [unacknowledgedOrders.size, soundEnabled, startAlert, stopAlert]);
-
-  const loadOrders = async () => {
+  // Reload orders when date range changes (after initial load)
+  const loadOrders = useCallback(async () => {
     setIsLoading(true);
     try {
       const startDate = getDateFromRange(dateRange);
-
-      // Query orders directly via Supabase client (RLS restricts to staff/admin)
       const { data: ordersData, error: ordersError } = await supabase
         .from('orders')
         .select('*')
@@ -190,118 +218,82 @@ const KitchenDashboard = () => {
 
       if (ordersData && ordersData.length > 0) {
         const orderIds = ordersData.map(o => o.id);
-        const { data: itemsData, error: itemsError } = await supabase
+        const { data: itemsData } = await supabase
           .from('order_items')
           .select('*')
           .in('order_id', orderIds);
 
-        if (itemsError) throw itemsError;
-
-        const ordersWithItems: OrderWithItems[] = ordersData.map((order) => ({
+        setOrders(ordersData.map(order => ({
           ...order,
-          items: (itemsData || []).filter((item) => item.order_id === order.id)
-        }));
-        setOrders(ordersWithItems);
+          items: (itemsData || []).filter(item => item.order_id === order.id),
+        })));
       } else {
         setOrders([]);
       }
     } catch (error) {
       console.error('Error loading orders:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to load orders"
-      });
+      toast({ variant: "destructive", title: "Error", description: "Failed to load orders" });
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [dateRange, toast]);
 
-  const setupRealtimeSubscription = () => {
+  // Re-fetch when date range changes
+  useEffect(() => {
+    loadOrders();
+  }, [dateRange, loadOrders]);
+
+  // Realtime subscription
+  useEffect(() => {
     const channel = supabase
       .channel('kitchen-orders')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'orders'
-        },
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' },
         async (payload) => {
-          console.log('New order received:', payload);
-
           const { data: itemsData } = await supabase
             .from('order_items')
             .select('*')
             .eq('order_id', payload.new.id);
 
-          const newOrder: OrderWithItems = {
-            ...payload.new as Order,
-            items: itemsData || []
-          };
-
+          const newOrder: OrderWithItems = { ...payload.new as Order, items: itemsData || [] };
           setOrders(prev => [newOrder, ...prev]);
 
           if (newOrder.payment_status === 'pending') {
-            // Pending orders appear silently - no alert sound
             setActiveView("pending");
             toast({
               title: "📋 New Pending Order",
               description: `Order ${newOrder.order_number} from ${newOrder.customer_name}`,
-              className: "bg-yellow-50 border-yellow-300"
+              className: "bg-yellow-50 border-yellow-300",
             });
           } else if (newOrder.payment_status === 'paid') {
-            // Direct paid order (rare, but handle it)
             setUnacknowledgedOrders(prev => new Set([...prev, newOrder.id]));
             setActiveView("paid");
             toast({
               title: "💰 New Paid Order!",
               description: `Order ${newOrder.order_number} from ${newOrder.customer_name}`,
-              className: "bg-green-50 border-green-300"
+              className: "bg-green-50 border-green-300",
             });
           }
         }
       )
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'order_items'
-        },
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'order_items' },
         (payload) => {
           const newItem = payload.new as OrderItem;
-          // Dynamically push items into the parent order if they arrive after the initial order broadcast
           setOrders(prev => prev.map(order =>
             order.id === newItem.order_id
-              ? {
-                ...order,
-                items: order.items.find(i => i.id === newItem.id)
-                  ? order.items
-                  : [...order.items, newItem]
-              }
+              ? { ...order, items: order.items.find(i => i.id === newItem.id) ? order.items : [...order.items, newItem] }
               : order
           ));
         }
       )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'orders'
-        },
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' },
         async (payload) => {
-          console.log('Order updated:', payload);
           const updatedOrder = payload.new as Order;
           const oldOrder = payload.old as Partial<Order>;
 
-          // Trigger alert when order transitions to paid
           if (updatedOrder.payment_status === 'paid' && oldOrder.payment_status !== 'paid') {
             setUnacknowledgedOrders(prev => new Set([...prev, updatedOrder.id]));
             setActiveView("paid");
 
-            // Re-fetch items to guarantee the kitchen doesn't miss items dropped during race conditions
             const { data: itemsData } = await supabase
               .from('order_items')
               .select('*')
@@ -316,22 +308,31 @@ const KitchenDashboard = () => {
             toast({
               title: "💰 New Paid Order!",
               description: `Order ${updatedOrder.order_number} from ${updatedOrder.customer_name} is ready to prepare!`,
-              className: "bg-green-50 border-green-300"
+              className: "bg-green-50 border-green-300",
             });
           } else {
-            // Update order in state without triggering paid alerts
             setOrders(prev => prev.map(order =>
-              order.id === updatedOrder.id
-                ? { ...order, ...updatedOrder }
-                : order
+              order.id === updatedOrder.id ? { ...order, ...updatedOrder } : order
             ));
           }
         }
       )
       .subscribe();
 
-    return channel;
-  };
+    return () => {
+      supabase.removeChannel(channel);
+      stopAlert();
+    };
+  }, [stopAlert, toast]);
+
+  // Alert sound based on unacknowledged orders
+  useEffect(() => {
+    if (soundEnabled && unacknowledgedOrders.size > 0) {
+      startAlert();
+    } else {
+      stopAlert();
+    }
+  }, [unacknowledgedOrders.size, soundEnabled, startAlert, stopAlert]);
 
   const handleAcknowledge = useCallback((orderId: string) => {
     setUnacknowledgedOrders(prev => {
@@ -346,6 +347,40 @@ const KitchenDashboard = () => {
     navigate('/staff/login');
   };
 
+  const handleSoundSelect = async (soundId: string, customUrl?: string) => {
+    setSelectedSound(soundId);
+    localStorage.setItem('kitchen_alert_sound', soundId);
+    if (customUrl) {
+      setCustomAudioUrl(customUrl);
+      localStorage.setItem('kitchen_alert_custom_url', customUrl);
+      await supabase
+        .from('kitchen_settings')
+        .upsert({ setting_key: 'custom_audio_url', setting_value: customUrl, updated_at: new Date().toISOString() }, { onConflict: 'setting_key' });
+    }
+    toast({
+      title: "Sound Updated",
+      description: soundId === 'custom' ? "Custom audio URL saved and synced." : "Alert sound preference saved.",
+    });
+  };
+
+  const handleDateRangeChange = (range: DateRangeOption) => {
+    setDateRange(range);
+    localStorage.setItem('kitchen_date_range', range);
+  };
+
+  // ──────────────────────────────────────────────
+  // RENDER: show spinner only while auth is checking AND data loading
+  // ──────────────────────────────────────────────
+  if (authState === 'checking' && isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <RefreshCw className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (authState === 'unauthorized') return null;
+
   const paidOrders = orders.filter(o => o.payment_status === 'paid');
   const pendingOrders = orders.filter(o => o.payment_status === 'pending');
   const currentOrders = activeView === 'paid' ? paidOrders : pendingOrders;
@@ -353,7 +388,6 @@ const KitchenDashboard = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
-        {/* Sidebar */}
         <KitchenSidebar
           activeView={activeView}
           onViewChange={setActiveView}
@@ -362,9 +396,7 @@ const KitchenDashboard = () => {
           unacknowledgedCount={unacknowledgedOrders.size}
         />
 
-        {/* Main Content */}
         <div className="flex-1 flex flex-col">
-          {/* Header */}
           <header className="bg-card shadow-sm border-b sticky top-0 z-50">
             <div className="px-2 sm:px-4 py-2 sm:py-3">
               <div className="flex items-center justify-between gap-2">
@@ -381,7 +413,7 @@ const KitchenDashboard = () => {
                 </div>
 
                 <div className="flex items-center gap-1 sm:gap-3 flex-shrink-0 flex-wrap justify-end">
-                  {/* Date Range Selector */}
+                  {/* Date Range - Desktop */}
                   <div className="hidden md:flex gap-1 bg-muted rounded-lg p-1">
                     {(['1month', '2months', '3months', '4months'] as DateRangeOption[]).map((range) => (
                       <Button
@@ -396,7 +428,7 @@ const KitchenDashboard = () => {
                     ))}
                   </div>
 
-                  {/* Mobile Date Range Dropdown */}
+                  {/* Date Range - Mobile */}
                   <div className="md:hidden">
                     <select
                       value={dateRange}
@@ -409,25 +441,17 @@ const KitchenDashboard = () => {
                     </select>
                   </div>
 
-                  {/* Stats Badge */}
                   {unacknowledgedOrders.size > 0 && (
                     <div className="px-3 py-1.5 bg-destructive/10 rounded-full animate-pulse">
                       <span className="text-sm font-bold text-destructive">{unacknowledgedOrders.size} New!</span>
                     </div>
                   )}
 
-                  {/* Sound Picker Button */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowSoundPicker(true)}
-                    className="hidden sm:flex items-center gap-2"
-                  >
+                  <Button variant="outline" size="sm" onClick={() => setShowSoundPicker(true)} className="hidden sm:flex items-center gap-2">
                     <Music className="w-4 h-4" />
                     <span className="text-xs">Sound</span>
                   </Button>
 
-                  {/* STACKED STOP BUTTONS - One for each unacknowledged order */}
                   {isPlaying && unacknowledgedOrders.size > 0 && (
                     <div className="flex flex-col gap-1">
                       {Array.from(unacknowledgedOrders).map((orderId) => {
@@ -440,10 +464,7 @@ const KitchenDashboard = () => {
                             size="default"
                             onClick={() => {
                               handleAcknowledge(orderId);
-                              toast({
-                                title: "Order Acknowledged",
-                                description: `Order #${orderNum} acknowledged - ${unacknowledgedOrders.size - 1} remaining`
-                              });
+                              toast({ title: "Order Acknowledged", description: `Order #${orderNum} acknowledged - ${unacknowledgedOrders.size - 1} remaining` });
                             }}
                             className="flex items-center gap-2 animate-pulse shadow-lg"
                           >
@@ -455,27 +476,13 @@ const KitchenDashboard = () => {
                     </div>
                   )}
 
-                  {/* Test Alert Button - Only show when not playing */}
                   {!isPlaying && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        startAlert();
-                        toast({
-                          title: "Testing Continuous Alert",
-                          description: "Alert will loop for 2.5 minutes or until you click Stop.",
-                          duration: 5000,
-                        });
-                      }}
-                      className="flex items-center gap-2"
-                    >
+                    <Button variant="outline" size="sm" onClick={() => { startAlert(); toast({ title: "Testing Continuous Alert", description: "Alert will loop for 2.5 minutes or until you click Stop.", duration: 5000 }); }} className="flex items-center gap-2">
                       <Volume2 className="w-4 h-4" />
                       <span className="text-xs hidden sm:inline">Test Alert</span>
                     </Button>
                   )}
 
-                  {/* Sound Toggle */}
                   <div className="flex items-center gap-2">
                     <Label htmlFor="sound" className="sr-only">Sound</Label>
                     {soundEnabled ? (
@@ -483,34 +490,17 @@ const KitchenDashboard = () => {
                     ) : (
                       <VolumeX className="w-4 h-4 text-muted-foreground" />
                     )}
-                    <Switch
-                      id="sound"
-                      checked={soundEnabled}
-                      onCheckedChange={setSoundEnabled}
-                    />
+                    <Switch id="sound" checked={soundEnabled} onCheckedChange={setSoundEnabled} />
                   </div>
 
-                  {/* Refresh */}
                   <Button variant="outline" size="icon" onClick={loadOrders} disabled={isLoading}>
                     <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
                   </Button>
 
-                  {/* Fullscreen */}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      if (document.fullscreenElement) {
-                        document.exitFullscreen();
-                      } else {
-                        document.documentElement.requestFullscreen();
-                      }
-                    }}
-                  >
+                  <Button variant="ghost" size="icon" onClick={() => { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); }}>
                     <ExternalLink className="w-4 h-4" />
                   </Button>
 
-                  {/* Logout */}
                   <Button variant="ghost" size="icon" onClick={handleLogout}>
                     <LogOut className="w-4 h-4" />
                   </Button>
@@ -519,7 +509,6 @@ const KitchenDashboard = () => {
             </div>
           </header>
 
-          {/* Content */}
           <main className="flex-1 p-2 sm:p-4">
             {isLoading ? (
               <div className="flex items-center justify-center h-64">
@@ -547,13 +536,9 @@ const KitchenDashboard = () => {
         </div>
       </div>
 
-      {/* Sound Picker Modal */}
       {showSoundPicker && (
         <>
-          <div
-            className="fixed inset-0 bg-black/50 z-40"
-            onClick={() => setShowSoundPicker(false)}
-          />
+          <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setShowSoundPicker(false)} />
           <SoundPicker
             currentSound={selectedSound}
             currentCustomUrl={customAudioUrl}
