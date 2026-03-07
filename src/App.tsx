@@ -25,7 +25,7 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import KitchenDashboard from "./pages/KitchenDashboard";
 import StaffLogin from "./pages/StaffLogin";
-import KitchenAuthGate from "./components/KitchenAuthGate";
+
 import NotFound from "./pages/NotFound";
 import MenuItemDetail from "./pages/MenuItemDetail";
 import AnalyticsDashboard from "./pages/AnalyticsDashboard";
