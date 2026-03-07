@@ -68,7 +68,7 @@ const App = () => (
               <Route path="/payment-success" element={<PaymentSuccessPage />} />
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/admin/kitchen" element={<KitchenAuthGate><KitchenDashboard /></KitchenAuthGate>} />
+              <Route path="/admin/kitchen" element={<KitchenDashboard />} />
               <Route path="/staff/login" element={<StaffLogin />} />
               <Route path="/visitors" element={<AnalyticsDashboard />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
