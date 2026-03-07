@@ -2,32 +2,35 @@
 
 ## Problem
 
-The cookie consent banner uses a single-row `flex` layout with text and buttons side-by-side. On mobile, the text and buttons compete for horizontal space, causing the text to wrap word-by-word into a vertical column (as shown in the screenshot).
+Two race conditions cause the kitchen login to intermittently fail or loop:
 
-## Solution
+**Race 1 — Double navigation in StaffLogin:**
+When `handleLogin` calls `signInWithPassword`, it triggers the `SIGNED_IN` auth event. Both `handleLogin` AND the `onAuthStateChange` listener then race to check the role and navigate to `/admin/kitchen` simultaneously. This causes double role-checks and double navigations.
 
-Switch to a **stacked layout on mobile**: text on top, buttons below. Keep the single-row layout on desktop (`sm:` breakpoint and up).
+**Race 2 — One-shot `authResolved` flag in KitchenAuthGate:**
+When the gate mounts, both `getSession()` and `onAuthStateChange(INITIAL_SESSION)` fire near-simultaneously. The `authResolved` flag means whichever resolves first wins — if `getSession` returns before the session is fully restored (returning null), it redirects to login and locks out the `SIGNED_IN` event that arrives moments later. On re-login, this creates the refresh loop.
 
-### Changes to `src/components/CookieConsent.tsx` (lines 75-114)
+**Race 3 — Awaiting inside `onAuthStateChange`:**
+Per Supabase docs, awaiting async operations inside `onAuthStateChange` can block subsequent auth event processing, causing deadlocks.
 
-1. Change the outer flex container to `flex-col` on mobile, `sm:flex-row sm:items-center` on desktop.
-2. Move the buttons into a full-width row on mobile with proper spacing.
-3. Ensure the text paragraph takes full width on mobile and doesn't get squeezed.
+## Plan
 
-```text
-Mobile layout:
-┌──────────────────────────────┐
-│ 🍪 We use cookies to enhance │
-│ your experience...  Learn more│
-│                              │
-│  [Accept] [Essential Only] ✕ │
-└──────────────────────────────┘
+### 1. Rewrite StaffLogin — remove auth listener entirely
 
-Desktop layout (unchanged):
-┌──────────────────────────────────────────────────────────┐
-│ 🍪 We use cookies to enhance...  Learn more  [Accept] [Essential Only] ✕ │
-└──────────────────────────────────────────────────────────┘
-```
+- Remove `onAuthStateChange` subscription and the `routeIfAuthorized` useEffect
+- On mount: call `getSession()` → if session exists and has role, redirect. Otherwise show form. Simple, no listener.
+- On form submit: `signInWithPassword` → check role → navigate. Single path, no races.
 
-Single file change, minimal diff.
+### 2. Rewrite KitchenAuthGate — remove one-shot flag, avoid awaiting in listener
+
+- Remove the `authResolved` one-shot flag
+- Use `getSession()` as the primary session restore mechanism
+- In `onAuthStateChange`: do NOT await. Use `setTimeout(0, () => validateSessionAccess(...))` to defer without blocking auth event processing
+- Allow state to be re-set on subsequent `SIGNED_IN` events (no one-shot blocking)
+- Keep the safety timeout but make it clearable on success
+- On `SIGNED_OUT`: reset state and redirect immediately
+
+### Files changed
+- `src/components/KitchenAuthGate.tsx`
+- `src/pages/StaffLogin.tsx`
 
