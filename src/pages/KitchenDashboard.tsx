@@ -46,8 +46,6 @@ const getDateFromRange = (range: DateRangeOption): Date => {
 };
 
 const KitchenDashboard = () => {
-  // Auth state (replaces KitchenAuthGate)
-  const [authState, setAuthState] = useState<'checking' | 'authorized' | 'unauthorized'>('checking');
   const mountedRef = useRef(true);
 
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
@@ -93,88 +91,27 @@ const KitchenDashboard = () => {
     return () => window.removeEventListener('click', handleFirstInteraction);
   }, [initAudioContext]);
 
-  // ──────────────────────────────────────────────
-  // DATA LOAD (Auth is already handled by KitchenAuthGate)
-  // ──────────────────────────────────────────────
+  // Initial settings load
   useEffect(() => {
-    mountedRef.current = true;
-
-    const loadDashboardData = async () => {
+    const loadSettings = async () => {
       try {
-        setAuthState('authorized'); // Gate already authorized us
-        const startDate = getDateFromRange(dateRange);
+        const { data } = await supabase
+          .from('kitchen_settings')
+          .select('setting_value')
+          .eq('setting_key', 'custom_audio_url')
+          .maybeSingle();
 
-        // Fire orders + settings queries in parallel
-        const [ordersResult, settingsResult] = await Promise.all([
-          supabase
-            .from('orders')
-            .select('*')
-            .gte('created_at', startDate.toISOString())
-            .order('created_at', { ascending: false }),
-          supabase
-            .from('kitchen_settings')
-            .select('setting_value')
-            .eq('setting_key', 'custom_audio_url')
-            .single(),
-        ]);
-
-        if (!mountedRef.current) return;
-
-        // Apply settings
-        if (settingsResult.data?.setting_value) {
-          setCustomAudioUrl(settingsResult.data.setting_value);
+        if (data?.setting_value) {
+          setCustomAudioUrl(data.setting_value);
           setSelectedSound('custom');
           localStorage.setItem('kitchen_alert_sound', 'custom');
-          localStorage.setItem('kitchen_alert_custom_url', settingsResult.data.setting_value);
-        }
-
-        // Process orders
-        if (ordersResult.error) throw ordersResult.error;
-        const ordersData = ordersResult.data || [];
-
-        if (ordersData.length > 0) {
-          const orderIds = ordersData.map(o => o.id);
-          const { data: itemsData } = await supabase
-            .from('order_items')
-            .select('*')
-            .in('order_id', orderIds);
-
-          if (!mountedRef.current) return;
-          const ordersWithItems: OrderWithItems[] = ordersData.map(order => ({
-            ...order,
-            items: (itemsData || []).filter(item => item.order_id === order.id),
-          }));
-          setOrders(ordersWithItems);
-        } else {
-          setOrders([]);
+          localStorage.setItem('kitchen_alert_custom_url', data.setting_value);
         }
       } catch (err) {
-        console.error('Error in kitchen boot sequence:', err);
-        if (mountedRef.current) {
-          navigate('/staff/login', { replace: true });
-        }
-      } finally {
-        if (mountedRef.current) setIsLoading(false);
+        console.error('Failed to load kitchen settings', err);
       }
     };
-
-    loadDashboardData();
-
-    // Auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT' || !session) {
-        if (mountedRef.current) {
-          setAuthState('unauthorized');
-          navigate('/staff/login', { replace: true });
-        }
-      }
-    });
-
-    return () => {
-      mountedRef.current = false;
-      subscription.unsubscribe();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    loadSettings();
   }, []);
 
   // Reload orders when date range changes (after initial load)
@@ -212,35 +149,32 @@ const KitchenDashboard = () => {
     }
   }, [dateRange, toast]);
 
-  // Re-fetch when date range changes
+  // Re-fetch when date range changes or component mounts
   useEffect(() => {
+    mountedRef.current = true;
     loadOrders();
+    return () => {
+      mountedRef.current = false;
+    };
   }, [dateRange, loadOrders]);
 
   // Bulletproof the iPad sleep-wake cycle & Fallback Polling
   useEffect(() => {
     const handleVisibilityChange = () => {
-      // Whenever the screen wakes back up, fetch fresh data instantly
-      // because WebSockets drop while the iPad screen is off/sleeping.
-      if (document.visibilityState === 'visible' && authState === 'authorized') {
+      if (document.visibilityState === 'visible') {
         loadOrders();
       }
     };
 
     const handleOnline = () => {
-      if (authState === 'authorized') {
-        loadOrders();
-      }
+      loadOrders();
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener("online", handleOnline);
 
-    // Fallback Polling: Ensure the kitchen never misses an order even if 
-    // the iPad's WebSocket connection secretly drops without throwing an error.
-    // Re-fetches orders silently every 5 minutes.
     const fallbackInterval = setInterval(() => {
-      if (document.visibilityState === 'visible' && authState === 'authorized') {
+      if (document.visibilityState === 'visible') {
         loadOrders();
       }
     }, 5 * 60 * 1000);
@@ -250,7 +184,7 @@ const KitchenDashboard = () => {
       window.removeEventListener("online", handleOnline);
       clearInterval(fallbackInterval);
     };
-  }, [loadOrders, authState]);
+  }, [loadOrders]);
 
   // Realtime subscription
   useEffect(() => {
@@ -393,16 +327,7 @@ const KitchenDashboard = () => {
     localStorage.setItem('kitchen_date_range', range);
   };
 
-  // ──────────────────────────────────────────────
-  // RENDER: block all content until auth is confirmed
-  // ──────────────────────────────────────────────
-  if (authState !== 'authorized') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <RefreshCw className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+
 
   const paidOrders = orders.filter(o => o.payment_status === 'paid');
   const pendingOrders = orders.filter(o => o.payment_status === 'pending');
