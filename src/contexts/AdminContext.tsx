@@ -26,20 +26,21 @@ function checkRoleAndSet(
   userId: string,
   setIsAdmin: (v: boolean) => void,
 ) {
-  supabase
-    .rpc('has_role', { _user_id: userId, _role: 'admin' })
-    .then(({ data: isAdmin }) => {
-      if (isAdmin) {
-        setIsAdmin(true);
-        return;
-      }
-      return supabase
-        .rpc('has_role', { _user_id: userId, _role: 'staff' })
-        .then(({ data: isStaff }) => {
-          if (isStaff) setIsAdmin(true);
-        });
-    })
-    .catch((err) => console.error('Role check failed:', err));
+  Promise.resolve(
+    supabase
+      .rpc('has_role', { _user_id: userId, _role: 'admin' })
+      .then(({ data: isAdmin }) => {
+        if (isAdmin) {
+          setIsAdmin(true);
+          return;
+        }
+        return supabase
+          .rpc('has_role', { _user_id: userId, _role: 'staff' })
+          .then(({ data: isStaff }) => {
+            if (isStaff) setIsAdmin(true);
+          });
+      }),
+  ).catch((err) => console.error('Role check failed:', err));
 }
 
 export const AdminProvider = ({ children }: { children: ReactNode }) => {
