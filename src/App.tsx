@@ -26,6 +26,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import KitchenDashboard from "./pages/KitchenDashboard";
 import StaffLogin from "./pages/StaffLogin";
 import KitchenAuthGate from "./components/KitchenAuthGate";
+import { LocationTracker } from "./hooks/LocationTracker";
 
 import NotFound from "./pages/NotFound";
 import MenuItemDetail from "./pages/MenuItemDetail";
@@ -50,6 +51,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <LocationTracker />
             <GoogleAnalytics />
             <PageViewTracker />
             <ScrollRestoration />
