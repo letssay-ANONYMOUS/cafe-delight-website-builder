@@ -28,10 +28,16 @@ const KitchenAuthGate = ({ children }: KitchenAuthGateProps) => {
           return;
         }
 
-        const [staffRes, adminRes] = await Promise.all([
+        // Add a 5 second timeout race so this cannot hang forever
+        const rolesPromise = Promise.all([
           supabase.rpc('has_role', { _user_id: session.user.id, _role: 'staff' }),
           supabase.rpc('has_role', { _user_id: session.user.id, _role: 'admin' }),
         ]);
+        const timeoutPromise = new Promise<[any, any]>((resolve) =>
+          setTimeout(() => resolve([{ data: null }, { data: null }]), 5000)
+        );
+
+        const [staffRes, adminRes] = await Promise.race([rolesPromise, timeoutPromise]);
 
         if (staffRes.data !== true && adminRes.data !== true) {
           await supabase.auth.signOut();

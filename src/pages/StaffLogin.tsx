@@ -41,13 +41,17 @@ const StaffLogin = () => {
 
     supabase.auth
       .getSession()
-      .then(async ({ data: { session } }) => {
-        if (!mounted || !session) {
+      .then(async ({ data: { session }, error }) => {
+        if (!mounted || !session || error) {
           if (mounted) setCheckingSession(false);
           return;
         }
 
-        const hasAccess = await hasKitchenAccess(session.user.id);
+        // Add a timeout race so hasKitchenAccess cannot hang forever
+        const accessPromise = hasKitchenAccess(session.user.id);
+        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000));
+
+        const hasAccess = await Promise.race([accessPromise, timeoutPromise]);
         if (!mounted) return;
 
         if (hasAccess === true) {
@@ -56,7 +60,8 @@ const StaffLogin = () => {
           setCheckingSession(false);
         }
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error("Session check failed:", err);
         if (mounted) setCheckingSession(false);
       });
 
