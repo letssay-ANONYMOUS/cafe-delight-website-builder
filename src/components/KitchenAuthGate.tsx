@@ -18,7 +18,24 @@ const KitchenAuthGate = ({ children }: KitchenAuthGateProps) => {
 
     const verifyAccess = async () => {
       try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        let { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+        // If session exists but token is expired/about to expire, refresh it
+        if (session?.expires_at) {
+          const expiresMs = session.expires_at * 1000;
+          if (Date.now() >= expiresMs - 60_000) {
+            const { data: { session: refreshed }, error: refreshErr } = await supabase.auth.refreshSession();
+            if (refreshErr || !refreshed) {
+              if (mountedRef.current) {
+                setLoading(false);
+                navigate('/staff/login', { replace: true });
+              }
+              return;
+            }
+            session = refreshed;
+            sessionError = null;
+          }
+        }
 
         if (sessionError || !session) {
           if (mountedRef.current) {
