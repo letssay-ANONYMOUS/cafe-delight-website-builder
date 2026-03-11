@@ -213,11 +213,13 @@ export const VisitorDetailsTable = ({ dateRange }: VisitorDetailsTableProps) => 
   };
 
   const handleExportCSV = () => {
-    const headers = ['Visitor ID', 'Device', 'Browser', 'IP', 'Pages Visited', 'Time on Site', 'Cart Items', 'Ordered', 'Consent', 'Last Seen'];
+    const headers = ['Visitor ID', 'Device', 'Browser', 'OS', 'Screen', 'IP', 'Pages Visited', 'Time on Site', 'Cart Items', 'Ordered', 'Consent', 'Last Seen'];
     const rows = visitors.map(v => [
       v.visitor_id.slice(-8),
       v.device_type || '-',
-      getBrowserName(v.browser),
+      `${getBrowserName(v.browser)}${v.browser_version ? ' ' + v.browser_version : ''}`,
+      v.os || '-',
+      v.screen_resolution || '-',
       v.ip_address || '-',
       v.pages.length,
       formatTime(v.total_time),
