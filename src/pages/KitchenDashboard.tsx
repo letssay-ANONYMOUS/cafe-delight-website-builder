@@ -115,11 +115,9 @@ const KitchenDashboard = () => {
   }, []);
 
   // Reload orders when date range changes (after initial load)
-  const loadOrders = useCallback(async () => {
+  const loadOrders = useCallback(async (retryCount = 0) => {
     setIsLoading(true);
     try {
-      // KitchenAuthGate already guarantees a valid session.
-      // The Supabase client auto-refreshes the token; no manual refresh here.
       const startDate = getDateFromRange(dateRange);
       const { data: ordersData, error: ordersError } = await supabase
         .from('orders')
@@ -145,7 +143,16 @@ const KitchenDashboard = () => {
       }
     } catch (error) {
       console.error('Error loading orders:', error);
-      toast({ variant: "destructive", title: "Error", description: "Failed to load orders" });
+      // Retry with backoff: 5s, 15s, 30s
+      const backoffs = [5000, 15000, 30000];
+      if (retryCount < backoffs.length && mountedRef.current) {
+        console.log(`Retrying loadOrders in ${backoffs[retryCount] / 1000}s (attempt ${retryCount + 1}/3)`);
+        setTimeout(() => {
+          if (mountedRef.current) loadOrders(retryCount + 1);
+        }, backoffs[retryCount]);
+      } else {
+        toast({ variant: "destructive", title: "Error", description: "Failed to load orders" });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -179,7 +186,7 @@ const KitchenDashboard = () => {
       if (document.visibilityState === 'visible') {
         loadOrders();
       }
-    }, 5 * 60 * 1000);
+    }, 60 * 1000);
 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
@@ -285,7 +292,18 @@ const KitchenDashboard = () => {
           }
         }
       )
-      .subscribe();
+      .subscribe((status, err) => {
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            console.warn(`Realtime channel ${status}, reconnecting in 3s...`, err);
+            setTimeout(() => {
+              if (cancelled) return;
+              if (channel) supabase.removeChannel(channel);
+              channel = null;
+              setupRealtime();
+              loadOrders();
+            }, 3000);
+          }
+        });
     };
 
     setupRealtime();
@@ -295,7 +313,7 @@ const KitchenDashboard = () => {
       if (channel) supabase.removeChannel(channel);
       stopAlert();
     };
-  }, [stopAlert, toast]);
+  }, [stopAlert, toast, loadOrders]);
 
   // Alert sound based on unacknowledged orders
   useEffect(() => {
@@ -454,7 +472,7 @@ const KitchenDashboard = () => {
                     <Switch id="sound" checked={soundEnabled} onCheckedChange={setSoundEnabled} />
                   </div>
 
-                  <Button variant="outline" size="icon" onClick={loadOrders} disabled={isLoading}>
+                  <Button variant="outline" size="icon" onClick={() => loadOrders()} disabled={isLoading}>
                     <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
                   </Button>
 
