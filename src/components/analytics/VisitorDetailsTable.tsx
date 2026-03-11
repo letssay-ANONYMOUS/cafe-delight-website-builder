@@ -193,6 +193,7 @@ export const VisitorDetailsTable = ({ dateRange }: VisitorDetailsTableProps) => 
           ip_address: v.ip_address,
           timezone: v.timezone,
           os: v.os,
+          screen_resolution: v.screen_resolution,
           last_seen_at: v.last_seen_at,
           created_at: v.created_at,
           pages: visitorPages,
