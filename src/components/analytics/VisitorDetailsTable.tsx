@@ -275,6 +275,8 @@ export const VisitorDetailsTable = ({ dateRange }: VisitorDetailsTableProps) => 
                 <TableHead className="w-[80px]">ID</TableHead>
                 <TableHead>Device</TableHead>
                 <TableHead>Browser</TableHead>
+                <TableHead>OS</TableHead>
+                <TableHead>Screen</TableHead>
                 <TableHead>IP</TableHead>
                 <TableHead>Pages</TableHead>
                 <TableHead>Time</TableHead>
