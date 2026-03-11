@@ -307,7 +307,13 @@ export const VisitorDetailsTable = ({ dateRange }: VisitorDetailsTableProps) => 
                         </div>
                       </TableCell>
                       <TableCell className="text-xs">
-                        {getBrowserName(visitor.browser)}
+                        {getBrowserName(visitor.browser)}{visitor.browser_version ? ` ${visitor.browser_version}` : ''}
+                      </TableCell>
+                      <TableCell className="text-xs">
+                        {visitor.os || '-'}
+                      </TableCell>
+                      <TableCell className="text-xs font-mono">
+                        {visitor.screen_resolution || '-'}
                       </TableCell>
                       <TableCell className="text-xs font-mono">
                         {maskIp(visitor.ip_address)}
