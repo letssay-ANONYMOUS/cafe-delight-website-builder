@@ -372,10 +372,9 @@ export const VisitorDetailsTable = ({ dateRange }: VisitorDetailsTableProps) => 
                     {/* Expanded row for page details */}
                     {expandedVisitor === visitor.visitor_id && (
                       <TableRow>
-                        <TableCell colSpan={10} className="bg-muted/30 p-4">
+                        <TableCell colSpan={13} className="bg-muted/30 p-4">
                           <div className="space-y-3">
                             <div className="flex gap-4 text-xs">
-                              <span><strong>OS:</strong> {visitor.os || '-'}</span>
                               <span><strong>Timezone:</strong> {visitor.timezone || '-'}</span>
                               <span><strong>Full IP:</strong> {visitor.ip_address || '-'}</span>
                               {visitor.has_order && (
