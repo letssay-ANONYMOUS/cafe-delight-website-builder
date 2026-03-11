@@ -1,36 +1,49 @@
 
 
-## Problem
+## Kitchen Dashboard Hardening Plan
 
-Two race conditions cause the kitchen login to intermittently fail or loop:
+Three targeted changes to make the kitchen page production-reliable.
 
-**Race 1 — Double navigation in StaffLogin:**
-When `handleLogin` calls `signInWithPassword`, it triggers the `SIGNED_IN` auth event. Both `handleLogin` AND the `onAuthStateChange` listener then race to check the role and navigate to `/admin/kitchen` simultaneously. This causes double role-checks and double navigations.
+---
 
-**Race 2 — One-shot `authResolved` flag in KitchenAuthGate:**
-When the gate mounts, both `getSession()` and `onAuthStateChange(INITIAL_SESSION)` fire near-simultaneously. The `authResolved` flag means whichever resolves first wins — if `getSession` returns before the session is fully restored (returning null), it redirects to login and locks out the `SIGNED_IN` event that arrives moments later. On re-login, this creates the refresh loop.
+### 1. Realtime channel reconnection (`KitchenDashboard.tsx`)
 
-**Race 3 — Awaiting inside `onAuthStateChange`:**
-Per Supabase docs, awaiting async operations inside `onAuthStateChange` can block subsequent auth event processing, causing deadlocks.
+**Problem:** If the realtime channel drops (network blip, token expiry), staff silently stop receiving orders with no recovery.
 
-## Plan
+**Fix:** After `.subscribe()`, listen to the channel status. On `CHANNEL_ERROR` or `TIMED_OUT`, wait 3 seconds, remove the dead channel, and re-subscribe. On reconnect, call `loadOrders()` to catch any missed orders during the gap.
 
-### 1. Rewrite StaffLogin — remove auth listener entirely
+---
 
-- Remove `onAuthStateChange` subscription and the `routeIfAuthorized` useEffect
-- On mount: call `getSession()` → if session exists and has role, redirect. Otherwise show form. Simple, no listener.
-- On form submit: `signInWithPassword` → check role → navigate. Single path, no races.
+### 2. Stop redundant role checks on TOKEN_REFRESHED (`AdminContext.tsx`)
 
-### 2. Rewrite KitchenAuthGate — remove one-shot flag, avoid awaiting in listener
+**Problem:** Line 65 triggers `checkRoleAndSet` on every `TOKEN_REFRESHED` event (~every hour). If the RPC momentarily fails during a refresh, `isAdmin` flips to `false` and the staff gets kicked out mid-shift.
 
-- Remove the `authResolved` one-shot flag
-- Use `getSession()` as the primary session restore mechanism
-- In `onAuthStateChange`: do NOT await. Use `setTimeout(0, () => validateSessionAccess(...))` to defer without blocking auth event processing
-- Allow state to be re-set on subsequent `SIGNED_IN` events (no one-shot blocking)
-- Keep the safety timeout but make it clearable on success
-- On `SIGNED_OUT`: reset state and redirect immediately
+**Fix:** Remove `TOKEN_REFRESHED` from the condition. Only check roles on `SIGNED_IN`. A token refresh doesn't change roles.
 
-### Files changed
-- `src/components/KitchenAuthGate.tsx`
-- `src/pages/StaffLogin.tsx`
+```
+// Before
+(event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')
+
+// After  
+event === 'SIGNED_IN'
+```
+
+---
+
+### 3. Reduce fallback polling + add retry (`KitchenDashboard.tsx`)
+
+**Problem:** If realtime dies AND `loadOrders()` fails, the dashboard sits stale for 5 minutes before the next poll attempt.
+
+**Fix:**
+- Change polling interval from `5 * 60 * 1000` to `60 * 1000` (1 minute, as requested)
+- Add retry with backoff to `loadOrders`: on failure, retry after 5s, then 15s, then 30s (3 attempts max) before giving up until the next poll cycle
+
+---
+
+### Files to change
+
+| File | Change |
+|------|--------|
+| `src/pages/KitchenDashboard.tsx` | Add channel status monitoring + reconnect logic; reduce poll to 1 min; add retry backoff on `loadOrders` failure |
+| `src/contexts/AdminContext.tsx` | Remove `TOKEN_REFRESHED` from role-check trigger (line 65) |
 
