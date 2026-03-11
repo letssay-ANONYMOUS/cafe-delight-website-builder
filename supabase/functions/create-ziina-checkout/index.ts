@@ -20,7 +20,7 @@ serve(async (req) => {
     const customerIp = cfConnectingIp || (forwardedFor ? forwardedFor.split(",")[0].trim() : null) || realIp || null;
     console.log("Customer IP:", customerIp);
 
-    const { customerName, phoneNumber, orderItems, additionalNotes, visitorId, latitude, longitude } = await req.json();
+    const { customerName, phoneNumber, orderItems, additionalNotes, visitorId, latitude, longitude, selectedBranch } = await req.json();
 
     // ===== BRANCH DETECTION =====
     // Two Nawa Cafe branches in Al Ain
