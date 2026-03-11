@@ -26,6 +26,7 @@ interface VisitorDetail {
   ip_address: string | null;
   timezone: string | null;
   os: string | null;
+  screen_resolution: string | null;
   last_seen_at: string;
   created_at: string;
   pages: PageDetail[];

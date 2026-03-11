@@ -84,6 +84,8 @@ const CheckoutPage = () => {
           customerName: formData.name,
           phoneNumber: formData.phone,
           visitorId: getVisitorId(),
+          latitude: customerCoords?.latitude ?? null,
+          longitude: customerCoords?.longitude ?? null,
           orderItems: cartItems.map(item => ({
             name: item.name,
             quantity: item.quantity,
