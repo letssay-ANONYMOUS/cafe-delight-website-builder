@@ -1,36 +1,29 @@
 
 
-## Problem
+## Security Fixes — Kitchen Dashboard Untouched
 
-Two race conditions cause the kitchen login to intermittently fail or loop:
+These fixes target only the admin edge functions, one modal component, one RLS policy, and one hardcoded URL. **Zero changes** to any kitchen-related files (`KitchenDashboard.tsx`, `KitchenAuthGate.tsx`, `KitchenSidebar.tsx`, `OrderTable.tsx`, `useKitchenAlert.ts`, `StaffLogin.tsx`).
 
-**Race 1 — Double navigation in StaffLogin:**
-When `handleLogin` calls `signInWithPassword`, it triggers the `SIGNED_IN` auth event. Both `handleLogin` AND the `onAuthStateChange` listener then race to check the role and navigate to `/admin/kitchen` simultaneously. This causes double role-checks and double navigations.
+### Changes
 
-**Race 2 — One-shot `authResolved` flag in KitchenAuthGate:**
-When the gate mounts, both `getSession()` and `onAuthStateChange(INITIAL_SESSION)` fire near-simultaneously. The `authResolved` flag means whichever resolves first wins — if `getSession` returns before the session is fully restored (returning null), it redirects to login and locks out the `SIGNED_IN` event that arrives moments later. On re-login, this creates the refresh loop.
+**1. Whitelist fields in `admin-item` edge function**
+- In `supabase/functions/admin-item/index.ts`, replace the destructured `...itemData` pass-through with an explicit whitelist of allowed fields (`title`, `description`, `price`, `category`, `subcategory`, `image_url`, `published`, `display_order`, `card_number`, `tags`, `options`). Prevents injection of arbitrary columns.
 
-**Race 3 — Awaiting inside `onAuthStateChange`:**
-Per Supabase docs, awaiting async operations inside `onAuthStateChange` can block subsequent auth event processing, causing deadlocks.
+**2. Remove hardcoded email from `AdminPasswordModal`**
+- In `src/components/AdminPasswordModal.tsx`, change the default `email` state from `'nawacafe22@gmail.com'` to `''` with a placeholder on the input field instead.
 
-## Plan
+**3. Tighten `kitchen_settings` RLS**
+- Database migration: Drop the 3 public INSERT/SELECT/UPDATE policies and replace with authenticated-only policies requiring `has_role(auth.uid(), 'admin')` or `has_role(auth.uid(), 'staff')`.
 
-### 1. Rewrite StaffLogin — remove auth listener entirely
+**4. Move n8n webhook URL to a secret**
+- Add a new secret `N8N_WEBHOOK_URL` via the secrets tool.
+- In `supabase/functions/create-ziina-checkout/index.ts`, replace the hardcoded URL with `Deno.env.get('N8N_WEBHOOK_URL')`.
 
-- Remove `onAuthStateChange` subscription and the `routeIfAuthorized` useEffect
-- On mount: call `getSession()` → if session exists and has role, redirect. Otherwise show form. Simple, no listener.
-- On form submit: `signInWithPassword` → check role → navigate. Single path, no races.
-
-### 2. Rewrite KitchenAuthGate — remove one-shot flag, avoid awaiting in listener
-
-- Remove the `authResolved` one-shot flag
-- Use `getSession()` as the primary session restore mechanism
-- In `onAuthStateChange`: do NOT await. Use `setTimeout(0, () => validateSessionAccess(...))` to defer without blocking auth event processing
-- Allow state to be re-set on subsequent `SIGNED_IN` events (no one-shot blocking)
-- Keep the safety timeout but make it clearable on success
-- On `SIGNED_OUT`: reset state and redirect immediately
-
-### Files changed
-- `src/components/KitchenAuthGate.tsx`
-- `src/pages/StaffLogin.tsx`
+### Files Modified
+| File | Type | Kitchen Impact |
+|------|------|----------------|
+| `supabase/functions/admin-item/index.ts` | Edge function | None |
+| `src/components/AdminPasswordModal.tsx` | Component | None |
+| `supabase/functions/create-ziina-checkout/index.ts` | Edge function | None |
+| Database migration (kitchen_settings RLS) | SQL | Read/write still works for authenticated staff — no behavior change |
 
