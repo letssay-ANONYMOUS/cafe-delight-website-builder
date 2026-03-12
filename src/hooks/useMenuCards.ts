@@ -18,7 +18,7 @@ export interface MenuSection {
 }
 
 export const menuSections: MenuSection[] = [
-  { id: 'nawa-breakfast', name: 'NAWA Breakfast', startId: 1, endId: 23 },
+  { id: 'nawa-breakfast', name: 'NAWA Breakfast', startId: 1, endId: 19 },
   { id: 'coffee', name: 'COFFEE', startId: 24, endId: 42 },
   { id: 'cold-beverages', name: 'Cold Beverages', startId: 43, endId: 58 },
   { id: 'manual-brew', name: 'MANUAL BREW', startId: 59, endId: 63 },
