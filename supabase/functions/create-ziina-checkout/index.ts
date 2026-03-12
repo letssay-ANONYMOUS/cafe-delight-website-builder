@@ -331,7 +331,11 @@ serve(async (req) => {
     }
 
     // Send order to n8n webhook (non-blocking)
-    const webhookUrl = new URL('https://hoi-there.app.n8n.cloud/webhook/ca4ea201-6cb4-4476-b7b5-d5c12894f9b1');
+    const n8nUrl = Deno.env.get('N8N_WEBHOOK_URL');
+    if (!n8nUrl) {
+      console.warn('N8N_WEBHOOK_URL secret not set, skipping webhook');
+    }
+    const webhookUrl = new URL(n8nUrl || 'https://example.com/placeholder');
     webhookUrl.searchParams.append('customerName', customerName || '');
     webhookUrl.searchParams.append('phoneNumber', phoneNumber || '');
     webhookUrl.searchParams.append('time', new Date().toLocaleString('en-AE', { timeZone: 'Asia/Dubai' }));
