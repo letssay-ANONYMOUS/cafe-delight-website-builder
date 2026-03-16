@@ -48,46 +48,70 @@ const queryClient = new QueryClient({
   },
 });
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AdminProvider>
-      <CartProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <LocationTracker />
-            <GoogleAnalytics />
-            <PageViewTracker />
-            <ScrollRestoration />
-            <ImagePreloader />
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/menu" element={<MenuPage />} />
-              <Route path="/menu/:id" element={<MenuItemDetail />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/catering" element={<CateringPage />} />
-              <Route path="/store" element={<StorePage />} />
-              <Route path="/store/:id" element={<ProductDetail />} />
-              <Route path="/contact" element={<ContactPage />} />
-              <Route path="/locations" element={<LocationsPage />} />
-              <Route path="/cart" element={<CartPage />} />
-              <Route path="/checkout" element={<CheckoutPage />} />
-              <Route path="/payment-success" element={<PaymentSuccessPage />} />
-              <Route path="/admin/login" element={<AdminLogin />} />
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/admin/kitchen" element={<KitchenAuthGate><KitchenDashboard /></KitchenAuthGate>} />
-              <Route path="/staff/login" element={<StaffLogin />} />
-              <Route path="/visitors" element={<AnalyticsDashboard />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            <RouteAwareCookieConsent />
-          </BrowserRouter>
-        </TooltipProvider>
-      </CartProvider>
-    </AdminProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  if (MAINTENANCE_MODE) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <AdminProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/admin/login" element={<AdminLogin />} />
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/staff/login" element={<StaffLogin />} />
+                <Route path="/visitors" element={<AnalyticsDashboard />} />
+                <Route path="*" element={<MaintenanceGate />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AdminProvider>
+      </QueryClientProvider>
+    );
+  }
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AdminProvider>
+        <CartProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <LocationTracker />
+              <GoogleAnalytics />
+              <PageViewTracker />
+              <ScrollRestoration />
+              <ImagePreloader />
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/menu" element={<MenuPage />} />
+                <Route path="/menu/:id" element={<MenuItemDetail />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/catering" element={<CateringPage />} />
+                <Route path="/store" element={<StorePage />} />
+                <Route path="/store/:id" element={<ProductDetail />} />
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="/locations" element={<LocationsPage />} />
+                <Route path="/cart" element={<CartPage />} />
+                <Route path="/checkout" element={<CheckoutPage />} />
+                <Route path="/payment-success" element={<PaymentSuccessPage />} />
+                <Route path="/admin/login" element={<AdminLogin />} />
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin/kitchen" element={<KitchenAuthGate><KitchenDashboard /></KitchenAuthGate>} />
+                <Route path="/staff/login" element={<StaffLogin />} />
+                <Route path="/visitors" element={<AnalyticsDashboard />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+              <RouteAwareCookieConsent />
+            </BrowserRouter>
+          </TooltipProvider>
+        </CartProvider>
+      </AdminProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
