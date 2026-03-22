@@ -36,7 +36,7 @@ import ProductDetail from "./pages/ProductDetail";
 import MaintenanceGate from "./components/MaintenanceGate";
 
 // ⚡ MAINTENANCE MODE — set to false to re-enable the site
-const MAINTENANCE_MODE = true;
+const MAINTENANCE_MODE = false;
 
 const queryClient = new QueryClient({
   defaultOptions: {
